@@ -17,12 +17,14 @@
 # Use Cases
 ## See the next bus
 *Actor*: Passenger
+
 **Main Flow**:
 1. Log in the Passenger
 2. Passenger chooses the bus route
 3. Passenger chooses the bus stop
 4. System executes the query for the tuple (route, stop)
 5. App displays the information about the next bus coming to this stop on the main page
+
 **Extensions**
 1. a: Passenger already logged in once, so the app logs him in automatically (no time outs)
 1. b: Passenger needs to confirm cookies and settings (sharing locations, etc.)
@@ -31,10 +33,13 @@
 5. a: App displays the next few buses coming to this bus stop, instead of just one bus
 
 ## Time from bus stop A to bus stop B
+
 *Actor*: Passenger
+
 **Main Flow**:
 1. Log in the Passenger
 2. Passenger goes to the 
+
 - Time from bus stop A to bus stop B
 - Bus locations (map)
 - Off route/cancelled buses
