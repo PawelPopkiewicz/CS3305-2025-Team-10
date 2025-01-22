@@ -84,7 +84,8 @@
 	- Pick a bus stop by clicking on it
 	- Search for a bus stop (By id, once found, display the bus stop page (departures from that bus stop))
 	- Search for a bus route (like 220 -> displays all 220s currently on the map) -> then you can click on a specific bus on that map which would display the route page
-- Bus stop (shows departures)
+	- Display suggestions for close bus stops under the search bar (like google maps showing "coffee", etc.)
+	-  Bus stop (shows departures)
 	- Show the departure from current time
 	- Option to specify a later time
 	- Option to "heart" it (add it to favourites)
@@ -95,7 +96,7 @@
 
 
 # Parts
-- AI/ML/Predictor
+- AI/ML/Predictors
 - Client
 - Server
 - Benchmarking
