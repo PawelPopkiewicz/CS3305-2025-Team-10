@@ -1,6 +1,10 @@
 import requests
 import os
+import csv
+import bus_model
+
 from dotenv import load_dotenv
+
 
 load_dotenv()
 
@@ -62,7 +66,27 @@ class GTFSR:
             return None
         return response.json()
 
+class StaticGTFSR:
+    """A class to parse the static csv-format GTFSR data."""
+    static_folder = "back-end/static_gtfsr/"
+    agency  = static_folder + "agency.txt"
+    stops   = static_folder + "stops.txt"
+    routes  = static_folder + "routes.txt"
+    trips   = static_folder + "trips.txt"
+    stop_times = static_folder + "stop_times.txt"
+    calendar = static_folder + "calendar.txt"
+    calendar_dates = static_folder + "calendar_dates.txt"
+    shapes = static_folder + "shapes.txt"
+    feed_info = static_folder + "feed_info.txt"
+
+    @classmethod
+    def read_routes(self, path=routes):
+        with open(path, 'r') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            for row in csv_reader:
+                bus_model.Route(row['route_id'], row['agency_id'], row['route_short_name'], row['route_long_name'], row['route_type'])
+        print(bus_model.Route.all_routes)
 
 if __name__ == "__main__":
     # quick debugging
-    print(GTFSR.fetch_endpoint("TripUpdates"))
+    StaticGTFSR.read_routes()
