@@ -91,7 +91,14 @@ class StaticGTFSR:
         with open(path, 'r') as csv_file:
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
-                bus_model.Stop(row['stop_id'], row['stop_code'] or None, row['stop_name'], row['stop_lat'], row['stop_lon'])        
+                bus_model.Stop(row['stop_id'], row['stop_code'] or None, row['stop_name'], row['stop_lat'], row['stop_lon'])
+
+    @classmethod
+    def read_agencies(self, path=agency):
+        with open(path, 'r') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            for row in csv_reader:
+                bus_model.Agency(row['agency_id'], row['agency_name'])
 
 if __name__ == "__main__":
     # quick debugging
