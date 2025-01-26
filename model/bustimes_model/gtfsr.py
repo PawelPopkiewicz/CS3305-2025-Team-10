@@ -1,11 +1,26 @@
-import urllib.request, json
+"""
+Provides a class to query GTFSR API
+"""
+
+import os
+import urllib.request
+import json
+from dotenv import load_dotenv
+
 
 class GTFSR:
+    """
+    Queries the GTFSR API
+    """
 
     def __init__(self):
-        self.base_url ="https://api.nationaltransport.ie/gtfsr/v2/"
+        self.configure()
+        self.base_url = "https://api.nationaltransport.ie/gtfsr/v2/"
         self.json_format = "?format=json"
-        self.api_key = "92aebfe6cc0045b7a5effb1ca9e171b5"
+        self.api_key = os.environ.get("api_key")
+
+    def configure(self):
+        load_dotenv()
 
     def fetch_gtfsr(self):
         return self.fetch_endpoint("gtfsr")
@@ -17,13 +32,11 @@ class GTFSR:
         return self.fetch_endpoint("TripUpdates")
 
     def fetch_endpoint(self, endpoint):
-        try: 
+        try:
             url = self.base_url+endpoint+self.json_format
-            
-            hdr ={
-            # Request headers
-            'Cache-Control': 'no-cache',
-            'x-api-key': self.decrypt_api_key(self.api_key),
+            hdr = {            # Request headers
+                'Cache-Control': 'no-cache',
+                'x-api-key': self.decrypt_api_key(self.api_key),
             }
 
             req = urllib.request.Request(url, headers=hdr)
@@ -53,11 +66,8 @@ class GTFSR:
             print(e)
 
 
-
 if __name__ == "__main__":
     gtfsr = GTFSR()
     json_data = gtfsr.fetch_vehicles()
-    #gtfsr.print_json(json_data)
+    # gtfsr.print_json(json_data)
     gtfsr.create_json_file("vehicles.json", json_data)
-
-
