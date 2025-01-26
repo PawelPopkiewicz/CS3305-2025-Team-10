@@ -10,8 +10,13 @@ class Stop:
     """A class to represent a bus stop and its relevant information."""
     all_stops = {}
 
-    def __init__(self, stop_id):
+    def __init__(self, stop_id: str, stop_code: int, stop_name: str, stop_lat: float, stop_lon: float):
         self.all_stops[stop_id] = self
+        self.stop_id = stop_id
+        self.stop_code = stop_code
+        self.stop_name = stop_name
+        self.stop_lat = stop_lat
+        self.stop_lon = stop_lon
 
 
 class Route:
