@@ -132,7 +132,13 @@ class StaticGTFSR:
                     shape = bus_model.Shape.all_shapes[shape_id]
                 shape.add_point(row['shape_pt_lat'], row['shape_pt_lon'])
 
-
+    @classmethod
+    def read_trips(self, path=trips):
+       with open(path, 'r') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            for row in csv_reader:
+                bus_model.Trip(row['trip_id'], row['route_id'], row['service_id'], row['shape_id'], row['trip_headsign'], row['trip_short_name'], row['direction_id'], row['block_id'])
+    
 
 if __name__ == "__main__":
     # quick debugging
