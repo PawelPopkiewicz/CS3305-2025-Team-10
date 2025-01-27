@@ -19,6 +19,7 @@ class Stop:
         self.stop_name = stop_name
         self.stop_lat = stop_lat
         self.stop_lon = stop_lon
+        self.bus_visits = [] # List of BusStopVisit objects at this stop
 
 
 class Route:
@@ -28,10 +29,11 @@ class Route:
     def __init__(self, route_id: int, agency_id: int, route_short_name: str, route_long_name: str, route_type: int):
         self.all_routes[route_id] = self
         self.route_id = route_id
-        self.agency_id = agency_id
+        self.agency = Agency.all_agencies[agency_id]
         self.route_short_name = route_short_name
         self.route_long_name = route_long_name
         self.route_type = route_type
+        self.all_trips = []
 
 class Trip:
     """A class to represent a trip and its relevant information."""
@@ -40,21 +42,23 @@ class Trip:
     def __init__(self, trip_id: int, route_id: int, service_id: int, shape_id: int, trip_headsign: str, trip_short_name: str, direction_id: int, block_id: str):
         self.all_trips[trip_id] = self
         self.trip_id = trip_id
-        self.route_id = route_id
-        self.service_id = service_id
-        self.shape_id = shape_id
+        self.route = Route.all_routes[route_id]
+        self.service = Service.all_services[service_id]
+        self.shape = Shape.all_shapes[shape_id]
         self.trip_headsign = trip_headsign
         self.trip_short_name = trip_short_name
         self.direction_id = direction_id
         self.block_id = block_id
-        self.stop
+        self.bus_stop_times = []
+
+        self.route.all_trips.append(self)
     
 class BusStopVisit:
     """A class to record the time of a stop in a trip."""
 
     def __init__(self, trip_id: int, stop_id: int, arrival_time: datetime, departure_time: datetime, stop_sequence: int, stop_headsign: str, pickup_type: int, drop_off_type: int, timepoint_type: int):
-        self.trip_id = trip_id
-        self.stop_id = stop_id
+        self.trip = Trip.all_trips[trip_id]
+        self.stop = Stop.all_stops[stop_id]
         self.arrival_time = arrival_time
         self.departure_time = departure_time
         self.stop_sequence = stop_sequence
@@ -62,6 +66,10 @@ class BusStopVisit:
         self.pickup_type = pickup_type
         self.drop_off_type = drop_off_type
         self.timepoint_type = timepoint_type
+
+        self.stop.bus_visits.append(self)
+        self.trip.bus_stop_times.append(self)
+
 
 class Service:
     """Represents a weekly schedule through a set of booleans"""

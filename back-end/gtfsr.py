@@ -80,6 +80,7 @@ class StaticGTFSR:
     shapes = static_folder + "shapes.txt"
     feed_info = static_folder + "feed_info.txt"
     date_format = "%Y%m%d"
+    time_format = "%H:%M:%S"
 
     @classmethod
     def read_routes(self, path=routes):
@@ -144,7 +145,9 @@ class StaticGTFSR:
         with open(path, 'r') as csv_file:
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
-                bus_model.BusStopVisit(row['trip_id'], row['stop_id'], row['arrival_time'], row['departure_time'], row['stop_sequence'], row['stop_headsign'], row['pickup_type'], row['drop_off_type'], row['timepoint_type'])
+                arrival_time = datetime.datetime.strptime(row['arrival_time'], self.time_format)
+                departure_time = datetime.datetime.strptime(row['departure_time'], self.time_format)
+                bus_model.BusStopVisit(row['trip_id'], row['stop_id'], arrival_time, departure_time, row['stop_sequence'], row['stop_headsign'], row['pickup_type'], row['drop_off_type'], row['timepoint_type'])
 
 if __name__ == "__main__":
     # quick debugging
