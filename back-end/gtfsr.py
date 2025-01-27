@@ -119,6 +119,19 @@ class StaticGTFSR:
                 date = datetime.datetime.strptime(row['date'], self.date_format)
                 service = bus_model.Service.all_services[row['service_id']]
                 service.add_exception(date, row['exception_type'])
+    
+    @classmethod
+    def read_shapes(self, path=shapes):
+        with open(path, 'r') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            for row in csv_reader:
+                shape_id = row['shape_id']
+                if shape_id not in bus_model.Shape.all_shapes:
+                    shape = bus_model.Shape(shape_id)
+                else:
+                    shape = bus_model.Shape.all_shapes[shape_id]
+                shape.add_point(row['shape_pt_lat'], row['shape_pt_lon'])
+
 
 
 if __name__ == "__main__":
