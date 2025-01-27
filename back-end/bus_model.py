@@ -31,6 +31,34 @@ class Route:
         self.route_long_name = route_long_name
         self.route_type = route_type
 
+class Trip:
+    """A class to represent a trip and its relevant information."""
+    all_trips = {}
+
+    def __init__(self, trip_id: int, route_id: int, service_id: int, shape_id: int, trip_headsign: str, trip_short_name: str, direction_id: int, block_id: str):
+        self.all_trips[trip_id] = self
+        self.trip_id = trip_id
+        self.route_id = route_id
+        self.service_id = service_id
+        self.shape_id = shape_id
+        self.trip_headsign = trip_headsign
+        self.trip_short_name = trip_short_name
+        self.direction_id = direction_id
+        self.block_id = block_id
+
+class Service:
+    """Represents a weekly schedule through a set of booleans"""
+
+    def __init__(self, service_id: int, monday: bool, tuesday: bool, wednesday: bool, thursday: bool, friday: bool, saturday: bool, sunday: bool):
+        self.service_id = service_id
+        self.monday = monday
+        self.tuesday = tuesday
+        self.wednesday = wednesday
+        self.thursday = thursday
+        self.friday = friday
+        self.saturday = saturday
+        self.sunday = sunday
+
 class Agency:
     """A class to represent a bus agency and its relevant information."""
     all_agencies = {}
@@ -39,3 +67,22 @@ class Agency:
         self.all_agencies[agency_id] = self
         self.agency_id = agency_id
         self.agency_name = agency_name
+
+class Shape:
+    """A class representing a trip's journey via sequence of coordinates."""
+    all_shapes = {}
+
+    def __init__(self, shape_id: int):
+        self.all_shapes[shape_id] = self
+        self.shape_id = shape_id
+        self.shape_coords: list[Point] = []
+    
+    def add_point(self, lat: float, lon: float):
+        self.shape_coords.append(Point(lat, lon))
+
+class Point:
+    """A class representing a latitude and longitude coordinate."""
+
+    def __init__(self, lat: float, lon: float):
+        self.lat = lat
+        self.lon = lon
