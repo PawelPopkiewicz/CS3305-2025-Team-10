@@ -1,15 +1,15 @@
-import { Text, View} from "react-native";
-import ButtonList from "@/components/ButtonList";
-import ButtonTab from "@/components/ButtonTab";
+import {Button, Text, View} from "react-native";
+import ButtonList from "../../components/ButtonList";
+import ButtonTab from "../../components/ButtonTab";
 
-export default function Index() {
-  return (
+export default function Search({navigation}) {
+return (
     <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
+        style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+        }}
     >
         <Text>Favourite stops</Text>
         {/* to be made functional once we store favourites*/}
@@ -24,6 +24,7 @@ export default function Index() {
         <ButtonTab />
 
 
+        <Button title="Go Back" onPress={() => navigation.goBack()} />
     </View>
-  );
+);
 }
