@@ -138,7 +138,13 @@ class StaticGTFSR:
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
                 bus_model.Trip(row['trip_id'], row['route_id'], row['service_id'], row['shape_id'], row['trip_headsign'], row['trip_short_name'], row['direction_id'], row['block_id'])
-    
+
+    @classmethod
+    def read_stop_times(self, path=stop_times):
+        with open(path, 'r') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            for row in csv_reader:
+                bus_model.BusStopVisit(row['trip_id'], row['stop_id'], row['arrival_time'], row['departure_time'], row['stop_sequence'], row['stop_headsign'], row['pickup_type'], row['drop_off_type'], row['timepoint_type'])
 
 if __name__ == "__main__":
     # quick debugging

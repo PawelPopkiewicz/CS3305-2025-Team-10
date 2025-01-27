@@ -47,6 +47,21 @@ class Trip:
         self.trip_short_name = trip_short_name
         self.direction_id = direction_id
         self.block_id = block_id
+        self.stop
+    
+class BusStopVisit:
+    """A class to record the time of a stop in a trip."""
+
+    def __init__(self, trip_id: int, stop_id: int, arrival_time: datetime, departure_time: datetime, stop_sequence: int, stop_headsign: str, pickup_type: int, drop_off_type: int, timepoint_type: int):
+        self.trip_id = trip_id
+        self.stop_id = stop_id
+        self.arrival_time = arrival_time
+        self.departure_time = departure_time
+        self.stop_sequence = stop_sequence
+        self.stop_headsign = stop_headsign
+        self.pickup_type = pickup_type
+        self.drop_off_type = drop_off_type
+        self.timepoint_type = timepoint_type
 
 class Service:
     """Represents a weekly schedule through a set of booleans"""
