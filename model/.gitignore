@@ -1,2 +1,3 @@
 __pycache__
 bustimes_model/.env
+bustimes_model/GTFS_Realtime/
