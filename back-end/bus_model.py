@@ -1,3 +1,5 @@
+from datetime import datetime
+
 class Bus:
     """A class to represent a bus and its relevant information."""
     all_buses = {}
@@ -48,8 +50,12 @@ class Trip:
 
 class Service:
     """Represents a weekly schedule through a set of booleans"""
+    all_services = {}
+    ADDED_EXCEPTION = 1
+    REMOVED_EXCEPTION = 2
 
-    def __init__(self, service_id: int, monday: bool, tuesday: bool, wednesday: bool, thursday: bool, friday: bool, saturday: bool, sunday: bool):
+    def __init__(self, service_id: int, monday: bool, tuesday: bool, wednesday: bool, thursday: bool, friday: bool, saturday: bool, sunday: bool, start_date: datetime, end_date: datetime):
+        self.all_services[service_id] = self
         self.service_id = service_id
         self.monday = monday
         self.tuesday = tuesday
@@ -58,6 +64,13 @@ class Service:
         self.friday = friday
         self.saturday = saturday
         self.sunday = sunday
+        self.start_date = start_date
+        self.end_date = end_date
+        self.exceptions = []
+    
+    def add_exception(self, date: datetime, exception_type: int):
+        """Records an exception to the schedule, to be parsed on schedule generation in a different method."""
+        self.exceptions.append((date, exception_type))
 
 class Agency:
     """A class to represent a bus agency and its relevant information."""

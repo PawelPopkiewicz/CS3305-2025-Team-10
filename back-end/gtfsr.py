@@ -2,6 +2,7 @@ import requests
 import os
 import csv
 import bus_model
+import datetime
 
 from dotenv import load_dotenv
 
@@ -78,6 +79,7 @@ class StaticGTFSR:
     calendar_dates = static_folder + "calendar_dates.txt"
     shapes = static_folder + "shapes.txt"
     feed_info = static_folder + "feed_info.txt"
+    date_format = "%Y%m%d"
 
     @classmethod
     def read_routes(self, path=routes):
@@ -99,6 +101,25 @@ class StaticGTFSR:
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
                 bus_model.Agency(row['agency_id'], row['agency_name'])
+    
+    @classmethod
+    def read_calendar(self, path=calendar):
+        with open(path, 'r') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            for row in csv_reader:
+                start_date = datetime.datetime.strptime(row['start_date'], self.date_format)
+                end_date = datetime.datetime.strptime(row['end_date'], self.date_format)
+                bus_model.Service(row['service_id'], row['monday'], row['tuesday'], row['wednesday'], row['thursday'], row['friday'], row['saturday'], row['sunday'], start_date, end_date)
+    
+    @classmethod
+    def read_calendar_dates(self, path=calendar_dates):
+        with open(path, 'r') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            for row in csv_reader:
+                date = datetime.datetime.strptime(row['date'], self.date_format)
+                service = bus_model.Service.all_services[row['service_id']]
+                service.add_exception(date, row['exception_type'])
+
 
 if __name__ == "__main__":
     # quick debugging
