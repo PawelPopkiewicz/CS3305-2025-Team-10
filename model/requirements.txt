@@ -3,3 +3,4 @@ gunicorn
 requests
 numpy
 python-dotenv
+sqlite3
