@@ -1,4 +1,4 @@
-import {Button, Text, View} from "react-native";
+import { Text, View } from "react-native";
 import ButtonList from "../../components/ButtonList";
 import ButtonTab from "../../components/ButtonTab";
 
