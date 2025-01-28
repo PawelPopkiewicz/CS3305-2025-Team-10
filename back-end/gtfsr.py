@@ -67,6 +67,7 @@ class GTFSR:
             return None
         return response.json()
 
+
 class StaticGTFSR:
     """A class to parse the static csv-format GTFSR data."""
     static_folder = "back-end/static_gtfsr/"
@@ -74,56 +75,63 @@ class StaticGTFSR:
     stops   = static_folder + "stops.txt"
     routes  = static_folder + "routes.txt"
     trips   = static_folder + "trips.txt"
-    stop_times = static_folder + "stop_times.txt"
+    stop_times = static_folder + "cork_stop_times.txt"#"stop_times.txt"
     calendar = static_folder + "calendar.txt"
     calendar_dates = static_folder + "calendar_dates.txt"
     shapes = static_folder + "shapes.txt"
     feed_info = static_folder + "feed_info.txt"
     date_format = "%Y%m%d"
     time_format = "%H:%M:%S"
+    cork_trip_ids = static_folder + "cork_trip_ids.txt"
 
     @classmethod
     def read_routes(self, path=routes):
-        with open(path, 'r') as csv_file:
+        with open(path, 'r', encoding="utf-8") as csv_file:
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
-                bus_model.Route(row['route_id'], row['agency_id'], row['route_short_name'], row['route_long_name'], row['route_type'])
+                bus_model.Route(row['route_id'], row['agency_id'],
+                                row['route_short_name'], row['route_long_name'], row['route_type'])
 
     @classmethod
     def read_stops(self, path=stops):
-        with open(path, 'r') as csv_file:
+        with open(path, 'r', encoding="utf-8") as csv_file:
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
-                bus_model.Stop(row['stop_id'], row['stop_code'] or None, row['stop_name'], row['stop_lat'], row['stop_lon'])
+                bus_model.Stop(row['stop_id'], row['stop_code'] or None,
+                               row['stop_name'], row['stop_lat'], row['stop_lon'])
 
     @classmethod
     def read_agencies(self, path=agency):
-        with open(path, 'r') as csv_file:
+        with open(path, 'r', encoding="utf-8") as csv_file:
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
                 bus_model.Agency(row['agency_id'], row['agency_name'])
-    
+
     @classmethod
     def read_calendar(self, path=calendar):
-        with open(path, 'r') as csv_file:
+        with open(path, 'r', encoding="utf-8") as csv_file:
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
-                start_date = datetime.datetime.strptime(row['start_date'], self.date_format)
-                end_date = datetime.datetime.strptime(row['end_date'], self.date_format)
-                bus_model.Service(row['service_id'], row['monday'], row['tuesday'], row['wednesday'], row['thursday'], row['friday'], row['saturday'], row['sunday'], start_date, end_date)
-    
+                start_date = datetime.datetime.strptime(
+                    row['start_date'], self.date_format)
+                end_date = datetime.datetime.strptime(
+                    row['end_date'], self.date_format)
+                bus_model.Service(row['service_id'], row['monday'], row['tuesday'], row['wednesday'],
+                                  row['thursday'], row['friday'], row['saturday'], row['sunday'], start_date, end_date)
+
     @classmethod
     def read_calendar_dates(self, path=calendar_dates):
-        with open(path, 'r') as csv_file:
+        with open(path, 'r', encoding="utf-8") as csv_file:
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
-                date = datetime.datetime.strptime(row['date'], self.date_format)
+                date = datetime.datetime.strptime(
+                    row['date'], self.date_format)
                 service = bus_model.Service.all_services[row['service_id']]
                 service.add_exception(date, row['exception_type'])
-    
+
     @classmethod
     def read_shapes(self, path=shapes):
-        with open(path, 'r') as csv_file:
+        with open(path, 'r', encoding="utf-8") as csv_file:
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
                 shape_id = row['shape_id']
@@ -135,20 +143,50 @@ class StaticGTFSR:
 
     @classmethod
     def read_trips(self, path=trips):
-       with open(path, 'r') as csv_file:
+        with open(path, 'r', encoding="utf-8") as csv_file:
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
-                bus_model.Trip(row['trip_id'], row['route_id'], row['service_id'], row['shape_id'], row['trip_headsign'], row['trip_short_name'], row['direction_id'], row['block_id'])
+                bus_model.Trip(row['trip_id'], row['route_id'], row['service_id'], row['shape_id'],
+                               row['trip_headsign'], row['trip_short_name'], row['direction_id'], row['block_id'])
 
     @classmethod
     def read_stop_times(self, path=stop_times):
-        with open(path, 'r') as csv_file:
+        with open(self.cork_trip_ids, 'r', encoding="utf-8") as csv_file:
+            cork_trip_ids = set(csv_file.read().splitlines())
+
+        with open(path, 'r', encoding="utf-8") as csv_file:
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
-                arrival_time = datetime.datetime.strptime(row['arrival_time'], self.time_format)
-                departure_time = datetime.datetime.strptime(row['departure_time'], self.time_format)
-                bus_model.BusStopVisit(row['trip_id'], row['stop_id'], arrival_time, departure_time, row['stop_sequence'], row['stop_headsign'], row['pickup_type'], row['drop_off_type'], row['timepoint_type'])
+                if row['trip_id'] not in cork_trip_ids:    # Filter to cork times only to reduce size from 250mb
+                    continue
+
+                # datetime only allows times between 0-23, so adjust the 24-29h times
+                if (t := int(row['arrival_time'][:2])) > 23:
+                    row['arrival_time'] = "0" + str(t-24) + row['arrival_time'][2:]
+                if (t := int(row['departure_time'][:2])) > 23:
+                    row['departure_time'] = "0" + str(t-24) + row['departure_time'][2:]
+                arrival_time = datetime.datetime.strptime(
+                    row['arrival_time'], self.time_format)
+                departure_time = datetime.datetime.strptime(
+                    row['departure_time'], self.time_format)
+                
+                bus_model.BusStopVisit(row['trip_id'], row['stop_id'], arrival_time, departure_time, row['stop_sequence'],
+                                       row['stop_headsign'], row['pickup_type'], row['drop_off_type'], row['timepoint'])
+
+    @classmethod
+    def load_all_files(self):
+        self.read_agencies()
+        self.read_calendar()
+        self.read_stops()
+        self.read_shapes()
+        self.read_routes()
+        self.read_calendar_dates()
+        self.read_trips()
+        self.read_stop_times()
+
 
 if __name__ == "__main__":
     # quick debugging
-    StaticGTFSR.read_routes()
+    StaticGTFSR.load_all_files()
+    print("num visits", len(bus_model.Trip.all_trips))
+    input()
