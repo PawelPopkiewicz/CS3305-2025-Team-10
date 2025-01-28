@@ -2,7 +2,7 @@ import {Button, Text, View} from "react-native";
 import ButtonList from "../../components/ButtonList";
 import ButtonTab from "../../components/ButtonTab";
 
-export default function Search({navigation}) {
+export default function Search() {
 return (
     <View
         style={{
@@ -22,9 +22,6 @@ return (
             { id: '2', title: 'Button 2' }]}/>
 
         <ButtonTab />
-
-
-        <Button title="Go Back" onPress={() => navigation.goBack()} />
     </View>
 );
 }
