@@ -36,7 +36,7 @@ class GTFSR:
             url = self.base_url+endpoint+self.json_format
             hdr = {            # Request headers
                 'Cache-Control': 'no-cache',
-                'x-api-key': self.decrypt_api_key(self.api_key),
+                'x-api-key': self.api_key,
             }
 
             req = urllib.request.Request(url, headers=hdr)
@@ -51,14 +51,11 @@ class GTFSR:
             print(f"Error occured when connecting to and endpoint{e}")
 
     def print_json(self, json_data):
+        """prints the provided json data"""
         print(json.dumps(json_data, indent=4))
 
-    def decrypt_api_key(self, encrypted_key):
-        # implement decryption
-        decrypted_key = encrypted_key
-        return decrypted_key
-
     def create_json_file(self, filename, json_data):
+        """creates a json file in the directory from the given json data"""
         try:
             with open(filename, "w") as json_file:
                 json.dump(json_data, json_file)
@@ -71,5 +68,5 @@ if __name__ == "__main__":
     json_vehicle_data = gtfsr.fetch_vehicles()
     # gtfsr.print_json(json_data)
     gtfsr.create_json_file("vehicles.json", json_vehicle_data)
-    json_data = gtfsr.fetch_tripUpdates()
-    gtfsr.create_json_file("tripUpdates.json", json_data)
+    json_trip_data = gtfsr.fetch_tripUpdates()
+    gtfsr.create_json_file("tripUpdates.json", json_trip_data)

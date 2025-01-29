@@ -4,6 +4,7 @@ Filters the response json data
 
 import os
 import json
+from db_funcs import get_route_id_to_name_dict
 from gtfsr import GTFSR
 
 
@@ -12,8 +13,7 @@ class JsonProcessor():
 
     def __init__(self):
         self.gtfsr = GTFSR()
-        self.route_id_to_name = {}
-        self.populate_route_id_to_name("route_id_to_name.txt")
+        self.route_id_to_name = get_route_id_to_name_dict()
 
     def populate_route_id_to_name(self, filename):
         """populate dict which maps route_id to its name"""
@@ -60,6 +60,4 @@ class JsonProcessor():
 
 if __name__ == "__main__":
     json_processor = JsonProcessor()
-    print(json_processor.map_route_id_to_name("4398_84470"))
     print(json.dumps(json_processor.filter_cork_city_routes(json_processor.load_json_file("vehicles.json")), indent=4))
-
