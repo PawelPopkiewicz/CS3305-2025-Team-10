@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import {Platform} from 'react-native';
 import MobileMap from '@/app/screens/mobileMap';
 import WebMap from '@/app/screens/webMap';
 

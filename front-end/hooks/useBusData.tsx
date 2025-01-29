@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { busApiUrl } from "@/config/constants"
+import {useEffect, useState} from 'react';
+import {busApiUrl} from "@/config/constants"
 
 export const useBusData = () => {
     const [busStops, setBusStops] = useState([]);
@@ -19,6 +19,6 @@ export const useBusData = () => {
         return () => clearInterval(interval);
     }, [busApiUrl]);
 
-    return { busStops, busRoutes, busPositions };
+    return {busStops, busRoutes, busPositions};
 };
 /* edited ChatGPT, might be revised, fine for a skeleton*/

@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Button, Icon } from 'react-native-elements';
+import {StyleSheet, View} from 'react-native';
+import {Button, Icon} from 'react-native-elements';
 import {router} from 'expo-router';
 
 const ButtonList = () => {
@@ -10,18 +10,18 @@ const ButtonList = () => {
         <View style={styles.container}>
             <Button
                 title="bus"
-                icon={<Icon name="bus" type="font-awesome" />}
+                icon={<Icon name="bus" type="font-awesome"/>}
                 buttonStyle={styles.button}
                 titleStyle={styles.title}
-                iconContainerStyle={{ marginBottom: 5 }} // Space between icon and text
+                iconContainerStyle={{marginBottom: 5}} // Space between icon and text
                 onPress={() => router.push("/")}
             />
             <Button
                 title="map"
-                icon={<Icon name="map" type="font-awesome" />}
+                icon={<Icon name="map" type="font-awesome"/>}
                 buttonStyle={styles.button}
                 titleStyle={styles.title}
-                iconContainerStyle={{ marginBottom: 5 }} // Space between icon and text
+                iconContainerStyle={{marginBottom: 5}} // Space between icon and text
                 onPress={() => router.push("/screens/map")}
             />
         </View>

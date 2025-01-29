@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, Button, StyleSheet } from 'react-native';
+import {Button, ScrollView, StyleSheet, View} from 'react-native';
 
 const ButtonList = ({buttonData}) => {
 
@@ -11,7 +11,7 @@ const ButtonList = ({buttonData}) => {
         <ScrollView>
             {buttonData.map((item) => (
                 <View key={item.id} style={styles.buttonContainer}>
-                    <Button title={item.title} onPress={() => handlePress(item.title)} />
+                    <Button title={item.title} onPress={() => handlePress(item.title)}/>
                 </View>
             ))}
         </ScrollView>

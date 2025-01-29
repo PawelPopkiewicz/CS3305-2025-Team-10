@@ -1,5 +1,4 @@
-import {FlatList, StyleSheet, Text, TextInput} from "react-native";
-import {View} from "react-native";
+import {FlatList, StyleSheet, Text, TextInput, View} from "react-native";
 import {SetStateAction, useState} from "react";
 
 const TransitFilter = () => {
@@ -19,13 +18,13 @@ const TransitFilter = () => {
 
     return (
         <View style={styles.container}>
-            <TextInput defaultValue={searchQuery} onChangeText={handleSearch} />
+            <TextInput defaultValue={searchQuery} onChangeText={handleSearch}/>
             <FlatList
                 data={filteredData}
                 keyExtractor={(item) => item}
-                renderItem={({ item }) => (<Text>{item}</Text>)}/>
+                renderItem={({item}) => (<Text>{item}</Text>)}/>
         </View>
-        )
+    )
 }
 const styles = StyleSheet.create({
     container: {
