@@ -1,6 +1,6 @@
 import {View} from 'react-native';
 
-export default function MobileMap() {
+export default function WebMap() {
     return (
         <View>
 

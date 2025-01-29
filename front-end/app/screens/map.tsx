@@ -1,7 +1,13 @@
 import {Platform} from 'react-native';
-import MobileMap from '@/app/screens/mobileMap';
-import WebMap from '@/app/screens/webMap';
+
+
+const MapComponent = Platform.OS === 'web'
+    ? require('./webMap').default
+    : require('./mobileMap').default;
+
 
 export default function Map() {
-    return Platform.OS === 'web' ? <WebMap /> : <MobileMap />;
+    return (
+        <MapComponent/>
+    )
 }
