@@ -50,6 +50,7 @@ class Trip:
         self.direction_id = direction_id
         self.block_id = block_id
         self.bus_stop_times = []
+        self.stop_id_stop_seq = {}
 
         self.route.all_trips.append(self)
     
@@ -69,6 +70,7 @@ class BusStopVisit:
 
         self.stop.bus_visits.append(self)
         self.trip.bus_stop_times.append(self)
+        self.trip.stop_id_stop_seq[stop_sequence] = stop_id
 
 
 class Service:
