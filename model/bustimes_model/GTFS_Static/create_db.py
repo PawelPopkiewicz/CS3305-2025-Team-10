@@ -3,8 +3,8 @@ Create the databases from txt files and filter them to include only cork city ro
 """
 
 import sqlite3
-from convert_txt_to_sqlite import TableCreator, TablePopulator 
-from filter_db import TableFilter
+from .convert_txt_to_sqlite import TableCreator, TablePopulator
+from .filter_db import TableFilter
 
 if __name__ == "__main__":
     conn = sqlite3.connect("gtfsr.db")
