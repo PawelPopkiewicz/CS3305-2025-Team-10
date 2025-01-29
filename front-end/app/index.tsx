@@ -1,29 +1,6 @@
-import { Text, View} from "react-native";
-import ButtonList from "@/components/ButtonList";
-import ButtonTab from "@/components/ButtonTab";
+import HomeScreen from "@/app/(tabs)/HomeScreen";
+// import SearchScreen from "@/app/screens/SearchScreen";
 
 export default function Index() {
-  return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-        <Text>Favourite stops</Text>
-        {/* to be made functional once we store favourites*/}
-        <ButtonList buttonData= {[
-            { id: '1', title: 'Button 1' },
-            { id: '2', title: 'Button 2' }]}/>
-        <Text>Favourite buses</Text>
-        <ButtonList buttonData= {[
-            { id: '1', title: 'Button 1' },
-            { id: '2', title: 'Button 2' }]}/>
-
-        <ButtonTab />
-
-
-    </View>
-  );
+  return <HomeScreen />;
 }

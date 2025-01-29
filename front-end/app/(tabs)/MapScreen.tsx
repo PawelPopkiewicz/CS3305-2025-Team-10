@@ -1,5 +1,5 @@
 import {FlatList, StyleSheet, Text, TextInput, View} from "react-native";
-import ButtonTab from "../../components/ButtonTab";
+import ButtonTab from "@/components/ButtonTab";
 import {SetStateAction, useState} from "react";
 
 

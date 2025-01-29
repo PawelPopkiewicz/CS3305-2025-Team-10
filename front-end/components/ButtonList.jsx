@@ -18,13 +18,14 @@ const ButtonList = ({buttonData}) => {
                     <TouchableOpacity
                     style={styles.buttonContainer}
                     onPress={() => handlePress(item.title)}
+                    activeOpacity={0.1}
                     >
                         <View>
                             <Text style={styles.textPrimary}>
-                                {item.title.split(",")[0]}
+                                {item.title.split(",")[0]?.trim() || ""}
                             </Text>
                             <Text style={styles.textSecondary}>
-                            {item.title.split(",")[1]}
+                            {item.title.split(",")[1]?.trim() || ""}
                             </Text>
                         </View>
                     </TouchableOpacity>
@@ -38,17 +39,20 @@ const ButtonList = ({buttonData}) => {
 const styles = StyleSheet.create({
     buttonContainer: {
         backgroundColor: colors.backgroundPrimary,
+        padding: 5,
+        // borderBottomWidth: 1,
+        // borderBottomColor: colors.border,
         // justifyContent: 'left',
     },
-    button: {
-        backgroundColor: colors.backgroundPrimary,
-        justifyContent: 'flex-start',
-    },
-    title: {
-        textAlign: 'left',
-        // padding: 7,
-        fontSize: fonts.subHeading,
-    },
+    // button: {
+    //     backgroundColor: colors.backgroundPrimary,
+    //     justifyContent: 'flex-start',
+    // },
+    // title: {
+    //     textAlign: 'left',
+    //     // padding: 7,
+    //     fontSize: fonts.subHeading,
+    // },
     textPrimary: {
         fontSize: fonts.subHeading,
         color: colors.textPrimary,
