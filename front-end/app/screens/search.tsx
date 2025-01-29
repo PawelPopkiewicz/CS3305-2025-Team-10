@@ -1,6 +1,6 @@
-import {Text, View} from "react-native";
-import ButtonList from "../../components/ButtonList";
-import ButtonTab from "../../components/ButtonTab";
+import {Button, Text, View} from "react-native";
+import ButtonList from "@/components/ButtonList";
+import ButtonTab from "@/components/ButtonTab";
 
 export default function Search() {
     return (

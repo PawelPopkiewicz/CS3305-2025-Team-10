@@ -3,6 +3,9 @@ import {StyleSheet, View} from 'react-native';
 import {Button, Icon} from 'react-native-elements';
 import {router} from 'expo-router';
 
+import colors from '@/config/Colors';
+import fonts from '@/config/Fonts';
+
 const ButtonList = () => {
 
 
@@ -15,7 +18,12 @@ const ButtonList = () => {
                 titleStyle={styles.title}
                 iconContainerStyle={{marginBottom: 5}} // Space between icon and text
                 onPress={() => router.push("/")}
-            />
+            >
+                {/* <Text>
+
+                </Text> */}
+            </Button>
+
             <Button
                 title="map"
                 icon={<Icon name="map" type="font-awesome"/>}
@@ -31,18 +39,23 @@ const ButtonList = () => {
 
 const styles = StyleSheet.create({
     container: {
+        width: '100%',
+        height: '100%',
         flexDirection: "row",
-        justifyContent: 'center',
-        alignItems: 'center',
+        flex: 1,
+        justifyContent: 'space-evenly',
+        alignItems: 'flex-end',
     },
     button: {
-        backgroundColor: '#007BFF',
+        flex: 1,
+        backgroundColor: colors.backgroundPrimary,
         flexDirection: 'column', // Stack icon and text vertically
         padding: 20,
     },
     title: {
-        fontSize: 16,
+        fontSize: fonts.body,
         marginTop: 5,
+        color: colors.textSecondary
     },
 });
 

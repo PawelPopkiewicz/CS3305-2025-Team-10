@@ -1,29 +1,80 @@
-import {Text, View} from "react-native";
+import {Button, Text, View, StyleSheet, SafeAreaView, Platform} from "react-native";
 import ButtonList from "@/components/ButtonList";
 import ButtonTab from "@/components/ButtonTab";
 
+import colors from "@/config/Colors";
+import fonts from "@/config/Fonts";
+
 export default function Index() {
-    return (
-        <View
-            style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-            }}
-        >
-            <Text>Favourite stops</Text>
+return (
+    <SafeAreaView
+        style={styles.background}
+    >
+        <View style={styles.favourite}>
+            <View style={styles.heading}>
+                <Text style={styles.textPrimary}>Favourite stops</Text>
+            </View>
             {/* to be made functional once we store favourites*/}
-            <ButtonList buttonData={[
-                {id: '1', title: 'Button 1'},
-                {id: '2', title: 'Button 2'}]}/>
-            <Text>Favourite buses</Text>
-            <ButtonList buttonData={[
-                {id: '1', title: 'Button 1'},
-                {id: '2', title: 'Button 2'}]}/>
-
-            <ButtonTab/>
-
+            <View>
+                <ButtonList buttonData= {[
+                    { id: '1', title: 'Stop 2232, University College Cork'},
+                    { id: '2', title: 'Stop 2154, Patrick Street Cork'},
+                    { id: '3', title: 'Stop 0026, North Mall, Cork'},
+                    { id: '4', title: 'Stop 5682, Oliver Street, Cork'},
+                    ]}/>
+            </View>
 
         </View>
-    );
+
+        <View style={styles.favourite}>
+            <View style={styles.heading}>
+                <Text style={styles.textPrimary}>Favourite buses</Text>
+            </View>
+            {/* to be made functional once we store favourites*/}
+            <View>
+                <ButtonList buttonData= {[
+                    { id: '3', title: 'Bus 220, Carrigaline - Crosshaven' },
+                    ]}/>
+            </View>
+
+        </View>
+
+        <ButtonTab />
+    </SafeAreaView>
+);
 }
+
+const styles = StyleSheet.create({
+    background: {
+        // paddingTop: Platform.OS === 'android' ? 20 : 0,
+        paddingTop: 20,
+        flex: 1,
+        // justifyContent: 'flex-end',
+        backgroundColor: colors.backgroundPrimary,
+    },
+    favourite: {
+        // padding: 7,
+        // flex: 1,
+        height: 200,
+        backgroundColor: colors.backgroundPrimary,
+    },
+    heading: {
+        borderTopLeftRadius: 17,
+        borderBottomLeftRadius: 17,
+        paddingLeft: 7,
+        backgroundColor: colors.backgroundSecondary,
+        fontSize: fonts.heading,
+    },
+    buttons: {
+        marginTop: 5,
+        color: colors.textSecondary,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
+    },
+    textPrimary: {
+        padding: 7,
+        textAlign: 'left',
+        fontSize: fonts.heading,
+        color: colors.textPrimary
+    }
+});

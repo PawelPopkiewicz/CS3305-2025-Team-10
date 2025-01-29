@@ -1,5 +1,9 @@
 import React from 'react';
-import {Button, ScrollView, StyleSheet, View} from 'react-native';
+import { View, ScrollView, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { Button } from 'react-native-elements';
+
+import colors from '@/config/Colors';
+import fonts from '@/config/Fonts';
 
 const ButtonList = ({buttonData}) => {
 
@@ -11,7 +15,21 @@ const ButtonList = ({buttonData}) => {
         <ScrollView>
             {buttonData.map((item) => (
                 <View key={item.id} style={styles.buttonContainer}>
-                    <Button title={item.title} onPress={() => handlePress(item.title)}/>
+                    <TouchableOpacity
+                    style={styles.buttonContainer}
+                    onPress={() => handlePress(item.title)}
+                    activeOpacity={0.1}
+                    >
+                        <View>
+                            <Text style={styles.textPrimary}>
+                                {item.title.split(",")[0]?.trim() || ""}
+                            </Text>
+                            <Text style={styles.textSecondary}>
+                            {item.title.split(",")[1]?.trim() || ""}
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+
                 </View>
             ))}
         </ScrollView>
@@ -20,7 +38,28 @@ const ButtonList = ({buttonData}) => {
 
 const styles = StyleSheet.create({
     buttonContainer: {
-        marginVertical: 10,
+        backgroundColor: colors.backgroundPrimary,
+        padding: 5,
+        // borderBottomWidth: 1,
+        // borderBottomColor: colors.border,
+        // justifyContent: 'left',
+    },
+    // button: {
+    //     backgroundColor: colors.backgroundPrimary,
+    //     justifyContent: 'flex-start',
+    // },
+    // title: {
+    //     textAlign: 'left',
+    //     // padding: 7,
+    //     fontSize: fonts.subHeading,
+    // },
+    textPrimary: {
+        fontSize: fonts.subHeading,
+        color: colors.textPrimary,
+    },
+    textSecondary: {
+        fontSize: fonts.body,
+        color: colors.textSecondary,
     },
 });
 
