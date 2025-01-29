@@ -4,3 +4,4 @@ requests
 numpy
 python-dotenv
 sqlite3
+pymongo
