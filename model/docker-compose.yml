@@ -14,15 +14,15 @@ services:
       - mongo_data:/data/db
 
   app:
-    build: ./app
+    build: ./bustimes_model
     container_name: bustimes_model
     depends_on:
       - mongodb
     environment:
       MONGO_URI: "mongodb://admin:admin@mongodb:27017/"
     volumes:
-      - ./app:/app
-    command: ["python3", "fetch_data.py"]
+      - ./bustimes_model:/app
+        # command: ["python3", "fetch_data.py"]
 
 volumes:
   mongo_data:

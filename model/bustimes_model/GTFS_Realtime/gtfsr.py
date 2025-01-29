@@ -6,7 +6,7 @@ import os
 import urllib.request
 import json
 from dotenv import load_dotenv
-from get_root import get_root
+from .get_root import get_root
 
 
 class GTFSR:
@@ -71,4 +71,4 @@ if __name__ == "__main__":
     # gtfsr.print_json(json_data)
     gtfsr.create_json_file("vehicles.json", json_vehicle_data)
     json_trip_data = gtfsr.fetch_tripUpdates()
-    gtfsr.create_json_file("json_files/tripUpdates.json", json_trip_data)
+    gtfsr.create_json_file("tripUpdates.json", json_trip_data)
