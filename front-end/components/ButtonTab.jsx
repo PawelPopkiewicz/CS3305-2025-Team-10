@@ -12,16 +12,16 @@ const ButtonList = () => {
     return (
         <View style={styles.container}>
             <Button
-                // title="bus"
+                title="bus"
                 icon={<Icon name="bus" type="font-awesome" />}
                 buttonStyle={styles.button}
-                // titleStyle={styles.title}
+                titleStyle={styles.title}
                 iconContainerStyle={{ marginBottom: 5 }} // Space between icon and text
                 onPress={() => router.push("/")}
             >
-                <Text>
+                {/* <Text>
 
-                </Text>
+                </Text> */}
             </Button>
 
             <Button
@@ -40,17 +40,17 @@ const ButtonList = () => {
 const styles = StyleSheet.create({
     container: {
         width: '100%',
-        height: 88,
+        height: '100%',
         flexDirection: "row",
         flex: 1,
-        justifyContent: 'flex-end',
-        // alignItems: 'center',
+        justifyContent: 'space-evenly',
+        alignItems: 'flex-end',
     },
     button: {
         flex: 1,
         backgroundColor: colors.backgroundPrimary,
         flexDirection: 'column', // Stack icon and text vertically
-        // padding: 20,
+        padding: 20,
     },
     title: {
         fontSize: fonts.body,
