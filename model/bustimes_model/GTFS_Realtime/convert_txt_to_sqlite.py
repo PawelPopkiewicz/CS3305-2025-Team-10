@@ -68,6 +68,12 @@ class TableCreator():
     );
     """
 
+    CHOSEN_ROUTES_TABLE = """
+    CREATE TABLE chosen_routes (
+    route_short_name VARCHAR(10)
+    );
+    """
+
     def __init__(self, conn):
         self.conn = conn
         self.cursor = conn.cursor()
@@ -90,13 +96,26 @@ class TableCreator():
         self.create_table("stops", self.STOPS_TABLE)
         self.create_table("stop_times", self.STOP_TIMES_TABLE)
         self.create_table("route_id_to_name", self.ROUTE_ID_TO_NAME_TABLE)
+        self.create_table("chosen_routes", self.CHOSEN_ROUTES_TABLE)
 
 
 class TablePopulator():
+    """Populates the tables with data"""
 
     def __init__(self, conn):
         self.conn = conn
         self.cursor = conn.cursor()
+        self.agency_id = "7778020"
+
+    def populate_chosen_routes(self):
+        """Populates the chosen_routes table with predefined values"""
+        with open("chosen_routes.txt", "r", encoding="utf-8") as txtconn:
+            lines = txtconn.readlines()
+            for line in lines:
+                route = line.strip("\n")
+                self.cursor.execute("INSERT INTO chosen_routes VALUES (?)",
+                                    (route,))
+        self.conn.commit()
 
     def populate_shapes(self):
         """
@@ -169,14 +188,22 @@ class TablePopulator():
         """
         Populates the route_id_to_name table
         """
-        with open("source_text_files/route_id_to_name.txt", "r", encoding="utf-8") as txtconn:
-            lines = txtconn.readlines()
-            for line in lines[1:]:
-                fields = line.strip("\n").split(",")
-                # print(f"shape_id={shape_id}")
-                # print(line)
-                self.cursor.execute("INSERT INTO route_id_to_name VALUES (?, ?)",
-                               tuple(fields))
+        query = """
+        INSERT INTO route_id_to_name (route_id, route_short_name)
+        SELECT r.route_id, r.route_short_name
+        FROM routes AS r
+        INNER JOIN chosen_routes AS c
+        ON r.route_short_name = c.route_short_name AND r.agency_id = 7778020;
+        """
+        self.cursor.execute(query)
+#         with open("source_text_files/route_id_to_name.txt", "r", encoding="utf-8") as txtconn:
+#             lines = txtconn.readlines()
+#             for line in lines[1:]:
+#                 fields = line.strip("\n").split(",")
+#                 # print(f"shape_id={shape_id}")
+#                 # print(line)
+#                 self.cursor.execute("INSERT INTO route_id_to_name VALUES (?, ?)",
+#                                tuple(fields))
         self.conn.commit()
 
     def populate_tables(self):
@@ -188,16 +215,22 @@ class TablePopulator():
         self.populate_stop_times()
         self.populate_routes()
         self.populate_shapes()
+        self.populate_chosen_routes()
         self.populate_route_id_to_name()
 
 
 if __name__ == "__main__":
-    # create_table("routes", routes_table)
-    # populate_routes()
-    # create_table("trips", trips_table)
-    # populate_trips()
-    # screate_table("route_id_to_name", ROUTE_ID_TO_NAME_TABLE)
-    # spopulate_route_id_to_name()
-    # screate_table("routes", ROUTES_TABLE)
-    # spopulate_routes()
-    pass
+    conn = sqlite3.connect("test_gtfsr.db")
+    cr = TableCreator(conn)
+    po = TablePopulator(conn)
+    cr.create_table("chosen_routes", cr.CHOSEN_ROUTES_TABLE)
+    cr.create_table("routes", cr.ROUTES_TABLE)
+    cr.create_table("route_id_to_name", cr.ROUTE_ID_TO_NAME_TABLE)
+    po.populate_chosen_routes()
+    po.cursor.execute("SELECT * FROM chosen_routes;")
+    print(po.cursor.fetchall())
+    po.populate_routes()
+    po.populate_route_id_to_name()
+    po.cursor.execute("SELECT * FROM route_id_to_name;")
+    [print(row) for row in po.cursor.fetchall()]
+    conn.close()

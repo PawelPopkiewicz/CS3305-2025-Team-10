@@ -48,7 +48,7 @@ class GTFSR:
             return json_data
 
         except Exception as e:
-            print(e)
+            print(f"Error occured when connecting to and endpoint{e}")
 
     def print_json(self, json_data):
         print(json.dumps(json_data, indent=4))
@@ -63,11 +63,13 @@ class GTFSR:
             with open(filename, "w") as json_file:
                 json.dump(json_data, json_file)
         except Exception as e:
-            print(e)
+            print(f"Error occured when creating a json file: {e}")
 
 
 if __name__ == "__main__":
     gtfsr = GTFSR()
-    json_data = gtfsr.fetch_vehicles()
+    json_vehicle_data = gtfsr.fetch_vehicles()
     # gtfsr.print_json(json_data)
-    gtfsr.create_json_file("vehicles.json", json_data)
+    gtfsr.create_json_file("vehicles.json", json_vehicle_data)
+    json_data = gtfsr.fetch_tripUpdates()
+    gtfsr.create_json_file("tripUpdates.json", json_data)
