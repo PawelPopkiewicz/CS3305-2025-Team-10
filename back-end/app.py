@@ -1,7 +1,22 @@
-from flask import Flask, request, redirect, abort
-from gtfsr import GTFSR
-
+from flask import Flask, jsonify, g
+import time
+from gtfsr import GTFSR, StaticGTFSR
+import bus_model
 app = Flask(__name__)
+load_before = time.time()
+StaticGTFSR.load_all_files()
+print(f"Loaded in {time.time() - load_before} seconds")
+print("Loaded")
+
+
+@app.before_request
+def before_request():
+    g.start_time = time.time()
+
+@app.teardown_request
+def teardown_request(execution=None):
+    diff = time.time() - g.start_time
+    print(f"Request took {diff} seconds")
 
 @app.route("/")
 def test():
@@ -10,3 +25,16 @@ def test():
 @app.route("/vehicles")
 def vehicles():
     return GTFSR.fetch_vehicles()
+
+@app.route("/stops")
+def stops():
+    return [stop.get_stop_info() for stop in bus_model.Stop._all.values()]
+
+@app.route("/trips/cork")
+def cork_stops():
+    cork_routes = ["201", "202", "203", "205", "206", "207", "208", "209", "212", "213",
+                    "214", "215", "216", "219", "220", "223", "225", "226", "209A", "215A",
+                    "207A", "226X", "202A", "225L", "220X", "223X"]
+    cork_agency_id = bus_model.search_attribute(bus_model.Agency, "agency_name", "Bus Éireann")[0].agency_id
+    cork_route_ids = [route.route_id for route in bus_model.Route._all.values() if route.agency.agency_id == cork_agency_id and route.route_short_name in cork_routes]
+    return bus_model.Trip.filter_by_routes(cork_route_ids)

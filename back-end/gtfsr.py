@@ -75,7 +75,7 @@ class StaticGTFSR:
     stops   = static_folder + "stops.txt"
     routes  = static_folder + "routes.txt"
     trips   = static_folder + "trips.txt"
-    stop_times = static_folder + "cork_stop_times.txt"#"stop_times.txt"
+    stop_times = static_folder + "cork_stop_times.txt"
     calendar = static_folder + "calendar.txt"
     calendar_dates = static_folder + "calendar_dates.txt"
     shapes = static_folder + "shapes.txt"
@@ -126,7 +126,7 @@ class StaticGTFSR:
             for row in csv_reader:
                 date = datetime.datetime.strptime(
                     row['date'], self.date_format)
-                service = bus_model.Service.all_services[row['service_id']]
+                service = bus_model.Service._all[row['service_id']]
                 service.add_exception(date, row['exception_type'])
 
     @classmethod
@@ -135,10 +135,10 @@ class StaticGTFSR:
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
                 shape_id = row['shape_id']
-                if shape_id not in bus_model.Shape.all_shapes:
+                if shape_id not in bus_model.Shape._all:
                     shape = bus_model.Shape(shape_id)
                 else:
-                    shape = bus_model.Shape.all_shapes[shape_id]
+                    shape = bus_model.Shape._all[shape_id]
                 shape.add_point(row['shape_pt_lat'], row['shape_pt_lon'])
 
     @classmethod
@@ -151,14 +151,14 @@ class StaticGTFSR:
 
     @classmethod
     def read_stop_times(self, path=stop_times):
-        with open(self.cork_trip_ids, 'r', encoding="utf-8") as csv_file:
-            cork_trip_ids = set(csv_file.read().splitlines())
+        # with open(self.cork_trip_ids, 'r', encoding="utf-8") as csv_file:
+        #     cork_trip_ids = set(csv_file.read().splitlines())
 
         with open(path, 'r', encoding="utf-8") as csv_file:
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
-                if row['trip_id'] not in cork_trip_ids:    # Filter to cork times only to reduce size from 250mb
-                    continue
+                # if row['trip_id'] not in cork_trip_ids:    # Filter to cork times only to reduce size from 250mb
+                #     continue
 
                 # datetime only allows times between 0-23, so adjust the 24-29h times
                 if (t := int(row['arrival_time'][:2])) > 23:
@@ -187,6 +187,9 @@ class StaticGTFSR:
 
 if __name__ == "__main__":
     # quick debugging
+    import time
+    start = time.time()
     StaticGTFSR.load_all_files()
-    print("num visits", len(bus_model.Trip.all_trips))
+    print("num visits", len(bus_model.Trip._all))
+    print(f"Time taken: {time.time() - start}s")
     input()
