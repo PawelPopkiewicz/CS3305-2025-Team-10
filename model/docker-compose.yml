@@ -1,17 +1,18 @@
-version: '3.8'
-
 services:
   mongodb:
-    image: mongo
-    container_name: mongodb_container
+    image: mongo:latest
+    container_name: mongodb
     restart: always
     ports:
       - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: amdin
+      MONGO_INITDB_ROOT_PASSWORD: admin
     volumes:
       - mongo_data:/data/db
+    command: ["--auth"]
+    networks:
+      - mynetwork
 
   app:
     build: ./bustimes_model
@@ -19,10 +20,18 @@ services:
     depends_on:
       - mongodb
     environment:
-      MONGO_URI: "mongodb://admin:admin@mongodb:27017/"
+      MONGO_URI: "mongodb://admin:admin@mongodb:27017/bus_data?authSource=admin"
     volumes:
       - ./bustimes_model:/app
+    ports:
+      - "5000:5000"
+    networks:
+      - mynetwork
         # command: ["python3", "fetch_data.py"]
+
+networks:
+  mynetwork:
+    driver: bridge
 
 volumes:
   mongo_data:
