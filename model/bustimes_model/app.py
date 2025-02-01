@@ -5,6 +5,7 @@ API endpoints, main entry point for the docker container
 from flask import render_template, request, jsonify, Flask
 import json
 from GTFS_Realtime.mongo_funcs import MongoManager
+from GTFS_Realtime.fetch_store import VehicleUpdates
 
 app = Flask(__name__)
 
@@ -32,9 +33,7 @@ def index():
 @app.route("/mongo_contents_test", methods=["GET"])
 def mongo_contents_test():
     """Return page containing the sample contents of the mongo_db database, for testing purposes"""
-    print("entered the mongo_contents_test route")
     mm = MongoManager()
-    print("testing the mongodb")
     mongo_contents = mm.get_mongo_test()
     return render_template("mongo_contents.html", jsonfile=json.dumps(mongo_contents))
 
@@ -42,10 +41,18 @@ def mongo_contents_test():
 @app.route("/mongo_contents", methods=["GET"])
 def mongo_contents():
     """Return page containing the sample contents of the mongo_db database, for testing purposes"""
-    print("entered the real deal")
     mm = MongoManager()
-    mm.make_skeleton()
-    print("made skeleton")
     mongo_contents = mm.get_mongo()
-    print("fetched data")
-    return render_template("mongo_contents.html", jsonfile=json.dumps(mongo_contents))
+    return render_template("mongo_contents.html", jsonfile=json.dumps(mongo_contents, indent=4))
+
+
+@app.route("/update_vehicles", methods=["GET"])
+def update_vehicles():
+    """Fetches the vehicles api data and updates the mongodb with it"""
+    vu = VehicleUpdates()
+    return jsonify(vu.update_trips())
+
+@app.route("/delete_vehicles", methods=["GET"])
+def delete_vehicles():
+    mm = MongoManager()
+    mm.delete_documents()

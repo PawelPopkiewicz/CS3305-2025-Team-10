@@ -20,14 +20,13 @@ services:
     depends_on:
       - mongodb
     environment:
-      MONGO_URI: "mongodb://admin:admin@mongodb:27017/bus_data?authSource=admin"
+      MONGO_URI: "mongodb://admin:admin@mongodb:27017/?authSource=admin"
     volumes:
-      - ./bustimes_model:/app
+      - ./bustimes_model:/bustimes_model
     ports:
       - "5000:5000"
     networks:
       - mynetwork
-        # command: ["python3", "fetch_data.py"]
 
 networks:
   mynetwork:
