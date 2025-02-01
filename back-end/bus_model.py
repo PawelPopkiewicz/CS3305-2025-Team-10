@@ -2,15 +2,15 @@ from datetime import datetime
 
 class Bus:
     """A class to represent a bus and its relevant information."""
-    _all = {}
+    _all: dict[str, 'Bus'] = {}
 
-    def __init__(self, bus_id):
+    def __init__(self, bus_id: str):
         self._all[bus_id] = self
 
 
 class Stop:
     """A class to represent a bus stop and its relevant information."""
-    _all = {}
+    _all: dict[str, "Stop"] = {}
 
     def __init__(self, stop_id: str, stop_code: int, stop_name: str, stop_lat: float, stop_lon: float):
         self._all[stop_id] = self
@@ -19,9 +19,9 @@ class Stop:
         self.stop_name = stop_name
         self.stop_lat = stop_lat
         self.stop_lon = stop_lon
-        self.bus_visits = [] # List of BusStopVisit objects at this stop
+        self.bus_visits: list[BufferError] = [] # List of BusStopVisit objects at this stop
     
-    def get_stop_info(self):
+    def get_stop_info(self) -> dict[str, str]:
         """Returns the stop's information in a dictionary."""
         return {
             "stop_id": self.stop_id,
@@ -33,7 +33,7 @@ class Stop:
 
 class Route:
     """A class to represent a bus route and its relevant information."""
-    _all = {}
+    _all: dict[str, 'Route'] = {}
 
     def __init__(self, route_id: int, agency_id: int, route_short_name: str, route_long_name: str, route_type: int):
         self._all[route_id] = self
@@ -42,9 +42,9 @@ class Route:
         self.route_short_name = route_short_name
         self.route_long_name = route_long_name
         self.route_type = route_type
-        self.all_trips = []
+        self.all_trips: list[Trip] = []
 
-    def get_route_info(self):
+    def get_route_info(self) -> dict[str, str]:
         """Returns the route's information in a dictionary."""
         return {
             "route_id": self.route_id,
@@ -56,7 +56,7 @@ class Route:
 
 class Trip:
     """A class to represent a trip and its relevant information."""
-    _all = {}
+    _all: dict[str, "Trip"] = {}
 
     def __init__(self, trip_id: int, route_id: int, service_id: int, shape_id: int, trip_headsign: str, trip_short_name: str, direction_id: int, block_id: str):
         self._all[trip_id] = self
@@ -68,12 +68,12 @@ class Trip:
         self.trip_short_name = trip_short_name
         self.direction_id = direction_id
         self.block_id = block_id
-        self.bus_stop_times = []
-        self.stop_id_stop_seq = {}
+        self.bus_stop_times: list[BusStopVisit] = []
+        self.stop_id_stop_seq: dict[str, int] = {}
 
         self.route.all_trips.append(self)
     
-    def get_trip_info(self) -> dict:
+    def get_trip_info(self) -> dict[str, str]:
         """Returns the trip's information in a dictionary."""
         return {
             "trip_id": self.trip_id,
@@ -87,7 +87,7 @@ class Trip:
         }
     
     @classmethod
-    def filter_by_routes(cls, route_ids: list|int) -> list[dict]:
+    def filter_by_routes(cls, route_ids: list|int) -> list[dict[str, str]]:
         """Filters the list of all trips by specified route IDs."""
         if isinstance(route_ids, int):
             route_ids = [route_ids]
@@ -114,7 +114,7 @@ class BusStopVisit:
 
 class Service:
     """Represents a weekly schedule through a set of booleans"""
-    _all = {}
+    _all: dict[str, 'Service'] = {}
     ADDED_EXCEPTION = 1
     REMOVED_EXCEPTION = 2
 
@@ -138,14 +138,14 @@ class Service:
 
 class Agency:
     """A class to represent a bus agency and its relevant information."""
-    _all = {}
+    _all: dict[str, 'Agency'] = {}
 
     def __init__(self, agency_id: int, agency_name: str):
         self._all[agency_id] = self
         self.agency_id = agency_id
         self.agency_name = agency_name
 
-    def get_agency_info(self):
+    def get_agency_info(self) -> dict[str, str]:
         """Returns the agency's ID and name."""
         return {
             "agency_id": self.agency_id,
@@ -154,7 +154,7 @@ class Agency:
 
 class Shape:
     """A class representing a trip's journey via sequence of coordinates."""
-    _all = {}
+    _all: dict[str, 'Shape'] = {}
 
     def __init__(self, shape_id: int):
         self._all[shape_id] = self
@@ -165,7 +165,7 @@ class Shape:
         """Adds a point to the shape."""
         self.shape_coords.append(Point(lat, lon))
 
-    def get_shape_coords(self) -> list[dict]:
+    def get_shape_coords(self) -> list[dict[str, float]]:
         """Returns a list of the coordinates of the shape."""
         return [point.get_details() for point in self.shape_coords]
 
@@ -176,7 +176,7 @@ class Point:
         self.lat = lat
         self.lon = lon
 
-    def get_details(self) -> dict:
+    def get_details(self) -> dict[str, float]:
         """Returns the latitude and longitude of the point."""
         return {
             "lat": self.lat,
