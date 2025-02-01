@@ -1,16 +1,16 @@
+"""
+Provides functions which manage the connection to the sqlite3 database
+"""
+
 import sqlite3
-import os
+from .get_root import get_root
 
 
 def find_db():
     """Finds the gtfsr.db file starting from the current dir"""
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-
-    for root, _, files in os.walk(dir_path):
-        for file in files:
-            if file.endswith("gtfsr.db"):
-                return os.path.join(root, file)
-    return ""
+    root = get_root()
+    db_path = root / "GTFS_Static" / "gtfsr.db"
+    return db_path
 
 
 def create_connection():

@@ -11,3 +11,7 @@ def get_root():
     """Returns project root"""
     load_dotenv()
     return Path(os.getenv("PROJECT_ROOT")).resolve()
+
+
+if __name__ == "__main__":
+    print(get_root())

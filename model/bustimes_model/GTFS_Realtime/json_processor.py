@@ -2,7 +2,6 @@
 Filters the response json data
 """
 
-import os
 import json
 from .gtfsr import GTFSR
 from GTFS_Static.db_funcs import get_route_id_to_name_dict
@@ -36,18 +35,11 @@ class JsonProcessor():
                 entities.pop(i)
         print(f"Removed {entity_count - len(entities)} out of {entity_count}, {len(entities)} remaining")
 
-    def convert_vehicles(self, vehicles_json):
-        """Converts the raw vehicles.json data into the data which could would be stored"""
-
-
-    def convert_tripUpdates(self, tripUdates_json):
-        """Converts the raw tripUpdates.json data into storable format"""
-
     def load_json_file(self, filename):
         """Tries to load a json file"""
         try:
             root = get_root()
-            with open(root / "GTFS_Realtime" / "json_files" / filename, "r") as conn:
+            with open(root / "GTFS_Realtime" / "json_files" / filename, "r", encoding="utf-8") as conn:
                 json_file = json.load(conn)
                 return json_file
         except FileNotFoundError as e:
@@ -73,7 +65,7 @@ class JsonProcessor():
         except TypeError as e:
             print(f"Dump was not possible: {e}")
         except Exception as e:
-            print("Unexpected error occured: {e}")
+            print(f"Unexpected error occured: {e}")
 
 
 if __name__ == "__main__":

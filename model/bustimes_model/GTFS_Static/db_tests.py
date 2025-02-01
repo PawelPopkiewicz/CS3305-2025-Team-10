@@ -2,14 +2,12 @@
 testing the databases
 """
 
-import sqlite3
+from .db_connection import close_connection, create_connection
 
-conn = sqlite3.connect("gtfsr.db")
-
+conn = create_connection()
 cursor = conn.cursor()
-
-# cursor.execute("SELECT * FROM trips LIMIT 50;")
 cursor.execute("SELECT COUNT(*) FROM shapes;")
 rows = cursor.fetchall()
 for row in rows:
     print(row)
+close_connection(conn)

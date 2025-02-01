@@ -21,18 +21,23 @@ class GTFSR:
         self.api_key = os.environ.get("api_key")
 
     def configure(self):
+        """Configure the setup by loading the env which contains api_key"""
         load_dotenv()
 
     def fetch_gtfsr(self):
+        """Fetches the gtfsr endpoint which is the same as tripUpdates"""
         return self.fetch_endpoint("gtfsr")
 
     def fetch_vehicles(self):
+        """Fetches the vehicle updates"""
         return self.fetch_endpoint("Vehicles")
 
     def fetch_tripUpdates(self):
+        """Fetches the tripUpdates"""
         return self.fetch_endpoint("TripUpdates")
 
     def fetch_endpoint(self, endpoint):
+        """Fetches the json data from the provided endpoint"""
         try:
             url = self.base_url+endpoint+self.json_format
             hdr = {            # Request headers
@@ -59,7 +64,7 @@ class GTFSR:
         """creates a json file in the directory from the given json data"""
         try:
             root = get_root()
-            with open(root / "GTFS_Realitme" / "json_files" / filename, "w") as json_file:
+            with open(root / "GTFS_Realitme" / "json_files" / filename, "w", encoding="utf-8") as json_file:
                 json.dump(json_data, json_file)
         except Exception as e:
             print(f"Error occured when creating a json file: {e}")
@@ -68,7 +73,6 @@ class GTFSR:
 if __name__ == "__main__":
     gtfsr = GTFSR()
     json_vehicle_data = gtfsr.fetch_vehicles()
-    # gtfsr.print_json(json_data)
     gtfsr.create_json_file("vehicles.json", json_vehicle_data)
     json_trip_data = gtfsr.fetch_tripUpdates()
     gtfsr.create_json_file("tripUpdates.json", json_trip_data)

@@ -26,7 +26,7 @@ def predict_bus():
 
 @app.route("/", methods=["GET"])
 def index():
-    """Returnsn main index page, mainly for testing connection"""
+    """Returns main index page, mainly for testing connection"""
     return render_template("index.html")
 
 
@@ -43,9 +43,8 @@ def mongo_contents():
     """Return page containing the sample contents of the mongo_db database, for testing purposes"""
     mm = MongoManager()
     mongo_contents = mm.get_mongo()
-#     return jsonify({"type": str(type(mongo_contents))})
-#     return render_template("mongo_contents.html", jsonfile=mongo_contents)
     return Response(mongo_contents, mimetype="application/json")
+
 
 @app.route("/update_vehicles", methods=["GET"])
 def update_vehicles():
@@ -53,7 +52,10 @@ def update_vehicles():
     vu = VehicleUpdates()
     return jsonify(vu.update_trips())
 
+
 @app.route("/delete_vehicles", methods=["GET"])
 def delete_vehicles():
+    """Deletes the entire mongodb"""
     mm = MongoManager()
     mm.delete_documents()
+    return jsonify({"deleted_documents": 0})
