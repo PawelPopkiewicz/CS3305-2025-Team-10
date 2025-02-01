@@ -2,7 +2,7 @@
 API endpoints, main entry point for the docker container
 """
 
-from flask import render_template, request, jsonify, Flask
+from flask import render_template, request, jsonify, Flask, Response
 import json
 from GTFS_Realtime.mongo_funcs import MongoManager
 from GTFS_Realtime.fetch_store import VehicleUpdates
@@ -43,8 +43,9 @@ def mongo_contents():
     """Return page containing the sample contents of the mongo_db database, for testing purposes"""
     mm = MongoManager()
     mongo_contents = mm.get_mongo()
-    return render_template("mongo_contents.html", jsonfile=json.dumps(mongo_contents, indent=4))
-
+#     return jsonify({"type": str(type(mongo_contents))})
+#     return render_template("mongo_contents.html", jsonfile=mongo_contents)
+    return Response(mongo_contents, mimetype="application/json")
 
 @app.route("/update_vehicles", methods=["GET"])
 def update_vehicles():

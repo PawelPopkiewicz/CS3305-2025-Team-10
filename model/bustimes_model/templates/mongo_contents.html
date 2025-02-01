@@ -6,11 +6,12 @@
     <title>Mongo Contents</title>
     <script>
       var jsonfile ={{jsonfile}};
+      var pretty = JSON.stringify(jsonfile, null, 2);
     </script>
   </head>
   <body>
   <div> 
-    {{jsonfile}}
+    {{pretty}}
   </div>
   </body>
 </html>
