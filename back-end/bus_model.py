@@ -22,6 +22,7 @@ class Stop:
         self.bus_visits = [] # List of BusStopVisit objects at this stop
     
     def get_stop_info(self):
+        """Returns the stop's information in a dictionary."""
         return {
             "stop_id": self.stop_id,
             "stop_code": self.stop_code,
@@ -43,6 +44,16 @@ class Route:
         self.route_type = route_type
         self.all_trips = []
 
+    def get_route_info(self):
+        """Returns the route's information in a dictionary."""
+        return {
+            "route_id": self.route_id,
+            "agency_id": self.agency.agency_id,
+            "route_short_name": self.route_short_name,
+            "route_long_name": self.route_long_name,
+            "route_type": self.route_type
+        }
+
 class Trip:
     """A class to represent a trip and its relevant information."""
     _all = {}
@@ -63,6 +74,7 @@ class Trip:
         self.route.all_trips.append(self)
     
     def get_trip_info(self) -> dict:
+        """Returns the trip's information in a dictionary."""
         return {
             "trip_id": self.trip_id,
             "route_id": self.route.route_id,
@@ -75,10 +87,11 @@ class Trip:
         }
     
     @classmethod
-    def filter_by_routes(self, route_ids: list|int) -> list[dict]:
+    def filter_by_routes(cls, route_ids: list|int) -> list[dict]:
+        """Filters the list of all trips by specified route IDs."""
         if isinstance(route_ids, int):
             route_ids = [route_ids]
-        return [trip.get_trip_info() for trip in Trip._all.values() if trip.route.route_id in route_ids]
+        return [trip.get_trip_info() for trip in cls._all.values() if trip.route.route_id in route_ids]
     
 class BusStopVisit:
     """A class to record the time of a stop in a trip."""
@@ -132,6 +145,13 @@ class Agency:
         self.agency_id = agency_id
         self.agency_name = agency_name
 
+    def get_agency_info(self):
+        """Returns the agency's ID and name."""
+        return {
+            "agency_id": self.agency_id,
+            "agency_name": self.agency_name
+        }
+
 class Shape:
     """A class representing a trip's journey via sequence of coordinates."""
     _all = {}
@@ -142,7 +162,12 @@ class Shape:
         self.shape_coords: list[Point] = []
     
     def add_point(self, lat: float, lon: float):
+        """Adds a point to the shape."""
         self.shape_coords.append(Point(lat, lon))
+
+    def get_shape_coords(self) -> list[dict]:
+        """Returns a list of the coordinates of the shape."""
+        return [point.get_details() for point in self.shape_coords]
 
 class Point:
     """A class representing a latitude and longitude coordinate."""
@@ -151,6 +176,14 @@ class Point:
         self.lat = lat
         self.lon = lon
 
+    def get_details(self) -> dict:
+        """Returns the latitude and longitude of the point."""
+        return {
+            "lat": self.lat,
+            "lon": self.lon
+        }
+
 
 def search_attribute(cls, attribute: str, value: str) -> list:
+    """Fetches all instances of a class with a certain attribute value."""
     return [instance for instance in cls._all.values() if getattr(instance, attribute) == value]

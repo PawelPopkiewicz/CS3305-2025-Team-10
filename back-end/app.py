@@ -22,15 +22,26 @@ def teardown_request(execution=None):
 def test():
     return "Hello, World!"
 
-@app.route("/vehicles")
+@app.route("/vehicle")
 def vehicles():
     return GTFSR.fetch_vehicles()
 
-@app.route("/stops")
+@app.route("/stop")
 def stops():
     return [stop.get_stop_info() for stop in bus_model.Stop._all.values()]
 
-@app.route("/trips/cork")
+@app.route("/stop/<stop_id>")
+def stop(stop_id):
+    if len(stop_id) > 8:    # stop_id
+        return bus_model.Stop._all[stop_id].get_stop_info()
+    else:   # stop_code
+        return bus_model.search_attribute(bus_model.Stop, "stop_code", stop_id)[0].get_stop_info()
+
+@app.route("/trip/<trip_id>")
+def trips(trip_id):
+    return bus_model.Trip._all[trip_id].get_trip_info()
+
+@app.route("/trip/cork")
 def cork_stops():
     cork_routes = ["201", "202", "203", "205", "206", "207", "208", "209", "212", "213",
                     "214", "215", "216", "219", "220", "223", "225", "226", "209A", "215A",
@@ -38,3 +49,15 @@ def cork_stops():
     cork_agency_id = bus_model.search_attribute(bus_model.Agency, "agency_name", "Bus Éireann")[0].agency_id
     cork_route_ids = [route.route_id for route in bus_model.Route._all.values() if route.agency.agency_id == cork_agency_id and route.route_short_name in cork_routes]
     return bus_model.Trip.filter_by_routes(cork_route_ids)
+
+@app.route("/agency/<agency_id>")
+def agency(agency_id):
+    return bus_model.Agency._all[agency_id].get_agency_info()
+
+@app.route("/route/<route_id>")
+def route(route_id):
+    return bus_model.Route._all[route_id].get_route_info()
+
+@app.route("/route/search/<route_name>")
+def route_search(route_name):
+    return [route.get_route_info() for route in bus_model.Route._all.values() if route_name in route.route_short_name]
