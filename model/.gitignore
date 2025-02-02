@@ -1,5 +1,5 @@
 *__pycache__
-bustimes_model/.env
+.env
 bustimes_model/GTFS_Static/*.db
 bustimes_model/GTFS_Static/source_text_files/
 bustimes_model/GTFS_Realtime/json_files/

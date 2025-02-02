@@ -19,17 +19,17 @@ class MongoManager():
         self.conn = self.client[DATABASE_NAME]
         self.collection = self.conn[COLLECTION_NAME]
 
-    def print_mongo(self):
+    def print_trips(self):
         """Prints the first document in the collection"""
         print(json.dumps(self.get_mongo(), indent=4))
 
-    def get_mongo_test(self):
+    def get_trips_test(self):
         """Returns a test dict"""
-        return {"routes": "Test"}
+        return {"trips": "Test"}
 
-    def get_mongo(self):
-        """Return the first document in collection"""
-        result = self.collection.find_one()
+    def get_trips(self):
+        """Return documents in collection"""
+        result = self.collection.find({})
         return self.bson_to_json(result)
 
     def bson_to_json(self, bson):
@@ -80,7 +80,7 @@ class MongoManager():
                 "direction_id": trip_info["trip"]["direction_id"],
                 "vehicle_updates": [vehicle_update]}
 
-    def delete_documents(self):
+    def delete_trips(self):
         """Deletes all documents in the collection"""
         self.collection.delete_many({})
 

@@ -2,8 +2,7 @@
 API endpoints, main entry point for the docker container
 """
 
-from flask import render_template, request, jsonify, Flask, Response
-import json
+from flask import render_template, jsonify, Flask, Response
 from GTFS_Realtime.mongo_funcs import MongoManager
 from GTFS_Realtime.fetch_store import VehicleUpdates
 
@@ -16,8 +15,6 @@ def predict_bus():
     Input: Inference input for the model
     Returns: The prediction for the bus route
     """
-    json_data = request.get_json()
-
     response = {
             'message': "Work in progress"
             }
@@ -30,32 +27,35 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/mongo_contents_test", methods=["GET"])
-def mongo_contents_test():
+@app.route("/trips_test", methods=["GET"])
+def get_trips_test():
     """Return page containing the sample contents of the mongo_db database, for testing purposes"""
     mm = MongoManager()
-    mongo_contents = mm.get_mongo_test()
-    return render_template("mongo_contents.html", jsonfile=json.dumps(mongo_contents))
+    mongo_contents = mm.get_trips_test()
+    mm.close_connection()
+    return jsonify(mongo_contents)
 
 
-@app.route("/mongo_contents", methods=["GET"])
-def mongo_contents():
+@app.route("/trips", methods=["GET"])
+def get_trips():
     """Return page containing the sample contents of the mongo_db database, for testing purposes"""
     mm = MongoManager()
-    mongo_contents = mm.get_mongo()
+    mongo_contents = mm.get_trips()
+    mm.close_connection()
     return Response(mongo_contents, mimetype="application/json")
 
 
-@app.route("/update_vehicles", methods=["GET"])
-def update_vehicles():
+@app.route("/trips", methods=["POST"])
+def update_trips():
     """Fetches the vehicles api data and updates the mongodb with it"""
     vu = VehicleUpdates()
     return jsonify(vu.update_trips())
 
 
-@app.route("/delete_vehicles", methods=["GET"])
-def delete_vehicles():
+@app.route("/trips", methods=["DELETE"])
+def delete_trips():
     """Deletes the entire mongodb"""
     mm = MongoManager()
-    mm.delete_documents()
-    return jsonify({"deleted_documents": 0})
+    mm.delete_trips()
+    mm.close_connection()
+    return jsonify({"delete": "ok"})

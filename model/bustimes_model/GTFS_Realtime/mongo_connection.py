@@ -14,13 +14,12 @@ def get_connection():
     try:
         mongo_uri = os.getenv("MONGO_URI")
         client = MongoClient(mongo_uri, authSource="admin")
-        print(client.server_info())
+        return client
     except errors.ServerSelectionTimeoutError as e:
         print(f"The connection to mongodb failed: {e}")
     except errors.OperationFailure as e:
         print(f"Operational Failure: {e}")
-    return client
-
+    return None
 
 def close_connection(client):
     """close the client connection"""

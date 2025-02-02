@@ -27,6 +27,8 @@ services:
       - "5000:5000"
     networks:
       - mynetwork
+    env_file:
+      - .env
 
 networks:
   mynetwork:
