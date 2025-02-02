@@ -1,5 +1,6 @@
 import {Button, Text, View, StyleSheet, SafeAreaView, Platform} from "react-native";
 import ButtonList from "@/components/ButtonList";
+import ButtonBus from "@/components/ButtonBus";
 import ButtonTab from "@/components/ButtonTab";
 
 import colors from "@/config/Colors";
@@ -32,7 +33,7 @@ return (
             </View>
             {/* to be made functional once we store favourites*/}
             <View>
-                <ButtonList buttonData= {[
+                <ButtonBus buttonData= {[
                     { id: '3', title: 'Bus 220, Carrigaline - Crosshaven' },
                     ]}/>
             </View>
