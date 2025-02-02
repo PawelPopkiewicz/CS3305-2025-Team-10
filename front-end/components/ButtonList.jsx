@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, ScrollView, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { Button } from 'react-native-elements';
+import {router} from 'expo-router';
 
 import colors from '@/config/Colors';
 import fonts from '@/config/Fonts';
@@ -17,7 +18,8 @@ const ButtonList = ({buttonData}) => {
                 <View key={item.id} style={styles.buttonContainer}>
                     <TouchableOpacity
                     style={styles.buttonContainer}
-                    onPress={() => handlePress(item.title)}
+                    // {/* onPress={() => handlePress(item.title)} */}
+                    onPress={() => router.push("/screens/stop")}
                     activeOpacity={0.1}
                     >
                         <View>
