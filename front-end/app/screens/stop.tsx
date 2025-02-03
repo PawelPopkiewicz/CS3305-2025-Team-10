@@ -1,4 +1,4 @@
-import {Text, View, StyleSheet, SafeAreaView, Platform} from "react-native";
+import {Text, View, StyleSheet, SafeAreaView, Platform, ScrollView} from "react-native";
 import {Button, Icon} from 'react-native-elements';
 import {router} from 'expo-router';
 import FontAwesomeIcon from "react-native-vector-icons";
@@ -44,17 +44,20 @@ return (
         </View>
 
         {/* Display each bus at selected bus stop here, make scrollView, bare bones given below */}
-        <View style={styles.bus}>
-            <Text style={styles.textSecondary}>220</Text>
-            <Text style={styles.textSecondary}>Fort Camden</Text>
-            <Text style={styles.textSecondary}>6 mins</Text>
-        </View>
-        <View style={styles.bus}>
-            <Text style={styles.textSecondary}>214</Text>
-            <Text style={styles.textSecondary}>Glanmire</Text>
-            <Text style={styles.textSecondary}>12 mins</Text>
-        </View>
+        <ScrollView style={styles.departures}>
 
+            <View style={styles.bus}>
+                <Text style={styles.textSecondary}>220</Text>
+                <Text style={styles.textSecondary}>Fort Camden</Text>
+                <Text style={styles.textSecondary}>6 mins</Text>
+            </View>
+            <View style={styles.bus}>
+                <Text style={styles.textSecondary}>214</Text>
+                <Text style={styles.textSecondary}>Glanmire</Text>
+                <Text style={styles.textSecondary}>12 mins</Text>
+            </View>
+
+        </ScrollView>
 
         <ButtonTab />
     </SafeAreaView>
@@ -64,19 +67,22 @@ return (
 const styles = StyleSheet.create({
     background: {
         // paddingTop: Platform.OS === 'android' ? 20 : 0,
-        paddingTop: 20,
+        // paddingTop: 20,
         flex: 1,
         // justifyContent: 'flex-end',
         backgroundColor: colors.backgroundPrimary,
         // height: '100%'
     },
     stop: {
+        alignItems: "center",
         flexDirection: 'row',
         height: '10%',
         width: '100%',
         backgroundColor: colors.backgroundPrimary,
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
+        padding: 3,
+        paddingHorizontal: 15,
     },
     heading: {
         color: colors.textPrimary,
@@ -107,10 +113,15 @@ const styles = StyleSheet.create({
         fontSize: fonts.body,
     },
     description: {
+        paddingTop: 20,
         justifyContent: 'space-evenly',
         flexDirection: 'row',
     },
+    departures: {
+        // paddingTop: 20,
+    },
     bus: {
+        paddingTop: 20,
         justifyContent: 'space-evenly',
         flexDirection: 'row', 
     }

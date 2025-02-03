@@ -13,7 +13,7 @@ const ButtonList = () => {
         <View style={styles.container}>
             <Button
                 title="bus"
-                icon={<Icon name="bus" type="font-awesome"/>}
+                icon={<Icon iconStyle={styles.icon} name="bus" type="font-awesome"/>}
                 buttonStyle={styles.button}
                 titleStyle={styles.title}
                 iconContainerStyle={{marginBottom: 5}} // Space between icon and text
@@ -26,7 +26,7 @@ const ButtonList = () => {
 
             <Button
                 title="map"
-                icon={<Icon name="map" type="font-awesome"/>}
+                icon={<Icon iconStyle={styles.icon} name="map" type="font-awesome"/>}
                 buttonStyle={styles.button}
                 titleStyle={styles.title}
                 iconContainerStyle={{marginBottom: 5}} // Space between icon and text
@@ -41,12 +41,16 @@ const styles = StyleSheet.create({
     container: {
         borderTopColor: colors.border,
         borderWidth: 1,
-        width: '100%',
-        // height: 100,
+        // width: '100%',
+        // height: '10%',
         flexDirection: "row",
         // flex: 1,
-        justifyContent: 'space-evenly',
-        alignItems: 'flex-end',
+        justifyContent: 'center',
+        alignItems: 'center',
+        alignContent: "space-between",
+        columnGap: 500,
+        // top: 400,        //display depending on size of device?
+        
     },
     button: {
         flex: 1,
@@ -58,6 +62,9 @@ const styles = StyleSheet.create({
         fontSize: fonts.body,
         marginTop: 5,
         color: colors.textSecondary
+    },
+    icon: {
+        color: colors.textPrimary,
     },
 });
 

@@ -13,7 +13,7 @@ const ButtonBus = ({buttonData}) => {
     };
 
     return (
-        <ScrollView>
+        <View>
             {buttonData.map((item) => (
                 <View key={item.id} style={styles.buttonContainer}>
                     <TouchableOpacity
@@ -34,7 +34,7 @@ const ButtonBus = ({buttonData}) => {
 
                 </View>
             ))}
-        </ScrollView>
+        </View>
     );
 };
 
@@ -42,6 +42,7 @@ const styles = StyleSheet.create({
     buttonContainer: {
         backgroundColor: colors.backgroundPrimary,
         padding: 5,
+        paddingHorizontal: 7,
         // borderBottomWidth: 1,
         // borderBottomColor: colors.border,
         // justifyContent: 'left',

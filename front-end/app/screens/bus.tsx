@@ -54,20 +54,20 @@ return (
         </View>
 
         {/* Display each bus stop of selected bus ordered by arrival time, make scrollView, bare bones given below */}
-        
-        <View style={styles.stop}>
-            {/* Ideally, make arrows change colors depending if the bus visited the stop yet or not */}
-            <Icon iconStyle={styles.busPathVisited} name="arrow-down" type="font-awesome"/>
-            <Text style={styles.textSecondary}>Stop 2232 University College, Cork</Text>
-            <Text style={styles.textSecondary}>14:32</Text>
-        </View>
+        <View style={styles.path}>
+            <View style={styles.stop}>
+                {/* Ideally, make arrows change colors depending if the bus visited the stop yet or not */}
+                <Icon iconStyle={styles.busPathVisited} name="arrow-down" type="font-awesome"/>
+                <Text style={styles.textSecondary}>Stop 2232 University College, Cork</Text>
+                <Text style={styles.time}>14:32</Text>
+            </View>
 
-        <View style={styles.stop}>
-            <Icon iconStyle={styles.busPathNotVisited} name="arrow-down" type="font-awesome"/>
-            <Text style={styles.textSecondary}>Stop 2238 Patrick Street, Cork</Text>
-            <Text style={styles.textSecondary}>14:44</Text>
+            <View style={styles.stop}>
+                <Icon iconStyle={styles.busPathNotVisited} name="arrow-down" type="font-awesome"/>
+                <Text style={styles.textSecondary}>Stop 2238 Patrick Street, Cork</Text>
+                <Text style={styles.time}>14:44</Text>
+            </View>
         </View>
-
         <ButtonTab />
     </SafeAreaView>
 );
@@ -76,13 +76,15 @@ return (
 const styles = StyleSheet.create({
     background: {
         // paddingTop: Platform.OS === 'android' ? 20 : 0,
-        paddingTop: 20,
+        // paddingTop: 20,
         flex: 1,
         // justifyContent: 'flex-end',
         backgroundColor: colors.backgroundPrimary,
         // height: '100%'
     },
     bus: {
+        // alignContent: 'center',
+        alignItems: 'center',
         flexDirection: 'row',
         height: '10%',
         width: '100%',
@@ -93,7 +95,8 @@ const styles = StyleSheet.create({
     route: {
         backgroundColor: colors.backgroundSecondary,
         color: colors.textPrimary,
-        flexGrow: 1,
+        // flexGrow: 1,
+        // justifyContent: 'center',
         fontSize: fonts.heading,
     },
     heading: {
@@ -111,17 +114,27 @@ const styles = StyleSheet.create({
         color: colors.textPrimary,
     },
     map: {
+        padding: 3,
+        paddingHorizontal: 15,
+        alignItems: 'center',
         flexDirection: 'row',
-        height: '10%',
+        height: "10%",
         width: '100%',
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
     },
+    path: {
+        height: '70%'
+    },
     busPathVisited: {
+        // flexBasis: 'auto',
+        // flexShrink: 3,
         // transform: [{rotate: "80deg"}],
         color: colors.objectSelected,
     },
     busPathNotVisited: {
+        // width: '20%',
+        // flex: 1,
         color: colors.objectNotSelected,
     },
     textPrimary: {
@@ -131,7 +144,16 @@ const styles = StyleSheet.create({
         color: colors.textPrimary
     },
     textSecondary: {
+        // flexBasis: 100,
+        // flex: 1,
+        // width: '20%',
         color: colors.textPrimary,
+        // alignSelf: 'flex-end',
+        fontSize: fonts.subHeading,
+    },
+    time: {
+        color: colors.textPrimary,
+        // alignItems: 'flex-end',
         fontSize: fonts.subHeading,
     },
     textDescription: {
@@ -145,5 +167,6 @@ const styles = StyleSheet.create({
     stop: {
         justifyContent: 'space-evenly',
         flexDirection: 'row', 
+        paddingTop: 20,
     }
 });
