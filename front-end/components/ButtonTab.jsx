@@ -11,6 +11,7 @@ const ButtonList = () => {
 
     return (
         <View style={styles.container}>
+        
             <Button
                 title="bus"
                 icon={<Icon iconStyle={styles.icon} name="bus" type="font-awesome"/>}
@@ -48,7 +49,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         alignContent: "space-between",
-        columnGap: 500,
+        columnGap: 300,
         // top: 400,        //display depending on size of device?
         
     },
