@@ -14,15 +14,15 @@ services:
     networks:
       - mynetwork
 
-  app:
-    build: ./bustimes_model
-    container_name: bustimes_model
+  training:
+    build: ./training_data_collection
+    container_name: training_data_collection
     depends_on:
       - mongodb
     environment:
       MONGO_URI: "mongodb://admin:admin@mongodb:27017/?authSource=admin"
-    volumes:
-      - ./bustimes_model:/bustimes_model
+        #    volumes:
+        #      - ./bustimes_model:/bustimes_model
     ports:
       - "5000:5000"
     networks:

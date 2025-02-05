@@ -1,0 +1,7 @@
+flask
+gunicorn
+requests
+numpy
+python-dotenv
+pymongo
+pathlib
