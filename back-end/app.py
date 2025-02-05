@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, g
+from flask import Flask, g, abort
 import time
 from gtfsr import GTFSR, StaticGTFSR
 import bus_model
@@ -28,18 +28,18 @@ def vehicles():
 
 @app.route("/stop")
 def stops():
-    return [stop.get_stop_info() for stop in bus_model.Stop._all.values()]
+    return [stop.get_info() for stop in bus_model.Stop._all.values()]
 
 @app.route("/stop/<stop_id>")
 def stop(stop_id):
     if len(stop_id) > 8:    # stop_id
-        return bus_model.Stop._all[stop_id].get_stop_info()
+        return generic_get_or_404(bus_model.Stop, stop_id)
     else:   # stop_code
-        return bus_model.search_attribute(bus_model.Stop, "stop_code", stop_id)[0].get_stop_info()
+        return bus_model.search_attribute(bus_model.Stop, "stop_code", stop_id)[0].get_info()
 
 @app.route("/trip/<trip_id>")
 def trips(trip_id):
-    return bus_model.Trip._all[trip_id].get_trip_info()
+    return generic_get_or_404(bus_model.Trip, trip_id)
 
 @app.route("/trip/cork")
 def cork_stops():
@@ -52,12 +52,23 @@ def cork_stops():
 
 @app.route("/agency/<agency_id>")
 def agency(agency_id):
-    return bus_model.Agency._all[agency_id].get_agency_info()
+    return generic_get_or_404(bus_model.Agency, agency_id)
 
 @app.route("/route/<route_id>")
 def route(route_id):
-    return bus_model.Route._all[route_id].get_route_info()
+    return generic_get_or_404(bus_model.Route, route_id)
 
 @app.route("/route/search/<route_name>")
 def route_search(route_name):
-    return [route.get_route_info() for route in bus_model.Route._all.values() if route_name in route.route_short_name]
+    return [route.get_info() for route in bus_model.Route._all.values() if route_name in route.route_short_name]
+
+@app.errorhandler(404)
+def page_not_found(e) -> dict:
+    return {"error_code": 404, "error_message": "Page not found"}, 404
+
+def generic_get_or_404(cls, id_: str) -> dict:
+    """Generic function to get info dict of any of the classes else raise a 404 error"""
+    if obj := cls._all.get(id_, None):
+        return obj.get_info()
+    else:
+        abort(404)

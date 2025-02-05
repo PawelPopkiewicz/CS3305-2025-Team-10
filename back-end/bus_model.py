@@ -21,7 +21,7 @@ class Stop:
         self.stop_lon = stop_lon
         self.bus_visits: list[BufferError] = [] # List of BusStopVisit objects at this stop
     
-    def get_stop_info(self) -> dict[str, str]:
+    def get_info(self) -> dict[str, str]:
         """Returns the stop's information in a dictionary."""
         return {
             "stop_id": self.stop_id,
@@ -44,7 +44,7 @@ class Route:
         self.route_type = route_type
         self.all_trips: list[Trip] = []
 
-    def get_route_info(self) -> dict[str, str]:
+    def get_info(self) -> dict[str, str]:
         """Returns the route's information in a dictionary."""
         return {
             "route_id": self.route_id,
@@ -63,7 +63,7 @@ class Trip:
         self.trip_id = trip_id
         self.route = Route._all[route_id]
         self.service = Service._all[service_id]
-        self.shape = Shape._all[shape_id]
+        self.shape = Shape._all.get(shape_id, None)
         self.trip_headsign = trip_headsign
         self.trip_short_name = trip_short_name
         self.direction_id = direction_id
@@ -73,7 +73,7 @@ class Trip:
 
         self.route.all_trips.append(self)
     
-    def get_trip_info(self) -> dict[str, str]:
+    def get_info(self) -> dict[str, str]:
         """Returns the trip's information in a dictionary."""
         return {
             "trip_id": self.trip_id,
@@ -91,7 +91,7 @@ class Trip:
         """Filters the list of all trips by specified route IDs."""
         if isinstance(route_ids, int):
             route_ids = [route_ids]
-        return [trip.get_trip_info() for trip in cls._all.values() if trip.route.route_id in route_ids]
+        return [trip.get_info() for trip in cls._all.values() if trip.route.route_id in route_ids]
     
 class BusStopVisit:
     """A class to record the time of a stop in a trip."""
@@ -145,7 +145,7 @@ class Agency:
         self.agency_id = agency_id
         self.agency_name = agency_name
 
-    def get_agency_info(self) -> dict[str, str]:
+    def get_info(self) -> dict[str, str]:
         """Returns the agency's ID and name."""
         return {
             "agency_id": self.agency_id,
@@ -165,9 +165,9 @@ class Shape:
         """Adds a point to the shape."""
         self.shape_coords.append(Point(lat, lon))
 
-    def get_shape_coords(self) -> list[dict[str, float]]:
+    def get_info(self) -> list[dict[str, float]]:
         """Returns a list of the coordinates of the shape."""
-        return [point.get_details() for point in self.shape_coords]
+        return [point.get_info() for point in self.shape_coords]
 
 class Point:
     """A class representing a latitude and longitude coordinate."""
@@ -176,7 +176,7 @@ class Point:
         self.lat = lat
         self.lon = lon
 
-    def get_details(self) -> dict[str, float]:
+    def get_info(self) -> dict[str, float]:
         """Returns the latitude and longitude of the point."""
         return {
             "lat": self.lat,
