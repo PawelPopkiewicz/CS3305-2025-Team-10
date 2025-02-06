@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, time
 
 class Bus:
     """A class to represent a bus and its relevant information."""
@@ -19,7 +19,7 @@ class Stop:
         self.stop_name = stop_name
         self.stop_lat = stop_lat
         self.stop_lon = stop_lon
-        self.bus_visits: list[BufferError] = [] # List of BusStopVisit objects at this stop
+        self.bus_visits: list[BusStopVisit] = [] # List of BusStopVisit objects at this stop
     
     def get_info(self) -> dict[str, str]:
         """Returns the stop's information in a dictionary."""
@@ -86,6 +86,25 @@ class Trip:
             "block_id": self.block_id
         }
     
+    def get_times(self) -> list[datetime]:
+        timestamps: list[datetime] = []
+        current_date = self.service.start_date
+        while current_date <= self.service.end_date:
+            day = current_date.weekday()
+            if self.service.schedule_days[day]:
+                if current_date not in self.service.cancelled_exceptions:
+                    for visit in self.bus_stop_times:
+                        new_timestamp = current_date.combine(current_date, visit.arrival_time)
+                        timestamps.append(new_timestamp)
+        for exception in self.service.extra_exceptions:
+            if exception not in self.service.cancelled_exceptions:
+                for visit in self.bus_stop_times:
+                    new_timestamp = exception.combine(exception, visit.arrival_time)
+                    timestamps.append(new_timestamp)
+        return timestamps
+
+
+    
     @classmethod
     def filter_by_routes(cls, route_ids: list|int) -> list[dict[str, str]]:
         """Filters the list of all trips by specified route IDs."""
@@ -96,7 +115,7 @@ class Trip:
 class BusStopVisit:
     """A class to record the time of a stop in a trip."""
 
-    def __init__(self, trip_id: int, stop_id: int, arrival_time: datetime, departure_time: datetime, stop_sequence: int, stop_headsign: str, pickup_type: int, drop_off_type: int, timepoint_type: int):
+    def __init__(self, trip_id: int, stop_id: int, arrival_time: time, departure_time: time, stop_sequence: int, stop_headsign: str, pickup_type: int, drop_off_type: int, timepoint_type: int):
         self.trip = Trip._all[trip_id]
         self.stop = Stop._all[stop_id]
         self.arrival_time = arrival_time
@@ -121,20 +140,20 @@ class Service:
     def __init__(self, service_id: int, monday: bool, tuesday: bool, wednesday: bool, thursday: bool, friday: bool, saturday: bool, sunday: bool, start_date: datetime, end_date: datetime):
         self._all[service_id] = self
         self.service_id = service_id
-        self.monday = monday
-        self.tuesday = tuesday
-        self.wednesday = wednesday
-        self.thursday = thursday
-        self.friday = friday
-        self.saturday = saturday
-        self.sunday = sunday
+        self.schedule_days = [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
         self.start_date = start_date
         self.end_date = end_date
-        self.exceptions = []
+        self.extra_exceptions: list[datetime] = []
+        self.cancelled_exceptions: list[datetime] = []
     
     def add_exception(self, date: datetime, exception_type: int):
         """Records an exception to the schedule, to be parsed on schedule generation in a different method."""
-        self.exceptions.append((date, exception_type))
+        if exception_type == self.ADDED_EXCEPTION:
+            self.extra_exceptions.append(date)
+        elif exception_type == self.REMOVED_EXCEPTION:
+            self.cancelled_exceptions.append(date)
+        else:
+            raise ValueError("Invalid exception type.")
 
 class Agency:
     """A class to represent a bus agency and its relevant information."""

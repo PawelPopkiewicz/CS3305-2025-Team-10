@@ -3,6 +3,7 @@ import os
 import csv
 import bus_model
 import datetime
+import time
 
 from dotenv import load_dotenv
 
@@ -75,7 +76,7 @@ class StaticGTFSR:
     stops   = static_folder + "stops.txt"
     routes  = static_folder + "routes.txt"
     trips   = static_folder + "trips.txt"
-    stop_times = static_folder + "cork_stop_times.txt"
+    stop_times = static_folder + "stop_times.txt"   # "cork_stop_times.txt"
     calendar = static_folder + "calendar.txt"
     calendar_dates = static_folder + "calendar_dates.txt"
     shapes = static_folder + "shapes.txt"
@@ -166,23 +167,32 @@ class StaticGTFSR:
                 if (t := int(row['departure_time'][:2])) > 23:
                     row['departure_time'] = "0" + str(t-24) + row['departure_time'][2:]
                 arrival_time = datetime.datetime.strptime(
-                    row['arrival_time'], self.time_format)
+                    row['arrival_time'], self.time_format).time()
                 departure_time = datetime.datetime.strptime(
-                    row['departure_time'], self.time_format)
+                    row['departure_time'], self.time_format).time()
                 
                 bus_model.BusStopVisit(row['trip_id'], row['stop_id'], arrival_time, departure_time, row['stop_sequence'],
                                        row['stop_headsign'], row['pickup_type'], row['drop_off_type'], row['timepoint'])
 
     @classmethod
     def load_all_files(self):
+        t = time.time()
         self.read_agencies()
+        print(f"Agencies loaded in {(t1:=time.time()) - t}s")
         self.read_calendar()
+        print(f"Calendar loaded in {(t:=time.time()) - t1}s")
         self.read_stops()
+        print(f"Stops loaded in {(t1:=time.time()) - t}s")
         self.read_shapes()
+        print(f"Shapes loaded in {(t:=time.time()) - t1}s")
         self.read_routes()
+        print(f"Routes loaded in {(t1:=time.time()) - t}s")
         self.read_calendar_dates()
+        print(f"Calendar dates loaded in {(t:=time.time()) - t1}s")
         self.read_trips()
-        self.read_stop_times()
+        print(f"Trips loaded in {(t1:=time.time()) - t}s")
+        #self.read_stop_times()
+        print(f"Stop times loaded in {(t:=time.time()) - t1}s")
 
 
 if __name__ == "__main__":
@@ -190,6 +200,6 @@ if __name__ == "__main__":
     import time
     start = time.time()
     StaticGTFSR.load_all_files()
-    print("num visits", len(bus_model.Trip._all))
+    #print("num visits", len(bus_model.Trip._all))
     print(f"Time taken: {time.time() - start}s")
     input()
