@@ -1,24 +1,59 @@
-import {useEffect, useState} from 'react';
-import {busApiUrl} from "@/config/constants"
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setBusStops, setLiveBuses, setBusPositions } from "@/app/redux/busSlice";
+import { RootState } from "@/app/redux/store";
+import { busApiUrl } from "@/config/constants";
 
 export const useBusData = () => {
-    const [busStops, setBusStops] = useState([]);
-    const [busRoutes, setBusRoutes] = useState([]);
-    const [busPositions, setBusPositions] = useState([]);
+    const dispatch = useDispatch();
+
+    // Select Redux state (so components can use this hook)
+    const stops = useSelector((state: RootState) => state.bus.busStops);
+    const busRoutes = useSelector((state: RootState) => state.bus.busRoutes);
+    const busPositions = useSelector((state: RootState) => state.bus.busPositions);
 
     useEffect(() => {
-        // Fetch initial data
-        fetch(`${busApiUrl}/stops`).then(res => res.json()).then(setBusStops);
-        fetch(`${busApiUrl}/routes`).then(res => res.json()).then(setBusRoutes);
+        const fetchInitialData = async () => {
+            try {
+                const stopsData = await fetch(`${busApiUrl}/stops`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }).then((res) => res.json());
+                const routesData = await fetch(`${busApiUrl}/routes`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }).then((res) => res.json());
 
-        // Poll or use WebSocket for live positions
-        const interval = setInterval(() => {
-            fetch(`${busApiUrl}/positions`).then(res => res.json()).then(setBusPositions);
+                dispatch(setBusStops(stopsData)); // Store in Redux
+                dispatch(setLiveBuses(routesData));
+            } catch (error) {
+                console.error("Error fetching initial bus data:", error);
+            }
+        };
+
+        fetchInitialData();
+
+        // Poll live bus positions
+        const interval = setInterval(async () => {
+            try {
+                const positionsData = await fetch(`${busApiUrl}/positions`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }).then((res) => res.json());
+                dispatch(setBusPositions(positionsData)); // Store live bus positions in Redux
+            } catch (error) {
+                console.error("Error fetching live bus positions:", error);
+            }
         }, 5000);
 
-        return () => clearInterval(interval);
-    }, [busApiUrl]);
+        return () => clearInterval(interval); // Cleanup interval on unmount
+    }, [dispatch]);
 
-    return {busStops, busRoutes, busPositions};
+    return { stops, busRoutes, busPositions }; // Other components can access Redux state via this hook
 };
-/* edited ChatGPT, might be revised, fine for a skeleton*/
