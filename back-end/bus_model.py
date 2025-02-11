@@ -4,8 +4,38 @@ class Bus:
     """A class to represent a bus and its relevant information."""
     _all: dict[str, 'Bus'] = {}
 
+    STYLE_NULL = 0
+    STYLE_COACH = 1
+    STYLE_DOUBLE_DECKER = 2
+    STYLE_MINIBUS = 3    
+    STYLE_TRAM = 4
+    STYLE_ARTICULATED = 5
+
+    FUEL_NULL = 0
+    FUEL_DIESEL = 1
+    FUEL_ELECTRIC = 2
+    FUEL_HYBRID = 3
+    FUEL_GAS = 4
+    FUEL_HYDROGEN = 5
+
+
     def __init__(self, bus_id: str):
         self._all[bus_id] = self
+        self.bus_id = bus_id
+    
+    def set_details(self, reg: str, fleet_code: str, slug: str, name: str, style: int, fuel: int, double_decker: bool, coach: bool, electric: bool, livery: int, withdrawn: bool, special_features: str):
+        self.reg = reg
+        self.fleet_code = fleet_code
+        self.slug = slug
+        self.name = name
+        self.style = style
+        self.fuel = fuel
+        self.double_decker = double_decker
+        self.coach = coach
+        self.electric = electric
+        self.livery = livery
+        self.withdrawn = withdrawn
+        self.special_features = special_features
 
 
 class Stop:
@@ -20,6 +50,8 @@ class Stop:
         self.stop_lat = stop_lat
         self.stop_lon = stop_lon
         self.bus_visits: list[BusStopVisit] = [] # List of BusStopVisit objects at this stop
+        self.routes: set[Route] = set()
+        self.trips: set[Trip] = set()
     
     def get_info(self) -> dict[str, str]:
         """Returns the stop's information in a dictionary."""
@@ -28,7 +60,9 @@ class Stop:
             "stop_code": self.stop_code,
             "stop_name": self.stop_name,
             "stop_lat": self.stop_lat,
-            "stop_lon": self.stop_lon
+            "stop_lon": self.stop_lon,
+            "route_ids": [route.route_id for route in self.routes],
+            "trip_ids": [trip.trip_id for trip in self.trips]
         }
 
 class Route:
@@ -43,6 +77,7 @@ class Route:
         self.route_long_name = route_long_name
         self.route_type = route_type
         self.all_trips: list[Trip] = []
+        self.all_stops: set[Stop] = set()
 
     def get_info(self) -> dict[str, str]:
         """Returns the route's information in a dictionary."""
@@ -53,7 +88,18 @@ class Route:
             "route_long_name": self.route_long_name,
             "route_type": self.route_type
         }
-
+    
+    def add_stop(self, stop: Stop):
+        """Adds a stop to the route's list of stops."""
+        self.all_stops.add(stop)
+    
+    def enumerate_stops(self):
+        for trip in self.all_trips:
+            for bus_stop_visit in trip.bus_stop_times:
+                self.add_stop(bus_stop_visit.stop.stop_id)
+        for stop in self.all_stops:
+            stop.routes.add(self)
+    
 class Trip:
     """A class to represent a trip and its relevant information."""
     _all: dict[str, "Trip"] = {}
@@ -87,6 +133,7 @@ class Trip:
         }
     
     def get_times(self) -> list[datetime]:
+        """Returns a list of all timestamps for the trip.""" # this sort of should be returning something else, maybe combine into stop -> routes -> trips -> times
         timestamps: list[datetime] = []
         current_date = self.service.start_date
         while current_date <= self.service.end_date:
@@ -128,6 +175,7 @@ class BusStopVisit:
 
         self.stop.bus_visits.append(self)
         self.trip.bus_stop_times.append(self)
+        self.stop.trips.add(self.trip)
         self.trip.stop_id_stop_seq[stop_sequence] = stop_id
 
 

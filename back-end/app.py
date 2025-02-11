@@ -62,6 +62,10 @@ def route(route_id):
 def route_search(route_name):
     return [route.get_info() for route in bus_model.Route._all.values() if route_name in route.route_short_name]
 
+@app.route("/shape/<shape_id>")
+def shape(shape_id):
+    return generic_get_or_404(bus_model.Shape, shape_id)
+
 @app.errorhandler(404)
 def page_not_found(e) -> dict:
     return {"error_code": 404, "error_message": "Page not found"}, 404
