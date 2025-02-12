@@ -1,22 +1,22 @@
 """
-Provides functions which manage the connection to the sqlite3 database
+Provides functions which manage the connection to the postgresql database
 """
 
-import sqlite3
+import psycopg
+from os import getenv
 from .get_root import get_root
-
-
-def find_db():
-    """Finds the gtfsr.db file starting from the current dir"""
-    root = get_root()
-    db_path = root / "GTFS_Static" / "gtfsr.db"
-    return db_path
 
 
 def create_connection():
     """Creates connection to the main gtfsr database"""
-    db_path = find_db()
-    conn = sqlite3.connect(db_path)
+    # db_host = getenv("POSTGRES_HOST")
+    # db_port = getenv("POSTGRES_PORT")
+    # db_name = getenv("POSTGRES_DB")
+    # db_user = getenv("POSTGRES_USER"T")
+    # db_password = getenv("POSTGRES_PT"ASSWORD")
+    # connect_data = "dbname=%s user=%s password=%s host=%s port=%s" % (db_name, db_user, db_password, db_host, db_port)
+    postgres_uri = getenv("POSTGRES_URI")
+    conn = psycopg.connect(postgres_uri)
     return conn
 
 

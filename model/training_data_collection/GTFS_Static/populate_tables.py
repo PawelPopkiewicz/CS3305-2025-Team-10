@@ -24,7 +24,7 @@ class TablePopulator():
             for line in lines[1:]:
                 fields = line.strip("\n").split(",")
                 insert_field_data = tuple([fields[field_indexes[i]] for i in range(len(field_indexes))])
-                query = "INSERT INTO " + name + " VALUES (" + "?, "*(len(field_indexes)-1) + "?);"
+                query = "INSERT INTO " + name + " VALUES (" + "%s "*(len(field_indexes)-1) + "%s);"
                 self.cursor.execute(query, insert_field_data)
         self.conn.commit()
 
@@ -41,7 +41,7 @@ class TablePopulator():
         result = self.cursor.fetchone()
         if result:
             return result[0]
-        return "7778020"
+        return "7778020"  # hard coded default value
 
     def populate_route_id_to_name(self):
         """
@@ -53,7 +53,7 @@ class TablePopulator():
         SELECT r.route_id, r.route_short_name
         FROM routes AS r
         INNER JOIN chosen_routes AS c
-        ON r.route_short_name = c.route_short_name AND r.agency_id = ?;
+        ON r.route_short_name = c.route_short_name AND r.agency_id = %s;
         """
         self.cursor.execute(query, (agency_id,))
         self.conn.commit()

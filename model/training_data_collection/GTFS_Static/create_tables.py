@@ -2,8 +2,6 @@
 Convert .txt files into sqlite for easier manipulation and queries
 """
 
-import sqlite3
-
 
 class TableCreator():
     """Creates sqlite table from the static info text files"""
@@ -11,16 +9,17 @@ class TableCreator():
     SHAPE_TABLE = """
     CREATE TABLE shapes (
     shape_id VARCHAR(10) NOT NULL,
-    shape_pt_lat REAL,
-    shape_pt_lon REAL,
+    shape_pt_lat DOUBLE PRECISION,
+    shape_pt_lon DOUBLE PRECISION,
     shape_pt_sequence INTEGER,
-    shape_dist_traveled REAL
+    shape_dist_traveled DOUBLE PRECISION,
+    PRIMARY KEY (shape_id, shape_pt_sequence)
     );
     """
 
     ROUTES_TABLE = """
     CREATE TABLE routes (
-    route_id VARCHAR(12) NOT NULL,
+    route_id VARCHAR(12) PRIMARY KEY,
     agency_id VARCHAR(10),
     route_short_name VARCHAR(10),
     route_long_name VARCHAR(100)
@@ -29,53 +28,53 @@ class TableCreator():
 
     TRIPS_TABLE = """
     CREATE TABLE trips (
-    route_id VARCHAR(12) NOT NULL,
+    route_id VARCHAR(12) NOT NULL REFERENCES routes(route_id) ON DELETE CASCADE,
     service_id VARCHAR(5),
-    trip_id VARCHAR(10),
-    direction_id VARCHAR(1),shape_id
-    shape_id VARCHAR(10)
+    trip_id VARCHAR(10) PRIMARY KEY,
+    direction_id VARCHAR(1),
+    shape_id VARCHAR(10) REFERENCES shapes(shape_id) ON DELETE SET NULL
     );
     """
 
     STOPS_TABLE = """
     CREATE TABLE stops (
-    stop_id VARCHAR(20) NOT NULL,
+    stop_id VARCHAR(20) PRIMARY KEY,
     stop_name VARCHAR(100),
-    stop_lat REAL,
-    stop_lon REAL
+    stop_lat DOUBLE PRECISION,
+    stop_lon DOUBLE PRECISION
     );
     """
 
     STOP_TIMES_TABLE = """
     CREATE TABLE stop_times (
-    trip_id VARCHAR(10) NOT NULL,
+    trip_id VARCHAR(10) NOT NULL REFERENCES trips(trip_id) ON DELETE CASCADE,
     arrival_time VARCHAR(8),
     departure_time VARCHAR(8),
-    stop_id VARCHAR(20),
+    stop_id VARCHAR(20) NOT NULL REFERENCES stops(stop_id) ON DELETE CASCADE,
     stop_sequence INTEGER,
-    pickup_type VARCHAR(1),
-    drop_off_type VARCHAR(1),
-    timepoint VARCHAR(1)
+    pickup_type BOOLEAN,
+    drop_off_type BOOLEAN,
+    timepoint BOOLEAN
     );
     """
 
     AGENCY_TABLE = """
     CREATE TABLE agency (
-    agency_id VARCHAR(20),
+    agency_id VARCHAR(20) PRIMARY KEY,
     agency_name VARCHAR(100)
     );
     """
 
     CALENDAR_TABLE = """
     CREATE TABLE calendar (
-    service_id VARCHAR(5),
-    monday VARCHAR(1),
-    tuesday VARCHAR(1),
-    wednesday VARCHAR(1),
-    thursday VARCHAR(1),
-    friday VARCHAR(1),
-    saturday VARCHAR(1),
-    sunday VARCHAR(1),
+    service_id VARCHAR(5) PRIMARY KEY,
+    monday BOOLEAN,
+    tuesday BOOLEAN,
+    wednesday BOOLEAN,
+    thursday BOOLEAN,
+    friday BOOLEAN,
+    saturday BOOLEAN,
+    sunday BOOLEAN,
     start_date VARCHAR(10),
     end_date VARCHAR(10)
     );
@@ -83,22 +82,22 @@ class TableCreator():
 
     CALENDAR_DATES_TABLE = """
     CREATE TABLE calendar_dates (
-    service_id VARCHAR(5),
-    date VARCHAR(10),
-    exception_type VARCHAR(2)
-    );
+    service_id VARCHAR(5) REFERENCES calendar(service_id) ON DELETE CASCADE,
+    date VARCHAR(10) NOT NULL,
+    exception_type VARCHAR(2),
+    PRIMARY KEY (service_id, date));
     """
 
     ROUTE_ID_TO_NAME_TABLE = """
     CREATE TABLE route_id_to_name (
-    route_id VARCHAR(12),
+    route_id VARCHAR(12) PRIMARY KEY REFERENCES routes(route_id) ON DELETE CASCADE,
     route_short_name VARCHAR(10)
     );
     """
 
     CHOSEN_ROUTES_TABLE = """
     CREATE TABLE chosen_routes (
-    route_short_name VARCHAR(10)
+    route_short_name VARCHAR(10) PRIMARY KEY REFERENCES routes(route_short_name) ON DELETE CASCADE
     );
     """
 
@@ -131,9 +130,10 @@ class TableCreator():
 
 
 if __name__ == "__main__":
-    test_conn = sqlite3.connect("test_gtfsr.db")
+    from .db_connection import create_connection, close_connection
+    test_conn = create_connection()
     cr = TableCreator(test_conn)
     cr.create_table("chosen_routes", cr.CHOSEN_ROUTES_TABLE)
     cr.create_table("routes", cr.ROUTES_TABLE)
     cr.create_table("route_id_to_name", cr.ROUTE_ID_TO_NAME_TABLE)
-    test_conn.close()
+    close_connection(test_conn)
