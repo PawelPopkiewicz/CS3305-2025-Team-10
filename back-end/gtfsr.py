@@ -128,7 +128,7 @@ class StaticGTFSR:
                 date = datetime.datetime.strptime(
                     row['date'], self.date_format)
                 service = bus_model.Service._all[row['service_id']]
-                service.add_exception(date, row['exception_type'])
+                service.add_exception(date, int(row['exception_type']))
 
     @classmethod
     def read_shapes(self, path=shapes):
@@ -191,7 +191,7 @@ class StaticGTFSR:
         print(f"Calendar dates loaded in {(t:=time.time()) - t1}s")
         self.read_trips()
         print(f"Trips loaded in {(t1:=time.time()) - t}s")
-        #self.read_stop_times()
+        self.read_stop_times()
         print(f"Stop times loaded in {(t:=time.time()) - t1}s")
 
 

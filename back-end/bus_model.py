@@ -24,6 +24,7 @@ class Bus:
         self.bus_id = bus_id
     
     def set_details(self, reg: str, fleet_code: str, slug: str, name: str, style: int, fuel: int, double_decker: bool, coach: bool, electric: bool, livery: int, withdrawn: bool, special_features: str):
+        """Sets the details of the bus."""
         self.reg = reg
         self.fleet_code = fleet_code
         self.slug = slug
@@ -36,6 +37,26 @@ class Bus:
         self.livery = livery
         self.withdrawn = withdrawn
         self.special_features = special_features
+    
+    def get_info(self) -> dict[str, str]:
+        """Returns the bus's information in a dictionary."""
+        return {
+            "bus_id": self.bus_id,
+            "reg": self.reg,
+            "fleet_code": self.fleet_code,
+            "slug": self.slug,
+            "vehicle_details": {
+                "name": self.name,
+                "style": self.style,
+                "fuel": self.fuel,
+                "double_decker": self.double_decker,
+                "coach": self.coach,
+                "electric": self.electric
+                },
+            "livery": self.livery,
+            "withdrawn": self.withdrawn,
+            "special_features": self.special_features
+        }
 
 
 class Stop:
