@@ -1,8 +1,8 @@
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { setBusStops, setLiveBuses, setBusPositions } from "@/app/redux/busSlice";
-import { RootState } from "@/app/redux/store";
-import { busApiUrl } from "@/config/constants";
+import {useEffect} from "react";
+import {useDispatch, useSelector} from "react-redux";
+import {setBusPositions, setBusStops, setLiveBuses} from "@/app/redux/busSlice";
+import {RootState} from "@/app/redux/store";
+import {busApiUrl} from "@/config/constants";
 
 export const useBusData = () => {
     const dispatch = useDispatch();

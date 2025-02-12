@@ -1,10 +1,6 @@
-import {Text, View, StyleSheet, SafeAreaView, Platform, ScrollView} from "react-native";
+import {SafeAreaView, ScrollView, StyleSheet, Text, View} from "react-native";
 import {Button, Icon} from 'react-native-elements';
 import {router} from 'expo-router';
-import FontAwesomeIcon from "react-native-vector-icons";
-
-import ButtonList from "@/components/ButtonList";
-import ButtonTab from "@/components/ButtonTab";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 
@@ -18,7 +14,7 @@ return (
             <Button
                 icon={<Icon iconStyle={styles.icon} name="chevron-left" type="font-awesome"/>}
                 buttonStyle={styles.button}
-                onPress={() => router.push("/screens/map")}
+                onPress={() => router.back()}
                 >
 
             </Button>
@@ -58,8 +54,6 @@ return (
             </View>
 
         </ScrollView>
-
-        <ButtonTab />
     </SafeAreaView>
 );
 }

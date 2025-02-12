@@ -1,10 +1,6 @@
-import {Text, View, StyleSheet, SafeAreaView, Platform} from "react-native";
+import {SafeAreaView, StyleSheet, Text, View} from "react-native";
 import {Button, Icon} from 'react-native-elements';
 import {router} from 'expo-router';
-import FontAwesomeIcon from "react-native-vector-icons";
-
-import ButtonList from "@/components/ButtonList";
-import ButtonTab from "@/components/ButtonTab";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 
@@ -18,7 +14,7 @@ return (
             <Button
                 icon={<Icon iconStyle={styles.icon} name="chevron-left" type="font-awesome"/>}
                 buttonStyle={styles.button}
-                onPress={() => router.push("/")}
+                onPress={() => router.back()}
                 >
             </Button>
 
@@ -48,15 +44,15 @@ return (
             <Button                
                 icon={<Icon iconStyle={styles.icon} name="arrow-right" type="font-awesome"/>}
                 buttonStyle={styles.button}
-                onPress={() => router.push('/screens/map')}
+                onPress={() => router.push('/map')}
             >
             </Button>
         </View>
 
-        {/* Display each bus stop of selected bus ordered by arrival time, make scrollView, bare bones given below */}
+        {/* Display each bus stop of selected bus ordered by arrival time, make scrollView, barebones given below */}
         <View style={styles.path}>
             <View style={styles.stop}>
-                {/* Ideally, make arrows change colors depending if the bus visited the stop yet or not */}
+                {/* Ideally, make arrows change colors depending on if the bus visited the stop yet or not */}
                 <Icon iconStyle={styles.busPathVisited} name="arrow-down" type="font-awesome"/>
                 <Text style={styles.textSecondary}>Stop 2232 University College, Cork</Text>
                 <Text style={styles.time}>14:32</Text>
@@ -68,7 +64,6 @@ return (
                 <Text style={styles.time}>14:44</Text>
             </View>
         </View>
-        <ButtonTab />
     </SafeAreaView>
 );
 }

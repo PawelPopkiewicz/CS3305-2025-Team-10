@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, ScrollView, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { Button } from 'react-native-elements';
+import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {router} from 'expo-router';
 
 import colors from '@/config/Colors';

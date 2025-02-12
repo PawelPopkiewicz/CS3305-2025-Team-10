@@ -5,22 +5,10 @@ import {store} from "./redux/store";
 export default function Layout() {
   return (
       <Provider store={store}>
-          <Stack>
+          <Stack
+              screenOptions={{headerShown: false}}>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           </Stack>
       </Provider>
   );
 }
-
-
-// import {Tabs} from "expo-router";
-
-
-// export default function TabLayout(){
-//   return (
-//     <Tabs>
-//       <Tabs.Screen name="HomeScreen" options={{title: "Home"}} />
-//       <Tabs.Screen name="MapScreen" options={{title: "Map"}} />
-//     </Tabs>
-//   )
-// }

@@ -1,7 +1,6 @@
-import {Button, Text, View, StyleSheet, SafeAreaView, Platform} from "react-native";
+import {SafeAreaView, StyleSheet, Text, View} from "react-native";
 import ButtonList from "@/components/ButtonList";
 import ButtonBus from "@/components/ButtonBus";
-import ButtonTab from "@/components/ButtonTab";
 
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
@@ -39,8 +38,6 @@ return (
             </View>
 
         </View>
-
-        <ButtonTab />
     </SafeAreaView>
 );
 }
@@ -52,6 +49,10 @@ const styles = StyleSheet.create({
         flex: 1,
         // justifyContent: 'flex-end',
         backgroundColor: colors.backgroundPrimary,
+    },
+    tab: {
+        flex: 1,
+        justifyContent: "flex-end",
     },
     favourite: {
         // padding: 7,

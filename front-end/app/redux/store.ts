@@ -1,4 +1,4 @@
-import { configureStore } from "@reduxjs/toolkit";
+import {configureStore} from "@reduxjs/toolkit";
 import busReducer from "./busSlice";
 
 export const store = configureStore({
@@ -7,3 +7,4 @@ export const store = configureStore({
     },
 });
 export type RootState = ReturnType<typeof store.getState>;
+export default store;

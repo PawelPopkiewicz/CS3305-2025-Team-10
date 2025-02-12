@@ -1,8 +1,7 @@
 import React from "react";
-import { View} from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import {View} from "react-native";
+import MapView, {Marker} from "react-native-maps";
 import {useBusData} from "@/hooks/useBusData";
-
 
 
 const Map = () => {
@@ -64,5 +63,3 @@ const Map = () => {
 };
 
 export default Map;
-
-

@@ -1,25 +1,15 @@
-import {Text, ScrollView, View, StyleSheet, TouchableOpacity} from "react-native";
-import { Input, Icon } from '@rneui/themed';
-import React, { useRef, useState } from "react";
-import { router } from "expo-router";
-import {Button} from 'react-native-elements';
+import {ScrollView, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {Icon, Input} from '@rneui/themed';
+import React, {useState} from "react";
+import {router} from "expo-router";
 
 import ButtonList from "@/components/ButtonList";
-import ButtonTab from "@/components/ButtonTab";
 import ButtonBus from "@/components/ButtonBus";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 
 
-
 export default function Search() {
-    // const inputRef = useRef(null);
-
-    // const clearText = () => {
-    //     if (inputRef.current) {
-    //         inputRef.current.clear(); // Clears the input field
-    //     }
-    // };
 
     const [text, setText] = useState("");
 
@@ -33,7 +23,8 @@ export default function Search() {
             onChangeText={setText} // Update state on change
             placeholder="Search bus stop or route"
             rightIcon={<Icon iconStyle={styles.clear} onPress={() => setText("")} name="plus" type="font-awesome"/>}
-            leftIcon={<Icon iconStyle={styles.back} onPress={() => router.push('/')} name="chevron-left" type="font-awesome"/>}
+            leftIcon={<Icon iconStyle={styles.back} onPress={() => router.back()} name="chevron-left"
+                            type="font-awesome"/>}
             >
             </Input>
 
@@ -73,8 +64,6 @@ export default function Search() {
                     { id: '1', title: 'Stop 2232, University College Cork'},
                 ]}/>
             </ScrollView>
-
-            <ButtonTab></ButtonTab>
         </View >
 
 
