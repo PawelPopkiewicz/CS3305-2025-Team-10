@@ -1,0 +1,55 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    volumes:
+      - mongo_data:/data/db
+    command: ["--auth"]
+    networks:
+      - mynetwork
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: static_data
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - mynetwork
+
+  training:
+    build: ./training_data_collection
+    container_name: training_data_collection
+    depends_on:
+      - mongodb
+      - postgres
+    environment:
+      MONGO_URI: "mongodb://admin:admin@mongodb:27017/?authSource=admin"
+      POSTGRES_URI: "postgresql://admin:admin@postgres:5432/static_data"
+        #    volumes:
+        #      - ./bustimes_model:/bustimes_model
+    ports:
+      - "5000:5000"
+    networks:
+      - mynetwork
+    env_file:
+      - .env
+
+networks:
+  mynetwork:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  pgdata:
