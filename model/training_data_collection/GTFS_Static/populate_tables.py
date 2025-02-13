@@ -5,6 +5,10 @@ Populates the tables with data from txt files
 from .get_root import get_root
 
 
+class AgencyNotFoundError(Exception):
+    """Custom exception for when the bus agency is not found in the db"""
+
+
 class TablePopulator():
     """Populates the tables with data"""
 
@@ -41,7 +45,7 @@ class TablePopulator():
         result = self.cursor.fetchone()
         if result:
             return result[0]
-        return "7778020"  # hard coded default value
+        raise AgencyNotFoundError("Bus Eirrean not found in the database")
 
     def populate_route_id_to_name(self):
         """
