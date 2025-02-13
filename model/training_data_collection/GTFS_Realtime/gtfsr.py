@@ -5,6 +5,7 @@ Provides a class to query GTFSR API
 import os
 import urllib.request
 import json
+import requests
 from dotenv import load_dotenv
 from .get_root import get_root
 
@@ -40,21 +41,18 @@ class GTFSR:
         """Fetches the json data from the provided endpoint"""
         try:
             url = self.base_url+endpoint+self.json_format
-            hdr = {            # Request headers
+            hdr = {
                 'Cache-Control': 'no-cache',
                 'x-api-key': self.api_key,
             }
 
-            req = urllib.request.Request(url, headers=hdr)
-
-            req.get_method = lambda: 'GET'
-            response = urllib.request.urlopen(req)
-            response_data = response.read().decode('utf-8')
-            json_data = json.loads(response_data)
-            return json_data
+            response = requests.get(url, headers=hdr, timeout=10)
+            response.raise_for_status()
+            return response.json()
 
         except Exception as e:
             print(f"Error occured when connecting to and endpoint{e}")
+            return None
 
     def print_json(self, json_data):
         """prints the provided json data"""
