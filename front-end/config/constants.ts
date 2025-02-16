@@ -1,0 +1,1 @@
+export const busApiUrl = "http://localhost:8080";
