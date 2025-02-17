@@ -1,1 +1,1 @@
-export const busApiUrl = "http://localhost:8080";
+export const busApiUrl = "https://5a4a-143-239-9-7.ngrok-free.app";
