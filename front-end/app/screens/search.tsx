@@ -1,6 +1,6 @@
 import {ScrollView, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import {Icon, Input} from '@rneui/themed';
-import React, {useState} from "react";
+import React, {useState, useRef, useEffect} from "react";
 import {router} from "expo-router";
 
 import ButtonList from "@/components/ButtonList";
@@ -12,11 +12,22 @@ import fonts from "@/config/Fonts";
 export default function Search() {
 
     const [text, setText] = useState("");
+    const inputRef = useRef(null);
 
+    useEffect(() => {
+        const timer = setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.focus(); // Open keyboard automatically
+          }
+        }, 100); // Delay ensures the UI is ready
+    
+        return () => clearTimeout(timer);
+      }, []);
     return (
         <View style={styles.background}>
 
             <Input
+            ref={inputRef}
             inputStyle={styles.textPrimary}
             inputContainerStyle={styles.input}
             value={text} // Controlled input
@@ -77,7 +88,7 @@ const styles = StyleSheet.create({
     },
     background: {
         // paddingTop: Platform.OS === 'android' ? 20 : 0,
-        // paddingTop: 20,
+        paddingTop: 50,
         flex: 1,
         // justifyContent: 'flex-end',
         backgroundColor: colors.backgroundPrimary,

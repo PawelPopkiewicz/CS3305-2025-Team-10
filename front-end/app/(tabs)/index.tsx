@@ -1,4 +1,4 @@
-import {SafeAreaView, StyleSheet, Text, View} from "react-native";
+import {SafeAreaView, StyleSheet, Text, View, ScrollView} from "react-native";
 import ButtonList from "@/components/ButtonList";
 import ButtonBus from "@/components/ButtonBus";
 
@@ -15,14 +15,14 @@ return (
                 <Text style={styles.textPrimary}>Favourite stops</Text>
             </View>
             {/* to be made functional once we store favourites*/}
-            <View>
+            <ScrollView>
                 <ButtonList buttonData= {[
                     { id: '1', title: 'Stop 2232, University College Cork'},
                     { id: '2', title: 'Stop 2154, Patrick Street Cork'},
                     { id: '3', title: 'Stop 0026, North Mall, Cork'},
                     { id: '4', title: 'Stop 5682, Oliver Street, Cork'},
                     ]}/>
-            </View>
+            </ScrollView>
 
         </View>
 
@@ -31,11 +31,11 @@ return (
                 <Text style={styles.textPrimary}>Favourite buses</Text>
             </View>
             {/* to be made functional once we store favourites*/}
-            <View>
+            <ScrollView>
                 <ButtonBus buttonData= {[
                     { id: '3', title: 'Bus 220, Carrigaline - Crosshaven' },
                     ]}/>
-            </View>
+            </ScrollView>
 
         </View>
     </SafeAreaView>
