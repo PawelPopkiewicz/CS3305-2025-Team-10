@@ -1,23 +1,20 @@
-import { createSlice, Dispatch, ThunkDispatch, UnknownAction} from '@reduxjs/toolkit';
+import {createSlice, Dispatch, ThunkDispatch, UnknownAction} from '@reduxjs/toolkit';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+//something up with never[], need to figure out how ts works
 const favoritesSlice = createSlice({
     name: 'favorites',
     initialState:
         {
-            favStops: ["aaa"],
-            favRoutes: ["aaa"],
+            favStops: [],
+            favRoutes: [],
         },
     reducers: {
         addFavoriteStop: (state, action) => {
-            console.log('State before push:', state.favStops);
-            state.favStops.push(action.payload); // Push to the array
-            console.log('State after push:', state.favStops);
+            // @ts-ignore
+            state.favStops.push(action.payload);
         },
         removeFavoriteStop: (state, action) => {
-            console.log('State before removal:', state.favStops);
             state.favStops = state.favStops.filter((item) => item !== action.payload);
-            console.log('State after removal:', state.favStops);
         },
         setFavoriteStops: (state, action) => {
             return action.payload;
