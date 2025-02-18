@@ -2,6 +2,8 @@
 Populates the tables with data from txt files
 """
 
+from io import StringIO
+import pandas as pd
 from .get_root import get_root
 
 
@@ -12,25 +14,72 @@ class AgencyNotFoundError(Exception):
 class TablePopulator():
     """Populates the tables with data"""
 
+    ROUTES_FIELDS = [0, 1, 2, 3]
+    TRIPS_FIELDS = [0, 1, 2, 5, 7]
+    STOPS_FIELDS = [0, 2, 4, 5]
+    STOP_TIMES_FIELDS = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    SHAPES_FIELDS = [0, 1, 2, 3, 4]
+    AGENCY_FIELDS = [0, 1]
+    CALENDAR_FIELDS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    CALENDAR_DATES_FIELDS = [0, 1, 2]
+    CHOSEN_ROUTES_FIELDS = [0]
+
+    ROUTES_MASK = ["str", "str", "str", "str"]
+    TRIPS_MASK = ["str", "str", "str", "bool", "str"]
+    STOPS_MASK = ["str", "str", "float", "float"]
+    STOP_TIMES_MASK = ["str", "str", "str", "str", "int", "str", "bool", "bool", "bool"]
+    SHAPES_MASK = ["str", "float", "float", "int", "float"]
+    AGENCY_MASK = ["str", "str"]
+    CALENDAR_MASK = ["str"] + ["bool"]*7 + ["str", "str"]
+    CALENDAR_DATES_MASK = ["str", "str", "str"]
+    CHOSEN_ROUTES_MASK = ["str"]
+
     def __init__(self, conn):
         self.conn = conn
         self.cursor = conn.cursor()
 
-    def populate_table(self, name, field_indexes):
+    def create_df(self, name, field_indexes, field_mask):
         """
-        Creates a connection to the text file based on the name and calls the given function
+        Creates the dataframe from a csv file specified by name
+        casts the value to the correct type
         """
         root = get_root()
         filename = name + ".txt"
         textfile_path = root / "GTFS_Static" / "source_text_files" / filename
-        with open(textfile_path, "r", encoding="utf-8") as txtconn:
-            lines = txtconn.readlines()
-            for line in lines[1:]:
-                fields = line.strip("\n").split(",")
-                insert_field_data = tuple([fields[field_indexes[i]] for i in range(len(field_indexes))])
-                query = "INSERT INTO " + name + " VALUES (" + "%s "*(len(field_indexes)-1) + "%s);"
-                self.cursor.execute(query, insert_field_data)
-        self.conn.commit()
+        df = pd.read_csv(textfile_path, low_memory=False)
+        df = df.iloc[:, field_indexes]
+        for i, mask in enumerate(field_mask):
+            col_name = df.columns[i]
+            match mask:
+                case "str":
+                    df[col_name] = df[col_name].astype(str)
+                case "bool":
+                    df[col_name] = df[col_name].astype(bool)
+                case "int":
+                    df[col_name] = df[col_name].astype(int)
+                case "float":
+                    df[col_name] = df[col_name].astype(float).round(6)
+        if name == "shapes":
+            df = df.drop_duplicates(subset=["shape_id", "shape_pt_lat", "shape_pt_lon"])
+        return df
+
+    def insert_df(self, name, df):
+        """
+        Insert the dataframe into the table
+        """
+        csv_buffer = StringIO()
+        df.to_csv(csv_buffer, index=False, header=False)
+        csv_buffer.seek(0)
+        copy_query = "COPY " + name + " FROM STDIN (FORMAT CSV)"
+        with self.cursor.copy(copy_query) as copy:
+            while data := csv_buffer.read(100):
+                copy.write(data)
+
+    def populate_table(self, name, field_indexes, field_mask):
+        """Populates the table"""
+        df = self.create_df(name, field_indexes, field_mask)
+        self.insert_df(name, df)
+        print("Populated " + name + " table")
 
     def get_bus_eirann_agency_id(self):
         """
@@ -39,11 +88,12 @@ class TablePopulator():
         query = """
         SELECT agency_id
         FROM agency
-        WHERE agency_name = "Bus Éireann";
+        WHERE agency_name = 'Bus Éireann';
         """
         self.cursor.execute(query)
         result = self.cursor.fetchone()
         if result:
+            print("Found Bus Éireann agency_id: " + result[0])
             return result[0]
         raise AgencyNotFoundError("Bus Eirrean not found in the database")
 
@@ -60,22 +110,30 @@ class TablePopulator():
         ON r.route_short_name = c.route_short_name AND r.agency_id = %s;
         """
         self.cursor.execute(query, (agency_id,))
-        self.conn.commit()
+
+    def index_shape_id_on_trips(self):
+        """Creates an index on shape_id in trips table"""
+        index_query = """CREATE INDEX idx_trips_shape_id ON trips(shape_id);"""
+        self.cursor.execute(index_query)
+        print("Indexed shape_id in trips table")
 
     def populate_tables(self):
         """
         Populates tables
         """
-        self.populate_table("shapes", list(range(5)))
-        self.populate_table("routes", list(range(4)))
-        self.populate_table("stop_times", list(range(5))+list(range(6, 9)))
-        self.populate_table("trips", [0, 1, 2, 5, 7])
-        self.populate_table("stops", [0, 2, 4, 5])
-        self.populate_table("agency", [0, 1])
-        self.populate_table("calendar", list(range(10)))
-        self.populate_table("calendar_dates", list(range(3)))
-        self.populate_table("chosen_routes", [0])
+        self.conn.autocommit = True
+        self.populate_table("routes", self.ROUTES_FIELDS, self.ROUTES_MASK)
+        self.populate_table("trips", self.TRIPS_FIELDS, self.TRIPS_MASK)
+        self.populate_table("stops", self.STOPS_FIELDS, self.STOPS_MASK)
+        self.populate_table("stop_times", self.STOP_TIMES_FIELDS, self.STOP_TIMES_MASK)
+        self.populate_table("shapes", self.SHAPES_FIELDS, self.SHAPES_MASK)
+        self.populate_table("agency", self.AGENCY_FIELDS, self.AGENCY_MASK)
+        self.populate_table("calendar", self.CALENDAR_FIELDS, self.CALENDAR_MASK)
+        self.populate_table("calendar_dates", self.CALENDAR_DATES_FIELDS, self.CALENDAR_DATES_MASK)
+        self.populate_table("chosen_routes", self.CHOSEN_ROUTES_FIELDS, self.CHOSEN_ROUTES_MASK)
         self.populate_route_id_to_name()
+        self.index_shape_id_on_trips()
+        self.conn.autocommit = False
 
 
 if __name__ == "__main__":

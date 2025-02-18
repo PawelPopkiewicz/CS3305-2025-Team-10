@@ -37,10 +37,28 @@ services:
     environment:
       MONGO_URI: "mongodb://admin:admin@mongodb:27017/?authSource=admin"
       POSTGRES_URI: "postgresql://admin:admin@postgres:5432/static_data"
-        #    volumes:
-        #      - ./bustimes_model:/bustimes_model
+    volumes:
+      - ./training_data_collection:/training_data_collection
     ports:
       - "5000:5000"
+    networks:
+      - mynetwork
+    env_file:
+      - .env
+
+  inference:
+    build: ./inference
+    container_name: inference
+    depends_on:
+      - mongodb
+      - postgres
+    environment:
+      MONGO_URI: "mongodb://admin:admin@mongodb:27017/?authSource=admin"
+      POSTGRES_URI: "postgresql://admin:admin@postgres:5432/static_data"
+    volumes:
+      - ./inference:/inference
+    ports:
+      - "5001:5001"
     networks:
       - mynetwork
     env_file:

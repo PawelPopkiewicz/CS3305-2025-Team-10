@@ -3,3 +3,4 @@
 training_data_collection/GTFS_Static/*.db
 training_data_collection/GTFS_Static/source_text_files/
 training_data_collection/GTFS_Realtime/json_files/
+inference/training_data/

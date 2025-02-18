@@ -1,12 +1,16 @@
 
-FROM python:3.9-slim
+FROM python:3.10-slim
 
 WORKDIR /inference
+
+RUN apt-get update && apt-get install -y libpq-dev build-essential
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+
+WORKDIR /inference
 
 ENV FLASK_APP=/inference/app.py
 ENV FLASK_RUN_HOST=0.0.0.0
