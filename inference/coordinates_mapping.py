@@ -80,6 +80,33 @@ def populate_trip_distance_table(conn):
     conn.commit()
 
 
+def v1_get_stop_dist(conn):
+    """prototyping the mapping"""
+    get_query = """
+    SELECT rsh.dist_traveled
+    FROM (
+        SELECT *
+        FROM stops AS s
+        WHERE s.stop_id IN (
+            SELECT st.stop_id FROM stop_times AS st
+            WHERE st.route_id = %s
+        )
+    ) AS stop
+    JOIN shapes AS sh
+        ON sh.shape_id = (
+            SELECT t.shape_id FROM trips AS t
+            WHERE t.route_id = %s AND t.direction = %s
+            )
+        AND sh.dist_traveled > %s
+    ORDER BY (sh.shape_pt_lat - stop.stop_lat)^2 + (sh.shape_pt_lon - stop.stop_lon)^2
+    LIMIT 1;
+    """
+    cursor = conn.cursor()
+    cursor.execute(get_query)
+    result = conn.fetchall()
+    return result
+
+
 if __name__ == "__main__":
     test_conn = create_connection()
     create_trip_distance_table(test_conn)

@@ -111,12 +111,6 @@ class TablePopulator():
         """
         self.cursor.execute(query, (agency_id,))
 
-    def index_shape_id_on_trips(self):
-        """Creates an index on shape_id in trips table"""
-        index_query = """CREATE INDEX idx_trips_shape_id ON trips(shape_id);"""
-        self.cursor.execute(index_query)
-        print("Indexed shape_id in trips table")
-
     def populate_tables(self):
         """
         Populates tables
@@ -132,7 +126,6 @@ class TablePopulator():
         self.populate_table("calendar_dates", self.CALENDAR_DATES_FIELDS, self.CALENDAR_DATES_MASK)
         self.populate_table("chosen_routes", self.CHOSEN_ROUTES_FIELDS, self.CHOSEN_ROUTES_MASK)
         self.populate_route_id_to_name()
-        self.index_shape_id_on_trips()
         self.conn.autocommit = False
 
 
