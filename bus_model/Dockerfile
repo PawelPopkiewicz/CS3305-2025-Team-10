@@ -8,9 +8,14 @@ RUN apt-get update && apt-get install -y \
 
 RUN apt-get update && apt-get install -y libpq-dev build-essential
 
+RUN apt-get update && apt-get install -y dos2unix
+
 WORKDIR /bus_model
 
 COPY requirements.txt .
+RUN dos2unix requirements.txt
+RUN echo "pandas">>requirements.txt
+RUN echo "psycopg">>requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .

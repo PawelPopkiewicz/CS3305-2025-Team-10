@@ -46,6 +46,24 @@ services:
     env_file:
       - .env
 
+  bus_model:
+    build: ./bus_model
+    container_name: bus_model
+    depends_on:
+      - mongodb
+      - postgres
+    environment:
+      MONGO_URI: "mongodb://admin:admin@mongodb:27017/?authSource=admin"
+      POSTGRES_URI: "postgresql://admin:admin@postgres:5432/static_data"
+    volumes:
+      - ./bus_model:/bus_model
+    ports:
+      - "5002:5002"
+    networks:
+      - mynetwork
+    env_file:
+      - .env
+
   inference:
     build: ./inference
     container_name: inference
