@@ -2,3 +2,5 @@ __pycache__/
 ../.venv/
 .env
 static_gtfsr/*.txt
+GTFS_Static/*.db
+GTFS_Static/source_text_files/
