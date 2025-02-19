@@ -4,7 +4,7 @@ Filters the response json data
 
 import json
 from .gtfsr import GTFSR
-from GTFS_Static.db_funcs import get_route_id_to_name_dict
+from .gtfs_static_funcs import get_route_id_to_name
 from .get_root import get_root
 
 
@@ -13,7 +13,8 @@ class JsonProcessor():
 
     def __init__(self):
         self.gtfsr = GTFSR()
-        self.route_id_to_name = get_route_id_to_name_dict()
+        self.route_id_to_name = get_route_id_to_name()
+        print(self.route_id_to_name)
 
     def filter_vehicles(self, vehicles_json):
         """filters the vehicles.json to only cork city"""
@@ -39,7 +40,7 @@ class JsonProcessor():
         """Tries to load a json file"""
         try:
             root = get_root()
-            with open(root / "GTFS_Realtime" / "json_files" / filename, "r", encoding="utf-8") as conn:
+            with open(root / "training_data_collection" / "GTFS_Realtime" / "json_files" / filename, "r", encoding="utf-8") as conn:
                 json_file = json.load(conn)
                 return json_file
         except FileNotFoundError as e:
@@ -58,7 +59,7 @@ class JsonProcessor():
         """creates a json file from the provided dict"""
         try:
             root = get_root()
-            with open(root / "GTFS_Realtime" / "json_files" / filename, "w", encoding="utf-8") as conn:
+            with open(root / "training_data_collection" / "GTFS_Realtime" / "json_files" / filename, "w", encoding="utf-8") as conn:
                 json.dump(json_data, conn)
         except FileNotFoundError as e:
             print(f"File not found: {e}")
@@ -70,10 +71,10 @@ class JsonProcessor():
 
 if __name__ == "__main__":
     json_processor = JsonProcessor()
-    tu_json = json_processor.load_json_file("tripUpdates.json")
-    json_processor.filter_tripUpdates(tu_json)
-    json_processor.filter_tripUpdates(tu_json)
-    json_processor.create_json_file(tu_json, "filtered_tripUpdates.json")
+#     tu_json = json_processor.load_json_file("tripUpdates.json")
+#     json_processor.filter_tripUpdates(tu_json)
+#     json_processor.filter_tripUpdates(tu_json)
+#     json_processor.create_json_file(tu_json, "filtered_tripUpdates.json")
     v_json = json_processor.load_json_file("vehicles.json")
     json_processor.filter_vehicles(v_json)
     json_processor.filter_vehicles(v_json)

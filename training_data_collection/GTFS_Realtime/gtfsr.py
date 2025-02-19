@@ -20,6 +20,7 @@ class GTFSR:
         self.base_url = "https://api.nationaltransport.ie/gtfsr/v2/"
         self.json_format = "?format=json"
         self.api_key = os.environ.get("api_key")
+        print(self.api_key)
 
     def configure(self):
         """Configure the setup by loading the env which contains api_key"""
@@ -62,7 +63,7 @@ class GTFSR:
         """creates a json file in the directory from the given json data"""
         try:
             root = get_root()
-            with open(root / "GTFS_Realitme" / "json_files" / filename, "w", encoding="utf-8") as json_file:
+            with open(root / "training_data_collection" / "GTFS_Realtime" / "json_files" / filename, "w+", encoding="utf-8") as json_file:
                 json.dump(json_data, json_file)
         except Exception as e:
             print(f"Error occured when creating a json file: {e}")
@@ -72,5 +73,5 @@ if __name__ == "__main__":
     gtfsr = GTFSR()
     json_vehicle_data = gtfsr.fetch_vehicles()
     gtfsr.create_json_file("vehicles.json", json_vehicle_data)
-    json_trip_data = gtfsr.fetch_tripUpdates()
-    gtfsr.create_json_file("tripUpdates.json", json_trip_data)
+#     json_trip_data = gtfsr.fetch_tripUpdates()
+#     gtfsr.create_json_file("tripUpdates.json", json_trip_data)

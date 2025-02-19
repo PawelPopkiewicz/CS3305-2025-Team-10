@@ -21,7 +21,7 @@ class MongoManager():
 
     def print_trips(self):
         """Prints the first document in the collection"""
-        print(json.dumps(self.get_mongo(), indent=4))
+        print(json.dumps(self.get_trips(), indent=4))
 
     def get_trips_test(self):
         """Returns a test dict"""
@@ -91,4 +91,4 @@ class MongoManager():
 
 if __name__ == "__main__":
     mm = MongoManager()
-    mm.print_mongo()
+    mm.print_trips()
