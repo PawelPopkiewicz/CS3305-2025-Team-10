@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {View, Text, StyleSheet, TouchableOpacity} from "react-native";
+import {View, Text, StyleSheet, TouchableOpacity, Image} from "react-native";
 import {Icon, Input} from '@rneui/themed';
 import MapView, {Marker} from "react-native-maps";
 import {useBusData} from "@/hooks/useBusData";
@@ -11,6 +11,24 @@ import fonts from "@/config/Fonts";
 const Map = () => {
     const { stops, busRoutes, busPositions } = useBusData();
     const [text, setText] = useState("");
+    const customBus = Image.resolveAssetSource(require('@/assets/images/bus.png')).uri
+
+    const CustomMarker = ({busNumber}) => (
+        <View style={{ alignItems: 'center' }}>
+            {/* Bus Number Label */}
+            <Text style={{ backgroundColor: 'black', padding: 4, borderRadius: 5, fontWeight: 'bold', color:'whitex ' }}>
+            {busNumber}
+            </Text>
+
+            <View style={{ transform: [{ rotate: '45deg' }] }}> 
+            <Image
+                source={{uri:customBus}}
+                style={{ width: 25, height: 25, resizeMode: 'contain' }}
+            />
+            </View>
+        </View>
+      );
+
     return (
         
         <View style={styles.background}>
@@ -35,8 +53,18 @@ const Map = () => {
                     latitudeDelta: 0.03,
                     longitudeDelta: 0.03,
                 }}
+                rotateEnabled={false} // Prevents map rotation}
             >
-                {/* Bus Stop Markers */}
+                
+
+
+                <Marker
+                coordinate={{ latitude: 51.9000, longitude: -8.4800 }}
+                >
+                    <CustomMarker busNumber='123'/>
+                </Marker>
+
+                {/* Bus Stop Markers
                 {stops?.length > 0 && stops.map((stop: { id: any; latitude: number; longitude: number; name: string | undefined; }) => (
                     stop.latitude && stop.longitude ? (
                         <Marker
@@ -49,7 +77,7 @@ const Map = () => {
 
                 ))}
 
-                {/* Bus Markers */}
+                Bus Markers
 
                 {busPositions?.length > 0 && busPositions.map((bus: { id: any; latitude: number; longitude: number }) => (
                     bus.latitude && bus.longitude ? (
@@ -61,7 +89,7 @@ const Map = () => {
                             description="Live Bus Location"
                         />
                     ) : null
-                ))}
+                ))} */}
 
                 {/* Example Route Line
 
@@ -89,18 +117,29 @@ const styles = StyleSheet.create({
             // justifyContent: 'flex-end',
             backgroundColor: colors.backgroundPrimary,
             // height: '100%'
+            overflow: 'hidden',
+            // borderRadius: 30,
         },
     input: {
+        // backgroundColor: 'white',
         // paddingTop: 100,
         // top:70,
-        marginTop:70,
+        marginTop:60,
+        // marginBottom: 10,
+        overflow: 'hidden',
         // alignItems: "center",
-        borderRadius: 30 ,
-        borderWidth: 2,
+        borderRadius: 30,
+        borderWidth: 1,
+        // borderTopLeftRadius: 30,
+        // borderTopRightRadius: 30,
+        // borderTopWidth: 1,
+        // borderLeftWidth: 1,
+        // borderRightWidth: 1,
         // padding: 3,
         paddingVertical: 15,
         paddingHorizontal: 15,
         borderColor: colors.border,
+
     },
     clear: {
         color: colors.textPrimary,
