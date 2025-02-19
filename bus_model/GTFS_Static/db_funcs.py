@@ -14,9 +14,10 @@ def get_route_id_to_name_dict():
     cursor = conn.cursor()
     cursor.execute(query)
     rows = cursor.fetchall()
-    route_dict = {route_id:route_name for route_id, route_name in rows}
+    # route_dict = {route_id:route_name for route_id, route_name in rows}
+    route_json = dict(rows)
     close_connection(conn)
-    return route_dict
+    return route_json
 
 
 if __name__ == "__main__":

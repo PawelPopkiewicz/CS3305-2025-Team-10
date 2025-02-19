@@ -10,8 +10,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-WORKDIR /inference
-
 ENV FLASK_APP=/inference/app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 
