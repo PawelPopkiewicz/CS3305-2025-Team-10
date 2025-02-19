@@ -11,8 +11,12 @@ import fonts from "@/config/Fonts";
 
 export default function Search() {
 
+    const [selected, setSelected] = useState(null);
     const [text, setText] = useState("");
     const inputRef = useRef(null);
+    const changeFilter = (filter) => {
+        setSelected(filter);
+    };
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -42,24 +46,24 @@ export default function Search() {
             <View style={styles.filters}>
 
                 <TouchableOpacity
-                style={styles.filterNotSelected}
-                // {/* onPress={() => handlePress(item.title)} */}
+                style={[styles.filter, {backgroundColor: selected === "Bus" ? colors.backgroundSecondary : colors.backgroundPrimary},]}
+                onPress={() => changeFilter("Bus")} 
                 activeOpacity={0.1}
                 >
                     <View>
-                        <Text style={styles.textSecondary}>
+                        <Text style={[{color: selected === "Bus" ? colors.objectSelected : colors.textSecondary}]}>
                             Bus
                         </Text>
                     </View>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                style={styles.filterSelected}
-                // {/* onPress={() => handlePress(item.title)} */}
+                style={[styles.filter, {backgroundColor: selected === "Stop" ? colors.backgroundSecondary : colors.backgroundPrimary},]}
+                onPress={() => changeFilter("Stop")} 
                 activeOpacity={0.1}
                 >
                     <View>
-                        <Text style={styles.textSelected}>
+                        <Text style={[{color: selected === "Stop" ? colors.objectSelected : colors.textSecondary}]}>
                             Stop
                         </Text>
                     </View>
@@ -113,21 +117,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-evenly',
     },
-    filterNotSelected: {
+    filter: {
         padding: 7,
         paddingHorizontal: 30,
         borderWidth: 1,
         borderRadius: 17,
         borderColor: colors.border,
-        backgroundColor: colors.backgroundPrimary,
-    },
-    filterSelected: {
-        padding: 7,
-        paddingHorizontal: 30,
-        borderWidth: 1,
-        borderColor: colors.border,
-        borderRadius: 17,
-        backgroundColor: colors.backgroundSecondary,
     },
     textSelected: {
         color: colors.objectSelected,
