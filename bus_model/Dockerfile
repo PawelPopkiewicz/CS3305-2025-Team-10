@@ -16,14 +16,15 @@ COPY requirements.txt .
 RUN dos2unix requirements.txt
 RUN echo "pandas">>requirements.txt
 RUN echo "psycopg">>requirements.txt
+RUN echo "gunicorn">>requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# ENV FLASK_APP=/training_data_collection/app.py
+# ENV FLASK_APP=/bus_model/app.py
 # ENV FLASK_RUN_HOST=0.0.0.0
 # 
-# EXPOSE 5000
+# EXPOSE 5002
 # 
 # RUN pip install gunicorn
-# CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+# CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5002", "app:app"]

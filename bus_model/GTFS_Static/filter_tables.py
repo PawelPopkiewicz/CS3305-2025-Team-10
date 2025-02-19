@@ -26,7 +26,8 @@ class TableFilter():
 
     def filter_tables(self):
         """Filter out the tables in the db"""
-        self.conn.autocommit = True
+        if not self.conn.autocommit:
+            self.conn.autocommit = True
         self.filter_table("routes", self.FILTER_ROUTES)
         self.filter_table("trips", self.FILTER_TRIPS)
         self.filter_table("stop_times", self.FILTER_STOP_TIMES)
@@ -35,7 +36,6 @@ class TableFilter():
         self.filter_table("calendar", self.FILTER_CALENDAR)
         self.filter_table("calendar_dates", self.FILTER_CALENDAR_DATES)
         self.cursor.execute("VACUUM;")
-        self.conn.autocommit = False
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 #!/bin/bash/
 
-PROJECT_ROOT=$(pwd | sed 's|training_data_collection/.*|training_data_collection/|' )
+PROJECT_ROOT=$(pwd | sed 's|bus_model/.*|bus_model/|' )
 
 cd ${PROJECT_ROOT}/GTFS_Static/
 

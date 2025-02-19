@@ -3,7 +3,7 @@ Convert .txt files into sqlite for easier manipulation and queries
 """
 
 
-class TableCreator():
+class TableCreator:
     """Creates sqlite table from the static info text files"""
 
     SHAPE_TABLE = """
@@ -118,7 +118,8 @@ class TableCreator():
         """
         Creates all tables needed
         """
-        self.conn.autocommit = True
+        if not self.conn.autocommit:
+            self.conn.autocommit = True
         self.create_table("shapes", self.SHAPE_TABLE)
         self.create_table("routes", self.ROUTES_TABLE)
         self.create_table("trips", self.TRIPS_TABLE)
@@ -129,11 +130,11 @@ class TableCreator():
         self.create_table("agency", self.AGENCY_TABLE)
         self.create_table("calendar", self.CALENDAR_TABLE)
         self.create_table("calendar_dates", self.CALENDAR_DATES_TABLE)
-        self.conn.autocommit = False
 
 
 if __name__ == "__main__":
-    from .db_connection import create_connection, close_connection
+    from .db_connection import close_connection, create_connection
+
     test_conn = create_connection()
     cr = TableCreator(test_conn)
     cr.create_table("chosen_routes", cr.CHOSEN_ROUTES_TABLE)

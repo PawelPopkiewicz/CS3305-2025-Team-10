@@ -115,7 +115,8 @@ class TablePopulator():
         """
         Populates tables
         """
-        self.conn.autocommit = True
+        if not self.conn.autocommit:
+            self.conn.autocommit = True
         self.populate_table("routes", self.ROUTES_FIELDS, self.ROUTES_MASK)
         self.populate_table("trips", self.TRIPS_FIELDS, self.TRIPS_MASK)
         self.populate_table("stops", self.STOPS_FIELDS, self.STOPS_MASK)
@@ -126,7 +127,6 @@ class TablePopulator():
         self.populate_table("calendar_dates", self.CALENDAR_DATES_FIELDS, self.CALENDAR_DATES_MASK)
         self.populate_table("chosen_routes", self.CHOSEN_ROUTES_FIELDS, self.CHOSEN_ROUTES_MASK)
         self.populate_route_id_to_name()
-        self.conn.autocommit = False
 
 
 if __name__ == "__main__":

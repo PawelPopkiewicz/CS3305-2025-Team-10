@@ -47,6 +47,7 @@ services:
       - .env
 
   bus_model:
+    tty: true
     build: ./bus_model
     container_name: bus_model
     depends_on:
