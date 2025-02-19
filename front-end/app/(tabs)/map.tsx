@@ -13,10 +13,27 @@ const Map = () => {
     const [text, setText] = useState("");
     const customBus = Image.resolveAssetSource(require('@/assets/images/bus.png')).uri
 
+    // const CustomMarker = ({ busNumber }) => (
+    //     <View style={{ transform: [{ rotate: `45deg` }], alignItems: 'center' }}>
+    //       {/* Image with Overlapping Text */}
+          
+          
+    //       <Image
+    //         source={{uri:customBus}}
+    //         style={{ width: 100, height: 55, resizeMode: 'contain' }}
+    //       />
+    //       <View style={{ position: 'absolute',alignItems: 'center' }}>
+    //         <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16, backgroundColor: 'rgba(0,0,0,0.6)', padding: 4, borderRadius: 5 }}>
+    //           {busNumber}
+    //         </Text>
+    //       </View>
+    //     </View>
+    //   );
+
     const CustomMarker = ({busNumber}) => (
         <View style={{ alignItems: 'center' }}>
             {/* Bus Number Label */}
-            <Text style={{ backgroundColor: 'black', padding: 4, borderRadius: 5, fontWeight: 'bold', color:'whitex ' }}>
+            <Text style={{ backgroundColor: 'black', padding: 4, borderRadius: 5, fontWeight: 'bold', color:'white' }}>
             {busNumber}
             </Text>
 
@@ -44,7 +61,10 @@ const Map = () => {
                             type="font-awesome"/>}
             >
             </Input> */}
-            <TouchableOpacity style={styles.input} onPress={() => router.push("/screens/search")}><Text style={styles.textSecondary}>Search bus stop or route</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.input} onPress={() => router.push("/screens/search")}>
+                <Icon iconStyle={styles.back} onPress={() => router.back()} name="chevron-left" type="font-awesome"/>
+                <Text style={styles.textSecondary}>Search bus stop or route</Text>
+            </TouchableOpacity>
             <MapView
                 style={{ flex: 1 }}
                 initialRegion={{
@@ -136,6 +156,7 @@ const styles = StyleSheet.create({
         // borderLeftWidth: 1,
         // borderRightWidth: 1,
         // padding: 3,
+        flexDirection: 'row',
         paddingVertical: 15,
         paddingHorizontal: 15,
         borderColor: colors.border,
@@ -146,7 +167,8 @@ const styles = StyleSheet.create({
         transform: [{rotate: "45deg"}],
     },
     back: {
-        color: colors.textPrimary
+        color: colors.textPrimary,
+        paddingRight: 10,
     },
     textSelected: {
             color: colors.objectSelected,
