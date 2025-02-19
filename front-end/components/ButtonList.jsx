@@ -7,17 +7,12 @@ import fonts from '@/config/Fonts';
 
 const ButtonList = ({buttonData}) => {
 
-    const handlePress = (title) => {
-        alert(`You pressed ${title}`);
-    };
-
     return (
         <View>
             {buttonData.map((item) => (
                 <View key={item.id} style={styles.buttonContainer}>
                     <TouchableOpacity
                     style={styles.buttonContainer}
-                    // {/* onPress={() => handlePress(item.title)} */}
                     onPress={() => router.push("/screens/stop")}
                     activeOpacity={0.1}
                     >
@@ -42,19 +37,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.backgroundPrimary,
         padding: 5,
         paddingHorizontal: 7,
-        // borderBottomWidth: 1,
-        // borderBottomColor: colors.border,
-        // justifyContent: 'left',
     },
-    // button: {
-    //     backgroundColor: colors.backgroundPrimary,
-    //     justifyContent: 'flex-start',
-    // },
-    // title: {
-    //     textAlign: 'left',
-    //     // padding: 7,
-    //     fontSize: fonts.subHeading,
-    // },
     textPrimary: {
         fontSize: fonts.subHeading,
         color: colors.textPrimary,

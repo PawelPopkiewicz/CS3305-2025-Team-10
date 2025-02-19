@@ -3,8 +3,15 @@ import {Button, Icon} from 'react-native-elements';
 import {router} from 'expo-router';
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
+import {useDispatch, useSelector} from "react-redux";
+import {RootState} from "@/app/redux/store";
+import {addFavoriteStop, removeFavoriteStop} from "@/app/redux/favSlice";
 
 export default function Stop() {
+    const stop = "WGB";
+    const favStops = useSelector((state: RootState) => state.fav.favStops);
+    const isFav = favStops.includes(stop);
+    const dispatch = useDispatch();
 return (
     <SafeAreaView
         style={styles.background}
@@ -21,11 +28,10 @@ return (
             <View style={styles.heading}>
                 <Text style={styles.textPrimary}>Stop 2232 University College, Cork</Text>
             </View>
-            {/* to be made functional once we store favourites */}
             <Button                
-                icon={<Icon iconStyle={styles.icon} name="star" type="font-awesome"/>}
+                icon={<Icon iconStyle={styles.icon} name= {isFav ? "star" : "star-o"} type="font-awesome"/>}
                 buttonStyle={styles.button}
-                onPress={() => alert("favs")}
+                onPress={() => { isFav ? dispatch(removeFavoriteStop(stop)) : dispatch(addFavoriteStop(stop)) }}
             >
 
             </Button>
@@ -39,7 +45,7 @@ return (
             <Text style={styles.textDescription}>Departs</Text>
         </View>
 
-        {/* Display each bus at selected bus stop here, make scrollView, bare bones given below */}
+        {/* Display each bus at selected bus stop here, make scrollView, bare-bones given below */}
         <ScrollView style={styles.departures}>
 
             <View style={styles.bus}>
