@@ -3,7 +3,6 @@ Provides a class to query GTFSR API
 """
 
 import os
-import urllib.request
 import json
 import requests
 from dotenv import load_dotenv
@@ -63,7 +62,7 @@ class GTFSR:
         """creates a json file in the directory from the given json data"""
         try:
             root = get_root()
-            with open(root / "training_data_collection" / "GTFS_Realtime" / "json_files" / filename, "w+", encoding="utf-8") as json_file:
+            with open(root / "GTFS_Realtime" / "json_files" / filename, "w+", encoding="utf-8") as json_file:
                 json.dump(json_data, json_file)
         except Exception as e:
             print(f"Error occured when creating a json file: {e}")

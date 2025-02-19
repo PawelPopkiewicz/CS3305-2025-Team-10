@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 def get_root():
     """Returns project root"""
     load_dotenv()
-    return Path(os.getenv("PROJECT_ROOT")).resolve()
+    return Path(os.getcwd())
 
 
 if __name__ == "__main__":

@@ -40,7 +40,7 @@ class JsonProcessor():
         """Tries to load a json file"""
         try:
             root = get_root()
-            with open(root / "training_data_collection" / "GTFS_Realtime" / "json_files" / filename, "r", encoding="utf-8") as conn:
+            with open(root / "GTFS_Realtime" / "json_files" / filename, "r", encoding="utf-8") as conn:
                 json_file = json.load(conn)
                 return json_file
         except FileNotFoundError as e:
@@ -59,7 +59,7 @@ class JsonProcessor():
         """creates a json file from the provided dict"""
         try:
             root = get_root()
-            with open(root / "training_data_collection" / "GTFS_Realtime" / "json_files" / filename, "w", encoding="utf-8") as conn:
+            with open(root / "GTFS_Realtime" / "json_files" / filename, "w", encoding="utf-8") as conn:
                 json.dump(json_data, conn)
         except FileNotFoundError as e:
             print(f"File not found: {e}")
