@@ -11,3 +11,4 @@ If you only have the `back-end` subdirectory open, you can run the following com
 python -m flask run --debug
 ```
 # Running a Production Server
+This is handled by the Docker container.
