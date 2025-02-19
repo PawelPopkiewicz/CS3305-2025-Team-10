@@ -19,7 +19,7 @@ def map_coord_to_progress(trip_id, direction, lat, lon):
     LIMIT 1;
     """
     cursor = conn.cursor()
-    cursor.execute(query, (trip_id, direction, lat, lon))
+    cursor.execute(query, (trip_id, bool(direction), lat, lon))
     dist_travelled = cursor.fetchone()
     close_connection(conn)
     return dist_travelled[0] if dist_travelled else None
@@ -27,6 +27,7 @@ def map_coord_to_progress(trip_id, direction, lat, lon):
 
 def get_next_stop_distance(distance, trip_id, direction):
     """Returns the distance of the next stop in this trip"""
+    direction = bool(direction)
     conn = create_connection()
     query = """
     SELECT stop_id
@@ -82,8 +83,9 @@ def populate_trip_distance_table(conn):
 
 def v1_get_next_stop_distance(distance, trip_id, direction):
     """prototyping the mapping"""
+    direction = bool(direction)
     get_query = """
-    SELECT sh.dist_traveled
+    SELECT sh.shape_dist_traveled
     FROM (
         SELECT *
         FROM stops AS s
@@ -97,7 +99,7 @@ def v1_get_next_stop_distance(distance, trip_id, direction):
             SELECT t.shape_id FROM trips AS t
             WHERE t.trip_id = %s AND t.direction = %s
             )
-        AND sh.dist_traveled > %s
+        AND sh.shape_dist_traveled > %s
     ORDER BY (sh.shape_pt_lat - stop.stop_lat)^2 + (sh.shape_pt_lon - stop.stop_lon)^2
     LIMIT 1;
     """
@@ -106,7 +108,7 @@ def v1_get_next_stop_distance(distance, trip_id, direction):
     cursor.execute(get_query, (trip_id, trip_id, direction, distance))
     result = cursor.fetchall()
     close_connection(conn)
-    return result
+    return result[0][0] if result else None
 
 
 if __name__ == "__main__":
