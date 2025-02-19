@@ -1,5 +1,3 @@
 /.idea/
 *__pycache__
 .env
-training_data_collection/GTFS_Realtime/json_files/
-inference/training_data/
