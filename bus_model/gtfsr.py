@@ -6,10 +6,21 @@ import datetime
 import time
 
 from dotenv import load_dotenv
+from GTFS_Static.db_connection import create_connection, close_connection
 
 
 load_dotenv()
 
+def manage_read_only_connection(func):
+    def wrapper(*args, **kwargs):
+        conn = create_connection()
+        cursor = conn.cursor()
+        try:
+            func(cursor, *args, **kwargs)
+            return cursor.fetchall()
+        finally:
+            close_connection(conn)
+    return wrapper
 
 class GTFSR:
     """A class to make requests to the GTFSR API. All methods can be used without initialising the class."""
@@ -70,7 +81,7 @@ class GTFSR:
 
 
 class StaticGTFSR:
-    """A class to parse the static csv-format GTFSR data."""
+    """A class to parse GTFSR data from the PostgreSQL db."""
     static_folder = "back-end/static_gtfsr/"
     agency  = static_folder + "agency.txt"
     stops   = static_folder + "stops.txt"
