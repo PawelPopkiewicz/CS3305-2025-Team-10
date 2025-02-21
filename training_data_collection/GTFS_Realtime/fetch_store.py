@@ -7,7 +7,7 @@ from .json_processor import JsonProcessor
 from .mongo_funcs import MongoManager
 
 
-class VehicleUpdates():
+class VehicleUpdates:
     """Provides functionality to manage fetching and storing data from GTFSR api"""
 
     def __init__(self):
@@ -15,27 +15,61 @@ class VehicleUpdates():
         self.gtfsr = GTFSR()
         self.json_processor = JsonProcessor()
 
-    def fetch_trips(self):
-        """Fetch, filter and return the vehicle json from GTFSR api"""
+    def _fetch_trips(self):
+        """Fetch and return the vehicle json from GTFSR api"""
         vehicle_trips = self.gtfsr.fetch_vehicles()
-        self.json_processor.filter_vehicles(vehicle_trips)
         return vehicle_trips
 
-    def store_trips(self, trips):
+    def _filter_trips(self, vehicle_trips):
+        """Filters the provided vehicles"""
+        self.json_processor.filter_vehicles(vehicle_trips)
+
+    def _store_trips(self, trips):
         """Store the provided trips inside the mongodb"""
-        report = {"updated_trips": 0,
-                  "added_trips": 0}
-        for trip in trips["entity"]:
-            self.mongo_manager.add_trip_update(trip, report)
+        report = self.mongo_manager.add_trips(trips)
         return report
 
-    def update_trips(self):
+    def fetch_update_trips(self):
         """Fetch, filter, store the trips"""
-        report = self.store_trips(self.fetch_trips())
-        self.close_connections()
+        trips = self._fetch_trips()
+        self._filter_trips(trips)
+        report = self._store_trips(trips)
+        self._close_connections()
         return report
 
-    def close_connections(self):
+    def update_trips(self, vehicle_trips):
+        """receives raw vehicles json, filters it and updates it"""
+        self._filter_trips(vehicle_trips)
+        report = self._store_trips(vehicle_trips)
+        self._close_connections()
+        return report
+
+    def get_trips(self):
+        """Returns the content of the mongodb"""
+        mongo_contents = self.mongo_manager.get_trips()
+        self._close_connections()
+        return mongo_contents
+
+    def get_trips_str(self):
+        """Returns the contents of the mongodb as a string"""
+        return self.mongo_manager.get_trips_string()
+
+    def generate_report(self):
+        """Generates a report on how the collection is going"""
+        return {}
+
+    def delete_trips(self):
+        """
+        Deletes the contents
+        As of now it returns an error, only way to delete is from server
+        """
+        return {"Error": "Can delete only from the server"}
+
+    def update_route_id_to_name(self, route_id_to_name):
+        """Updates the route_id_to_name dict"""
+        self.json_processor.update_route_id_to_name(route_id_to_name)
+
+    def _close_connections(self):
         """Closes all connections"""
         self.mongo_manager.close_connection()
 
