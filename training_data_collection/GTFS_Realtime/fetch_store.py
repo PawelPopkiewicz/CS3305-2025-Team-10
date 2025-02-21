@@ -5,6 +5,7 @@ Fetch the api data, process it and store it in the mongodb
 from .gtfsr import GTFSR
 from .json_processor import JsonProcessor
 from .mongo_funcs import MongoManager
+from GTFS_Realtime import json_processor
 
 
 class VehicleUpdates:
@@ -34,20 +35,17 @@ class VehicleUpdates:
         trips = self._fetch_trips()
         self._filter_trips(trips)
         report = self._store_trips(trips)
-        self._close_connections()
         return report
 
     def update_trips(self, vehicle_trips):
         """receives raw vehicles json, filters it and updates it"""
         self._filter_trips(vehicle_trips)
         report = self._store_trips(vehicle_trips)
-        self._close_connections()
         return report
 
     def get_trips(self):
         """Returns the content of the mongodb"""
         mongo_contents = self.mongo_manager.get_trips()
-        self._close_connections()
         return mongo_contents
 
     def get_trips_str(self):
@@ -69,11 +67,7 @@ class VehicleUpdates:
         """Updates the route_id_to_name dict"""
         self.json_processor.update_route_id_to_name(route_id_to_name)
 
-    def _close_connections(self):
-        """Closes all connections"""
-        self.mongo_manager.close_connection()
-
 
 if __name__ == "__main__":
     vu = VehicleUpdates()
-    print(vu.update_trips())
+    print(vu.fetch_update_trips())

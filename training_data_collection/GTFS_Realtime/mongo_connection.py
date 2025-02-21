@@ -21,6 +21,7 @@ def get_connection():
         print(f"Operational Failure: {e}")
     return None
 
+
 def close_connection(client):
     """close the client connection"""
     client.close()

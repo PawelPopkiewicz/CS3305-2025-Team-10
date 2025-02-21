@@ -2,8 +2,11 @@
 Functions to manage the mongo db
 """
 
+import atexit
 import json
+
 from bson import json_util
+
 from .mongo_connection import (COLLECTION_NAME, DATABASE_NAME,
                                close_connection, get_connection)
 
@@ -12,13 +15,16 @@ class MongoManager:
     """Manages the mongodb"""
 
     def __init__(self):
-        self.create_connection()
-
-    def create_connection(self):
-        """Sets up a connection to mongo"""
         self.client = get_connection()
         self.conn = self.client[DATABASE_NAME]
         self.collection = self.conn[COLLECTION_NAME]
+        atexit.register(self._cleanup)
+
+    def _cleanup(self):
+        """Closes the mongodb connection"""
+        self.conn = None
+        self.collection = None
+        close_connection(self.client)
 
     def print_trips(self):
         """Prints the first document in the collection"""
@@ -104,10 +110,6 @@ class MongoManager:
     def delete_trips(self):
         """Deletes all documents in the collection"""
         self.collection.delete_many({})
-
-    def close_connection(self):
-        """Closes the connection to the mongo database"""
-        close_connection(self.client)
 
 
 if __name__ == "__main__":

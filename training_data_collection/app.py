@@ -5,7 +5,6 @@ API endpoints, main entry point for the docker container
 from flask import Flask, Response, jsonify, render_template, request
 
 from GTFS_Realtime.fetch_store import VehicleUpdates
-from GTFS_Realtime.mongo_funcs import MongoManager
 
 app = Flask(__name__)
 vu = VehicleUpdates()
@@ -80,7 +79,7 @@ def delete_trips():
     return jsonify(delete_report), 400
 
 
-@app.route("route_id_to_name", methods=["PUT"])
+@app.route("/route_id_to_name", methods=["PUT"])
 def receive_route_id_to_name():
     """Receives the route_id_to_name dictionary"""
     try:
