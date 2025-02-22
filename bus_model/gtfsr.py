@@ -135,14 +135,15 @@ class StaticGTFSR:
             bus_model.Service(service_id=row[0], monday=row[1], tuesday=row[2], wednesday=row[3], thursday=row[4], friday=row[5], saturday=row[6], sunday=row[7], start_date=start_date, end_date=end_date)
 
     @classmethod
-    def read_calendar_dates(self, path=calendar_dates):
-        with open(path, 'r', encoding="utf-8") as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-            for row in csv_reader:
-                date = datetime.datetime.strptime(
-                    row['date'], self.date_format)
-                service = bus_model.Service._all[row['service_id']]
-                service.add_exception(date, int(row['exception_type']))
+    @manage_read_only_connection
+    def get_calendar_dates(cursor, cls):
+        query = """SELECT * FROM CALENDAR_DATES"""
+        cursor.execute(query)
+        res = cursor.fetchall()
+        for row in res:
+            date = datetime.datetime.strptime(row[1], cls.date_format)
+            service = bus_model.Service._all[row[0]]
+            service.add_exception(date, int(row[2]))
 
     @classmethod
     def read_shapes(self, path=shapes):
