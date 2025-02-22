@@ -17,7 +17,6 @@ def manage_read_only_connection(func):
         cursor = conn.cursor()
         try:
             func(cursor, *args, **kwargs)
-            return cursor.fetchall()
         finally:
             close_connection(conn)
     return wrapper
@@ -96,13 +95,15 @@ class StaticGTFSR:
     time_format = "%H:%M:%S"
     cork_trip_ids = static_folder + "cork_trip_ids.txt"
 
+
     @classmethod
-    def read_routes(self, path=routes):
-        with open(path, 'r', encoding="utf-8") as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-            for row in csv_reader:
-                bus_model.Route(row['route_id'], row['agency_id'],
-                                row['route_short_name'], row['route_long_name'], row['route_type'])
+    @manage_read_only_connection
+    def get_routes(cursor, _):
+        query = """SELECT * FROM ROUTES"""
+        cursor.execute(query)
+        res = cursor.fetchall()
+        for row in res:
+            bus_model.Route(route_id=row[0], agency_id=row[1], route_short_name=row[2], route_long_name=row[3], route_type=row[4])
 
     @classmethod
     def read_stops(self, path=stops):
