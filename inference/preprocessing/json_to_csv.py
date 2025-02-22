@@ -7,9 +7,8 @@ from datetime import datetime
 
 import pandas as pd
 
-from coordinates_mapping import (get_next_stop_distance, map_coord_to_distance,
-                                 v1_get_next_stop_distance)
-from get_root import get_root
+from .coordinates_mapping import (map_coord_to_distance, v1_get_next_stop_distance)
+from .get_root import get_root
 
 RUSH_HOURS = (
         ("0800", "1100"),
@@ -64,18 +63,18 @@ def calc_time_to_next_stop(trips, stop_dist, current_timestamp):
     return None
 
 
-def create_csv(training_data_filename):
+def create_csv(raw_json_filename, csv_filename):
     """Creates a csv training_data"""
     rows = []
     root = get_root()
-    json_filename = training_data_filename + ".json"
+    json_filename = raw_json_filename + ".json"
     training_data_dir = root / "training_data"
     with open(training_data_dir / json_filename, "r", encoding="UTF-8") as json_data:
         data = json.load(json_data)
     for record in data:
         rows += map_record_to_rows(record)
     df = pd.DataFrame(rows)
-    csv_filename = "bus_dataset" + ".csv"
+    csv_filename = csv_filename + ".csv"
     df.to_csv(training_data_dir / csv_filename, index=False)
 
 

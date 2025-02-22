@@ -3,7 +3,7 @@ Functions which handle the mapping between coordinates and distance travelled
 main function is map_coordinates_to_progress
 """
 
-from db_connection import create_connection, close_connection
+from .db_connection import create_connection, close_connection
 
 
 def map_coord_to_distance(trip_id, direction, lat, lon):
