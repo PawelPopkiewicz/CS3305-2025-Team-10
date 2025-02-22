@@ -76,6 +76,7 @@ services:
     environment:
       MONGO_URI: "mongodb://admin:admin@mongodb:27017/?authSource=admin"
       POSTGRES_URI: "postgresql://admin:admin@postgres:5432/static_data"
+      TRAINING_URI: "http://training_data_collection:5000"
     volumes:
       - ./inference:/inference
     ports:
