@@ -146,16 +146,18 @@ class StaticGTFSR:
             service.add_exception(date, int(row[2]))
 
     @classmethod
-    def read_shapes(self, path=shapes):
-        with open(path, 'r', encoding="utf-8") as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-            for row in csv_reader:
-                shape_id = row['shape_id']
-                if shape_id not in bus_model.Shape._all:
-                    shape = bus_model.Shape(shape_id)
-                else:
-                    shape = bus_model.Shape._all[shape_id]
-                shape.add_point(row['shape_pt_lat'], row['shape_pt_lon'])
+    @manage_read_only_connection
+    def get_shapes(cursor, _):
+        query = """SELECT * FROM SHAPES"""
+        cursor.execute(query)
+        res = cursor.fetchall()
+        for row in res:
+            shape_id = row[0]
+            if shape_id not in bus_model.Shape._all:
+                shape = bus_model.Shape(shape_id)
+            else:
+                shape = bus_model.Shape._all[shape_id]
+            shape.add_point(lat=row[1], lon=row[2], sequence=row[3], dist_traveled=row[4])
 
     @classmethod
     def read_trips(self, path=trips):
