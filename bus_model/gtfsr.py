@@ -106,12 +106,13 @@ class StaticGTFSR:
             bus_model.Route(route_id=row[0], agency_id=row[1], route_short_name=row[2], route_long_name=row[3], route_type=row[4])
 
     @classmethod
-    def read_stops(self, path=stops):
-        with open(path, 'r', encoding="utf-8") as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-            for row in csv_reader:
-                bus_model.Stop(row['stop_id'], row['stop_code'] or None,
-                               row['stop_name'], row['stop_lat'], row['stop_lon'])
+    @manage_read_only_connection
+    def get_stops(cursor, _):
+        query = """SELECT * FROM STOPS"""
+        cursor.execute(query)
+        res = cursor.fetchall()
+        for row in res:
+            bus_model.Stop(stop_id=row[0], stop_code=str(int(row[1])), stop_name=row[2], stop_lat=row[3], stop_lon=row[4])
 
     @classmethod
     def read_agencies(self, path=agency):
