@@ -111,6 +111,20 @@ class MongoManager:
         """Deletes all documents in the collection"""
         self.collection.delete_many({})
 
+    def generate_report(self):
+        """Generates a report on the state of the mongodb"""
+        trip_count = self.collection.count_documents({})
+        last_trip = self.collection.find_one(sort=[("_id", -1)])
+        last_trip_time = last_trip["_id"].generation_time if last_trip else None
+        first_trip = self.collection.find_one(sort=[("_id", 1)])
+        first_trip_time = first_trip["_id"].generation_time if first_trip else None
+        report = {
+                "Trips count": trip_count,
+                "Last trip time": last_trip_time,
+                "First trip time": first_trip_time
+                }
+        return report
+
 
 if __name__ == "__main__":
     mm = MongoManager()

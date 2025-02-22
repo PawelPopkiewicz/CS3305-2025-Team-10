@@ -2,10 +2,11 @@
 Fetch the api data, process it and store it in the mongodb
 """
 
+from GTFS_Realtime import json_processor
+
 from .gtfsr import GTFSR
 from .json_processor import JsonProcessor
 from .mongo_funcs import MongoManager
-from GTFS_Realtime import json_processor
 
 
 class VehicleUpdates:
@@ -54,7 +55,8 @@ class VehicleUpdates:
 
     def generate_report(self):
         """Generates a report on how the collection is going"""
-        return {}
+        report = self.mongo_manager.generate_report()
+        return report
 
     def delete_trips(self):
         """
