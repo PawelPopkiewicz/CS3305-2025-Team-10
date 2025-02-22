@@ -115,11 +115,13 @@ class StaticGTFSR:
             bus_model.Stop(stop_id=row[0], stop_code=str(int(row[1])), stop_name=row[2], stop_lat=row[3], stop_lon=row[4])
 
     @classmethod
-    def read_agencies(self, path=agency):
-        with open(path, 'r', encoding="utf-8") as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-            for row in csv_reader:
-                bus_model.Agency(row['agency_id'], row['agency_name'])
+    @manage_read_only_connection
+    def get_agencies(cursor, _):
+        query = """SELECT * FROM AGENCY"""
+        cursor.execute(query)
+        res = cursor.fetchall()
+        for row in res:
+            bus_model.Agency(agency_id=row[0], agency_name=row[1])
 
     @classmethod
     def read_calendar(self, path=calendar):
