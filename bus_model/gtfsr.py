@@ -1,6 +1,5 @@
 import requests
 import os
-import csv
 import bus_model
 import datetime
 import time
@@ -81,19 +80,8 @@ class GTFSR:
 
 class StaticGTFSR:
     """A class to parse GTFSR data from the PostgreSQL db."""
-    static_folder = "back-end/static_gtfsr/"
-    agency  = static_folder + "agency.txt"
-    stops   = static_folder + "stops.txt"
-    routes  = static_folder + "routes.txt"
-    trips   = static_folder + "trips.txt"
-    stop_times = static_folder + "stop_times.txt"   # "cork_stop_times.txt"
-    calendar = static_folder + "calendar.txt"
-    calendar_dates = static_folder + "calendar_dates.txt"
-    shapes = static_folder + "shapes.txt"
-    feed_info = static_folder + "feed_info.txt"
     date_format = "%Y%m%d"
     time_format = "%H:%M:%S"
-    cork_trip_ids = static_folder + "cork_trip_ids.txt"
 
 
     @classmethod
