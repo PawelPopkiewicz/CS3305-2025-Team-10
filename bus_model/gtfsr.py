@@ -169,29 +169,19 @@ class StaticGTFSR:
             bus_model.Trip(route_id=row[0], service_id=row[1], trip_id=row[2], trip_headsign=row[3], trip_short_name=row[4], direction_id=row[5], block_id=row[6], shape_id=row[7])
 
     @classmethod
-    def read_stop_times(self, path=stop_times):
-        # with open(self.cork_trip_ids, 'r', encoding="utf-8") as csv_file:
-        #     cork_trip_ids = set(csv_file.read().splitlines())
-
-        with open(path, 'r', encoding="utf-8") as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-            for row in csv_reader:
-                # if row['trip_id'] not in cork_trip_ids:    # Filter to cork times only to reduce size from 250mb
-                #     continue
-
-                # datetime only allows times between 0-23, so adjust the 24-29h times
-                if (t := int(row['arrival_time'][:2])) > 23:
-                    row['arrival_time'] = "0" + str(t-24) + row['arrival_time'][2:]
-                if (t := int(row['departure_time'][:2])) > 23:
-                    row['departure_time'] = "0" + str(t-24) + row['departure_time'][2:]
-                arrival_time = datetime.datetime.strptime(
-                    row['arrival_time'], self.time_format).time()
-                departure_time = datetime.datetime.strptime(
-                    row['departure_time'], self.time_format).time()
-                
-                bus_model.BusStopVisit(row['trip_id'], row['stop_id'], arrival_time, departure_time, row['stop_sequence'],
-                                       row['stop_headsign'], row['pickup_type'], row['drop_off_type'], row['timepoint'])
-
+    @manage_read_only_connection
+    def get_stop_times(cursor, _):
+        query = """SELECT * FROM STOP_TIMES"""
+        cursor.execute(query)
+        res = cursor.fetchall()
+        for row in res:
+            h, m, s = map(int, row[1].split(":"))
+            arrival_delta = datetime.timedelta(hours=h, minutes=m, seconds=s)
+            h, m, s = map(int, row[2].split(":"))
+            departure_delta = datetime.timedelta(hours=h, minutes=m, seconds=s)
+            headsign = row[5] if row[5] != "nan" else None
+            bus_model.BusStopVisit(trip_id=row[0], arrival_time=arrival_delta, departure_time=departure_delta, stop_id=row[3], stop_sequence=row[4], stop_headsign=headsign, pickup_type=row[6], drop_off_type=row[7], timepoint=row[8])
+    
     @classmethod
     def load_all_files(self):
         t = time.time()
