@@ -160,12 +160,13 @@ class StaticGTFSR:
             shape.add_point(lat=row[1], lon=row[2], sequence=row[3], dist_traveled=row[4])
 
     @classmethod
-    def read_trips(self, path=trips):
-        with open(path, 'r', encoding="utf-8") as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-            for row in csv_reader:
-                bus_model.Trip(row['trip_id'], row['route_id'], row['service_id'], row['shape_id'],
-                               row['trip_headsign'], row['trip_short_name'], row['direction_id'], row['block_id'])
+    @manage_read_only_connection
+    def get_trips(cursor, _):
+        query = """SELECT * FROM TRIPS"""
+        cursor.execute(query)
+        res = cursor.fetchall()
+        for row in res:
+            bus_model.Trip(route_id=row[0], service_id=row[1], trip_id=row[2], trip_headsign=row[3], trip_short_name=row[4], direction_id=row[5], block_id=row[6], shape_id=row[7])
 
     @classmethod
     def read_stop_times(self, path=stop_times):
