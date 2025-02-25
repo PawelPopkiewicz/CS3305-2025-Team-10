@@ -70,9 +70,9 @@ class Stop:
         self.stop_name = stop_name
         self.stop_lat = stop_lat
         self.stop_lon = stop_lon
-        self.bus_visits: list[BusStopVisit] = [] # List of BusStopVisit objects at this stop
-        self.routes: set[Route] = set()
-        self.trips: set[Trip] = set()
+        self.bus_visits: list[str] = [] # List of BusStopVisit ids at this stop
+        self.routes: set[str] = set()
+        self.trips: set[str] = set()
     
     def get_info(self) -> dict[str, str]:
         """Returns the stop's information in a dictionary."""
@@ -95,8 +95,8 @@ class Route:
         self.route_short_name = route_short_name
         self.route_long_name = route_long_name
         self.route_type = route_type
-        self.all_trips: list[Trip] = []
-        self.all_stops: set[Stop] = set()
+        self.all_trips: list[str] = []
+        self.all_stops: set[str] = set()
 
     def get_info(self) -> dict[str, str]:
         """Returns the route's information in a dictionary."""
@@ -108,16 +108,16 @@ class Route:
             "route_type": self.route_type
         }
     
-    def add_stop(self, stop: Stop):
+    def add_stop(self, stop_id: str):
         """Adds a stop to the route's list of stops."""
-        self.all_stops.add(stop)
+        self.all_stops.add(stop_id)
     
     def enumerate_stops(self):
-        for trip in self.all_trips:
-            for bus_stop_visit in trip.bus_stop_times:
+        for trip_id in self.all_trips:
+            for bus_stop_visit in Trip._all[trip_id].bus_stop_times:
                 self.add_stop(bus_stop_visit.stop.stop_id)
-        for stop in self.all_stops:
-            stop.routes.add(self)
+        for stop_id in self.all_stops:
+            self._all[stop_id].routes.add(self.route_id)
     
 class Trip:
     """A class to represent a trip and its relevant information."""
@@ -133,10 +133,10 @@ class Trip:
         self.trip_short_name = trip_short_name
         self.direction_id = direction_id
         self.block_id = block_id
-        self.bus_stop_times: list[BusStopVisit] = []
+        self.bus_stop_times: list[str] = []
         self.stop_id_stop_seq: dict[str, int] = {}
 
-        self.route.all_trips.append(self)
+        self.route.all_trips.append(self.trip_id)
     
     def get_info(self) -> dict[str, str]:
         """Returns the trip's information in a dictionary."""
@@ -191,10 +191,11 @@ class BusStopVisit:
         self.pickup_type = pickup_type
         self.drop_off_type = drop_off_type
         self.timepoint_type = timepoint_type
+        self._id = f"{trip_id}_{stop_id}_{stop_sequence}"
 
-        self.stop.bus_visits.append(self)
-        self.trip.bus_stop_times.append(self)
-        self.stop.trips.add(self.trip)
+        self.stop.bus_visits.append(self._id)
+        self.trip.bus_stop_times.append(self._id)
+        self.stop.trips.add(self.trip.trip_id)
         self.trip.stop_id_stop_seq[stop_sequence] = stop_id
 
 

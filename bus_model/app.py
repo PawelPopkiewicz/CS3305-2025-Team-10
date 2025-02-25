@@ -88,7 +88,7 @@ def route_id_to_name():
     """Fetches a mapping between route_id to route names"""
     return jsonify(get_route_id_to_name_dict())
 
-@app.route("/update", methods=["POST"])
+@app.route("/update_realtime", methods=["POST"])
 def update():
     """Takes the fetched data and populates the model."""
     data = request.get_json()
@@ -105,6 +105,19 @@ def update():
                 ... # Do stuff
             except KeyError:
                 continue
+    return "Success"
+
+@app.route("/update_static", methods=["GET"])
+def update_static():
+    """Takes the fetched data and populates the model."""
+    ... # fetch new static data
+    StaticGTFSR.load_all_files()
+    return "Success"
+
+@app.route("/update_bus", methods=["GET"])
+def update_bus():
+    """Updates the bus data."""
+    ... # fetch bus data
     return "Success"
 
 @app.errorhandler(500)
