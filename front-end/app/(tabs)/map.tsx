@@ -8,10 +8,12 @@ import {router} from "expo-router";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 
+
 const Map = () => {
     const { stops, busRoutes, busPositions } = useBusData();
     const [text, setText] = useState("");
-    const customBus = Image.resolveAssetSource(require('@/assets/images/bus.png')).uri
+    const customBus = Image.resolveAssetSource(require('@/assets/images/Bus.png')).uri
+    const customBusStop = Image.resolveAssetSource(require('@/assets/images/BusStop.png')).uri
 
     // const CustomMarker = ({ busNumber }) => (
     //     <View style={{ transform: [{ rotate: `45deg` }], alignItems: 'center' }}>
@@ -30,7 +32,7 @@ const Map = () => {
     //     </View>
     //   );
 
-    const CustomMarker = ({busNumber}) => (
+    const CustomMarkerBus = ({busNumber}) => (
         <View style={{ alignItems: 'center' }}>
             {/* Bus Number Label */}
             <Text style={{ backgroundColor: 'black', padding: 4, borderRadius: 5, fontWeight: 'bold', color:'white' }}>
@@ -45,6 +47,16 @@ const Map = () => {
             </View>
         </View>
       );
+    
+    const CustomMarkerStop = ({ }) => (
+        <View style={{ transform: [{ rotate: '0deg' }] }}> 
+            <Image
+                source={{uri:customBusStop}}
+                style={{ width: 25, height: 25, resizeMode: 'contain' }}
+            />
+            </View>
+    )
+    
 
     return (
         
@@ -81,7 +93,13 @@ const Map = () => {
                 <Marker
                 coordinate={{ latitude: 51.9000, longitude: -8.4800 }}
                 >
-                    <CustomMarker busNumber='123'/>
+                    <CustomMarkerBus busNumber='123'/>
+                </Marker>
+
+                <Marker
+                coordinate={{ latitude: 51.8000, longitude: -8.4700 }}
+                >
+                    <CustomMarkerStop />
                 </Marker>
 
                 {/* Bus Stop Markers
