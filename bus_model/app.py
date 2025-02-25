@@ -1,6 +1,6 @@
 from flask import Flask, g, abort, jsonify, request
 import time
-from gtfsr import GTFSR, StaticGTFSR
+from gtfsr import GTFSR, StaticGTFSR, BustimesAPI
 import bus_model
 from GTFS_Static.db_funcs import get_route_id_to_name_dict
 app = Flask(__name__)
@@ -117,7 +117,13 @@ def update_static():
 @app.route("/update_bus", methods=["GET"])
 def update_bus():
     """Updates the bus data."""
-    ... # fetch bus data
+    data = BustimesAPI.fetch_vehicles()
+    if data:
+        for bus in data:
+            cleaned_slug = bus["slug"].replace("ie-", "")
+            bus_obj = bus_model.Bus(slug=cleaned_slug) if cleaned_slug not in bus_model.Bus._all else bus_model.Bus._all[cleaned_slug]
+            v_type = bus.get("vehicle_type", {})
+            bus_obj.set_details(reg=bus.get("reg", ""), fleet_code=bus.get("fleet_code", ""), name=v_type.get("name", ""), fuel=v_type.get("fuel"), double_decker=v_type.get("double_decker", ""), coach=v_type.get("coach"), electric=v_type.get("electric"), livery=bus.get("livery", {}), withdrawn=bus.get("withdrawn", ""), special_features=bus.get("special_features"))
     return "Success"
 
 @app.errorhandler(500)

@@ -19,15 +19,14 @@ class Bus:
     FUEL_HYDROGEN = 5
 
 
-    def __init__(self, bus_id: str):
-        self._all[bus_id] = self
-        self.bus_id = bus_id
+    def __init__(self, slug: str):
+        self._all[slug] = self
+        self.slug = slug
     
-    def set_details(self, reg: str, fleet_code: str, slug: str, name: str, style: int, fuel: int, double_decker: bool, coach: bool, electric: bool, livery: int, withdrawn: bool, special_features: str):
+    def set_details(self, reg: str, fleet_code: str, name: str, style: int, fuel: int, double_decker: bool, coach: bool, electric: bool, livery: dict, withdrawn: bool, special_features: str):
         """Sets the details of the bus."""
         self.reg = reg
         self.fleet_code = fleet_code
-        self.slug = slug
         self.name = name
         self.style = style
         self.fuel = fuel
@@ -41,10 +40,9 @@ class Bus:
     def get_info(self) -> dict[str, str]:
         """Returns the bus's information in a dictionary."""
         return {
-            "bus_id": self.bus_id,
+            "bus_id": self.slug,
             "reg": self.reg,
             "fleet_code": self.fleet_code,
-            "slug": self.slug,
             "vehicle_details": {
                 "name": self.name,
                 "style": self.style,

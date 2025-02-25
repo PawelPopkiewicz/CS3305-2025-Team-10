@@ -20,6 +20,26 @@ def manage_read_only_connection(func):
             close_connection(conn)
     return wrapper
 
+class BustimesAPI:
+    base_url = "https://bustimes.org/api/vehicles"
+    limit = "limit=70000"
+
+    @classmethod
+    def fetch_vehicles(self) -> dict:
+        """Fetches and filters all of the vehicles from the Bustimes API."""
+        url = self.base_url + "?" + self.limit
+        try:
+            response = requests.get(url)
+        except Exception as e:
+            print(e)
+            return None
+        data = response.json()
+        vehicles: list[dict] = data.get("results", [])
+        if vehicles:
+            filtered = [vehicle for vehicle in vehicles if vehicle.get("slug", "").startswith("ie-")]
+            return filtered
+        return None
+
 class GTFSR:
     """A class to make requests to the GTFSR API. All methods can be used without initialising the class."""
     base_url = "https://api.nationaltransport.ie/gtfsr/v2/"
