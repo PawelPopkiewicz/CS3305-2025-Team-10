@@ -14,6 +14,7 @@ BACKEND_API_URL = "http://127.0.0.1:5002"
 
 # CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
+
 stops = [
     {"id": 1, "name": "Patrick Street", "code": "2021", "lat": 51.8983, "lon": -8.4731},
     {"id": 2, "name": "University College Cork", "code": "2022", "lat": 51.8935, "lon": -8.4919},
