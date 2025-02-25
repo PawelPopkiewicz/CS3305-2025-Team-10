@@ -58,7 +58,7 @@ def generate_report():
     return jsonify(report), 200
 
 
-@app.route("/training_job", methods=["POST"])
+@app.route("/training_jobs", methods=["POST"])
 @general_exception
 def create_training_job():
     """Creates a training job which fetches latest training data and retrains the model"""
@@ -72,7 +72,7 @@ def create_training_job():
     return jsonify(response), 202
 
 
-@app.route("/training_job/<model_id>", methods=["GET"])
+@app.route("/training_jobs/<model_id>", methods=["GET"])
 @general_exception
 def get_training_job_info(model_id):
     """returns the info about the model"""
