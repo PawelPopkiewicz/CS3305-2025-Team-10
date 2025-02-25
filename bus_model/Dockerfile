@@ -8,8 +8,6 @@ RUN apt-get update && apt-get install -y \
 
 RUN apt-get update && apt-get install -y libpq-dev build-essential
 
-RUN apt-get update && apt-get install -y dos2unix
-
 WORKDIR /bus_model
 
 COPY requirements.txt .
@@ -21,6 +19,10 @@ ENV FLASK_APP=/bus_model/app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 
 EXPOSE 5002
+
+# cronjob minutely running update_GTFS_Realtime.sh
+RUN chmod +x /scripts/update_GTFS_Realtime.sh
+RUN (crontab -l ; echo "* * * * * /scripts/update_GTFS_Realtime.sh") | crontab
 
 RUN pip install gunicorn
 CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5002", "app:app"]

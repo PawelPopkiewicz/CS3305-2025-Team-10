@@ -1,4 +1,4 @@
-from flask import Flask, g, abort, jsonify
+from flask import Flask, g, abort, jsonify, request
 import time
 from gtfsr import GTFSR, StaticGTFSR
 import bus_model
@@ -87,6 +87,25 @@ def bus(bus_id):
 def route_id_to_name():
     """Fetches a mapping between route_id to route names"""
     return jsonify(get_route_id_to_name_dict())
+
+@app.route("/update", methods=["POST"])
+def update():
+    """Takes the fetched data and populates the model."""
+    data = request.get_json()
+    entities = data.get("entity", [])
+    if entities:
+        for entity in entities:
+            try:
+                trip_id = entity["vehicle"]["trip"]["trip_id"]
+                route_id = entity["vehicle"]["trip"]["route_id"]
+                vehicle_id = entity["vehicle"]["vehicle"]["id"]
+                timestamp = entity["vehicle"]["timestamp"]
+                latitude = entity["vehicle"]["position"]["latitude"]
+                longitude = entity["vehicle"]["position"]["longitude"]
+                ... # Do stuff
+            except KeyError:
+                continue
+    return "Success"
 
 @app.errorhandler(500)
 def internal_server_error(e) -> dict:
