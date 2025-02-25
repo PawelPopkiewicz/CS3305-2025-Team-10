@@ -5,19 +5,19 @@
 
 ```json
 {
-	stops :
+	"stops" :
 	[
 		{
-			id: 1,
-			name: "Patrick Street",
-			lat: -51.1242,
-			lon: 43.1242
+			"id": 1,
+			"name": "Patrick Street",
+			"lat": -51.1242,
+			"lon": 43.1242
 		},
 		{
-			id: 2,
-			....
+			"id": 2,
+			"...."
 		},
-		...
+		"..."
 	]
 }
 ```
@@ -35,20 +35,20 @@
 
 ```json
 {
-	buses :
+	"buses" :
 	[
 		{
-			id: 1,
-			route: "220",
-			headsign: "MTU",
-			arrival: "14:44"
+			"id": 1,
+			"route": "220",
+			"headsign": "MTU",
+			"arrival": "14:44"
 		},
 		{
-			id: 2,
-			route: "220x",
-			....
+			"id": 2,
+			"route": "220x",
+			"...."
 		},
-		...
+		"..."
 	]
 }
 
@@ -65,21 +65,21 @@ contains: - bus.id - trip identifier - bus.route - number of the bus (i.e 220) -
 
 ```json
 {
-	buses :
+	"buses" :
 	[
 		{
-			id: 1,
-			route: "220",
-			headsign:  "MTU",
-			direction: 0
-			lat: -51.1242,
-			bus.lon: 43.1242
+			"id": 1,
+			"route": "220",
+			"headsign":  "MTU",
+			"direction": 0,
+			"lat": -51.1242,
+			"bus.lon": 43.1242
 		},
 		{
-			id: 2,
-			....
+			"id": 2,
+			"...."
 		},
-		...
+		"..."
 	]
 }
 ```
@@ -99,18 +99,18 @@ contains: - bus.id - trip identifier - bus.route - number of the bus (i.e 220) -
 
 ```json
 {
-	stops :
+	"stops" :
 	[
 		{
-			id: 1,
-			name: "Patrick Street",
-			arrival: "14:44"
+			"id": 1,
+			"name": "Patrick Street",
+			"arrival": "14:44"
 		},
 		{
-			id: 2,
-			...
+			"id": 2,
+			"..."
 		},
-		...
+		"..."
 	]
 }
 ```
