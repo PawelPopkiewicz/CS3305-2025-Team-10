@@ -1,5 +1,3 @@
-import {Trip} from "@/types/trip";
-
 export type Bus = {
     id: number;
     route: string;
@@ -7,5 +5,4 @@ export type Bus = {
     longitude: number;
     direction: number;
     headsign: string;
-    stops: Trip[];
 };

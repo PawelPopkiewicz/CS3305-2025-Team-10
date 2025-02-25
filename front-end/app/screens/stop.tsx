@@ -10,6 +10,7 @@ import {addFavoriteStop, removeFavoriteStop} from "@/app/redux/favSlice";
 export default function Stop() {
     const stop = "WGB";
     const favStops = useSelector((state: RootState) => state.fav.favStops);
+    // @ts-ignore
     const isFav = favStops.includes(stop);
     const dispatch = useDispatch();
 return (
