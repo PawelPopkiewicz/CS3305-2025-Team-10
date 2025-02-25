@@ -3,17 +3,18 @@ Preprocessing functions which transform json training data into a csv
 """
 
 import json
+import bisect
 from datetime import datetime
 
 import pandas as pd
 
-from .coordinates_mapping import (map_coord_to_distance, v1_get_next_stop_distance)
+from .coordinates_mapping import (map_coord_to_distance,
+                                  check_trip_id_exists,
+                                  get_route_name_from_trip,
+                                  get_stop_distances_for_trip)
 from .get_root import get_root
 
-RUSH_HOURS = (
-        ("0800", "1100"),
-        ("1500", "1800")
-        )
+RUSH_HOURS = (("0800", "1100"), ("1500", "1800"))
 
 
 def is_between_time(start_time, end_time, check_time):
@@ -37,80 +38,149 @@ def map_date_to_weekday(date):
     return dt.weekday() < 5
 
 
-def calc_next_stop_time(trips, stop_dist):
+def calc_interpolation(dist_1, t_1, dist_2, t_2, stop_dist):
+    """Calculates interpolation"""
+    if None in [dist_1, t_1, dist_2, t_2]:
+        return None
+
+    if dist_2 > stop_dist >= dist_1:
+        ratio = (stop_dist - dist_1) / (dist_2 - dist_1)
+        stop_time = t_1 + (t_2 - t_1) * ratio
+        return stop_time
+    return None
+
+
+def calc_next_stop_time(current_time, current_distance, trips, stop_dist):
     """
     Calculates the time the next stop is reached
     uses linear interpolation
     """
-    for i in range(len(trips) - 1, 0, -1):
-        current_trip = trips[i]
-        next_trip = trips[i - 1]
-        dist_1, t_1 = current_trip["distance"], current_trip["timestamp"]
-        dist_2, t_2 = next_trip["distance"], next_trip["timestamp"]
+    if len(trips) == 0:
+        return None
+    next_update = trips[-1]
+    stop_time = calc_interpolation(current_distance, current_time,
+                                   next_update["distance"], next_update["timestamp"],
+                                   stop_dist)
 
-        if dist_2 > stop_dist >= dist_1:
-            ratio = (stop_dist - dist_1) / (dist_2 - dist_1)
-            stop_time = t_1 + (t_2 - t_1) * ratio
+    if stop_time:
+        return stop_time
+    for i in range(len(trips) - 1, 0, -1):
+        current_update = trips[i]
+        next_update = trips[i - 1]
+        stop_time = calc_interpolation(current_update["distance"], current_update["timestamp"],
+                                       next_update["distance"], next_update["timestamp"],
+                                       stop_dist)
+        if stop_time:
             return stop_time
     return None
 
 
-def calc_time_to_next_stop(trips, stop_dist, current_timestamp):
+def calc_time_to_next_stop(trips, stop_dist, current_timestamp, current_distance):
     """Calculates the time to reach the next bus stop"""
-    stop_time = calc_next_stop_time(trips, stop_dist)
+    stop_time = calc_next_stop_time(current_timestamp, current_distance,
+                                    trips, stop_dist)
     if stop_time:
         return stop_time - current_timestamp
     return None
 
 
-def create_csv(raw_json_filename, csv_filename):
+def create_csv(raw_json_filename, csv_filename, subset_trips=None):
     """Creates a csv training_data"""
     rows = []
-    root = get_root()
     json_filename = raw_json_filename + ".json"
-    training_data_dir = root / "training_data"
+    training_data_dir = get_root() / "training_data"
     with open(training_data_dir / json_filename, "r", encoding="UTF-8") as json_data:
         data = json.load(json_data)
-    for record in data:
-        rows += map_record_to_rows(record)
+    num_of_rows_to_process = len(data)
+    if subset_trips:
+        if len(data) < subset_trips:
+            raise ValueError(
+                    "Subset of trips exceeded the overall number of trips")
+        num_of_rows_to_process = subset_trips
+    processed = 0
+    report_freq = min(50, max(num_of_rows_to_process//100, 1))
+    non_existent = 0
+    for i in range(num_of_rows_to_process):
+        if processed % report_freq == 0:
+            print(f"progress = {100*processed/num_of_rows_to_process}%")
+        processed += 1
+        row = map_record_to_rows(data[i])
+        if row is None:
+            non_existent += 1
+        else:
+            rows += row
+    print(f"Trips not found {non_existent} out of {num_of_rows_to_process}")
     df = pd.DataFrame(rows)
     csv_filename = csv_filename + ".csv"
     df.to_csv(training_data_dir / csv_filename, index=False)
+
+
+def get_next_stop_distance(distance, stop_distances):
+    """Returns the next distance based on the stop_distances provided"""
+    index = bisect.bisect_right(stop_distances, distance, key=lambda i: i[1])
+    if index < len(stop_distances):
+        return stop_distances[index][1]
+    return None
+
+
+def create_update_row_dict(trip_rows, record, stop_distances, update, trip_id, direction):
+    """Creates the row per update"""
+    timestamp = int(update["timestamp"])
+    is_rush_hour = map_time_to_rush_hours(timestamp)
+    is_weekday = map_date_to_weekday(record["start_date"])
+    distance = map_coord_to_distance(
+        trip_id, direction,
+        float(update["latitude"]), float(update["longitude"])
+    )
+    next_stop_distance = get_next_stop_distance(
+            distance, stop_distances)
+    time_to_next_stop = None
+    if next_stop_distance:
+        time_to_next_stop = calc_time_to_next_stop(
+            trip_rows, next_stop_distance, timestamp, distance
+        )
+    route_name = get_route_name_from_trip(trip_id)
+    return {
+        "trip_id": trip_id,
+        "route_name_from_trip_id": route_name,
+        "direction": direction,
+        "timestamp": timestamp,
+        "is_rush_hour": is_rush_hour,
+        "is_weekday": is_weekday,
+        "latitude_test": float(update["latitude"]),
+        "longitude_test": float(update["longitude"]),
+        "distance": distance,
+        "next_stop_distance": next_stop_distance,
+        "time_to_next_stop": time_to_next_stop,
+    }
 
 
 def map_record_to_rows(record):
     """Maps a record of bus trip to the corresponding rows"""
     trip_id = record["trip_id"]
     direction = bool(record["direction_id"])
-    route_id = record["route_id"]
+    if not check_trip_id_exists(trip_id, direction):
+        return None
+    stop_distances = get_stop_distances_for_trip(trip_id, direction)
+    for row in stop_distances:
+        print(row)
     trip_rows = []  # building it in reverse, oldest record is at index 0
-    num_of_updates = len(record["vehicle_updates"])
-    for i in range(num_of_updates - 1, -1, -1):
+    for i in range(len(record["vehicle_updates"]) - 1, -1, -1):
         update = record["vehicle_updates"][i]
-        timestamp = int(update["timestamp"])
-        distance = map_coord_to_distance(
-                trip_id, direction, float(update["latitude"]), float(update["longitude"]))
-        is_rush_hour = map_time_to_rush_hours(timestamp)
-        is_weekday = map_date_to_weekday(record["start_date"])
-        next_stop_distance = v1_get_next_stop_distance(
-                distance, trip_id, direction)
-        time_to_next_stop = calc_time_to_next_stop(trip_rows, next_stop_distance, timestamp)
-        update_row = {
-                "trip_id": trip_id,
-                "route_id": route_id,
-                "direction": direction,
-                "timestamp": timestamp,
-                "is_rush_hour": is_rush_hour,
-                "is_weekday": is_weekday,
-                "distance": distance,
-                "next_stop_distance": next_stop_distance,
-                "time_to_next_stop": time_to_next_stop
-                }
+        update_row = create_update_row_dict(
+                trip_rows, record,
+                stop_distances, update,
+                trip_id, direction)
         trip_rows.append(update_row)
     trip_rows.reverse()
-    # Potentially delete the first record as it does not have the time_to_next_stop with a valid value
+    # Potentially delete the first record as it does not have the time_to_next_stop valid value
     return trip_rows
 
 
 if __name__ == "__main__":
-    create_csv("small_data")
+    json_file = "filtered_training_data"  # input("Name of the json file(without .json): ")
+    csv_name = "test"  # input("Name of the csv file to be created: ")
+    rows_subset = input("Number of rows to process out of the dataset: ")
+    if rows_subset == "":
+        create_csv(json_file, csv_name)
+    create_csv(json_file, csv_name, int(rows_subset))

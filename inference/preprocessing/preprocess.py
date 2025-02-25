@@ -9,6 +9,7 @@ from .json_to_csv import create_csv
 RAW_TRAINING_DATA_FILENAME = "raw_training_data"
 CSV_DATASET = "bus_times_dataset"
 
+
 def fetch_convert_training_data():
     """Fetches the data from training_data_collection
     Converts it to a csv"""
