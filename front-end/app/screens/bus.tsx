@@ -1,4 +1,4 @@
-import {SafeAreaView, StyleSheet, Text, View} from "react-native";
+import {Platform, SafeAreaView, StyleSheet, Text, View} from "react-native";
 import {Button, Icon} from 'react-native-elements';
 import {router} from 'expo-router';
 import colors from "@/config/Colors";
@@ -70,7 +70,7 @@ return (
 
 const styles = StyleSheet.create({
     background: {
-        // paddingTop: Platform.OS === 'android' ? 20 : 0,
+        paddingTop: Platform.OS === 'android' ? 20 : 0,
         // paddingTop: 20,
         flex: 1,
         // justifyContent: 'flex-end',

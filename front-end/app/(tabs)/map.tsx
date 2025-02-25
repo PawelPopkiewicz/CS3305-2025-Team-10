@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {View, Text, StyleSheet, TouchableOpacity, Image} from "react-native";
+import {View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView, Platform} from "react-native";
 import {Icon, Input} from '@rneui/themed';
 import MapView, {Marker} from "react-native-maps";
 import {useBusData} from "@/hooks/useBusData";
@@ -60,7 +60,7 @@ const Map = () => {
 
     return (
         
-        <View style={styles.background}>
+        <SafeAreaView style={styles.background}>
 
             {/* <Input
             inputStyle={styles.textPrimary}
@@ -143,7 +143,7 @@ const Map = () => {
 
             </MapView>
             
-        </View>
+        </SafeAreaView>
     );
 };
 
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
         // backgroundColor: 'white',
         // paddingTop: 100,
         // top:70,
-        marginTop:60,
+        marginTop: Platform.OS === 'android' ? 20 : 0,
         // marginBottom: 10,
         overflow: 'hidden',
         // alignItems: "center",

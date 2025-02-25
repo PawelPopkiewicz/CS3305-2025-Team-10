@@ -1,4 +1,4 @@
-import {SafeAreaView, ScrollView, StyleSheet, Text, View} from "react-native";
+import {Platform, SafeAreaView, ScrollView, StyleSheet, Text, View} from "react-native";
 import {Button, Icon} from 'react-native-elements';
 import {router} from 'expo-router';
 import colors from "@/config/Colors";
@@ -66,7 +66,7 @@ return (
 
 const styles = StyleSheet.create({
     background: {
-        // paddingTop: Platform.OS === 'android' ? 20 : 0,
+        paddingTop: Platform.OS === 'android' ? 20 : 0,
         // paddingTop: 20,
         flex: 1,
         // justifyContent: 'flex-end',
@@ -77,16 +77,16 @@ const styles = StyleSheet.create({
         alignItems: "center",
         flexDirection: 'row',
         height: '10%',
-        width: '100%',
+        // width: '100%',
         backgroundColor: colors.backgroundPrimary,
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
-        padding: 3,
-        paddingHorizontal: 15,
+        // padding: 3,
+        // paddingHorizontal: 15,
     },
     heading: {
         color: colors.textPrimary,
-        flexGrow: 4,
+        // flexGrow: 1,
         flexDirection: 'column',
         fontSize: fonts.heading,
     },
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
         color: colors.textPrimary,
     },
     textPrimary: {
-        padding: 7,
+        // padding: 7,
         textAlign: 'left',
         fontSize: fonts.heading,
         color: colors.textPrimary

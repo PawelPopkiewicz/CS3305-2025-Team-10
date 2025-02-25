@@ -1,4 +1,4 @@
-import {SafeAreaView, StyleSheet, Text, View, ScrollView} from "react-native";
+import {SafeAreaView, StyleSheet, Text, View, ScrollView, Platform} from "react-native";
 import ButtonList from "@/components/ButtonList";
 import ButtonBus from "@/components/ButtonBus";
 
@@ -44,8 +44,8 @@ return (
 
 const styles = StyleSheet.create({
     background: {
-        // paddingTop: Platform.OS === 'android' ? 20 : 0,
-        paddingTop: 20,
+        paddingTop: Platform.OS === 'android' ? 20 : 0,
+        // paddingTop: 20,
         flex: 1,
         // justifyContent: 'flex-end',
         backgroundColor: colors.backgroundPrimary,
