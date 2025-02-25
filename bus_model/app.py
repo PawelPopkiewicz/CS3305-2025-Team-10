@@ -102,7 +102,9 @@ def update():
                 timestamp = entity["vehicle"]["timestamp"]
                 latitude = entity["vehicle"]["position"]["latitude"]
                 longitude = entity["vehicle"]["position"]["longitude"]
-                ... # Do stuff
+                bus = bus_model.Bus._all.get(vehicle_id, None)
+                if bus:
+                    bus.add_live_update(trip_id=trip_id, route_id=route_id, timestamp=timestamp, latitude=latitude, longitude=longitude)
             except KeyError:
                 continue
     return "Success"

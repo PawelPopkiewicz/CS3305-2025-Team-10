@@ -37,6 +37,14 @@ class Bus:
         self.withdrawn = withdrawn
         self.special_features = special_features
     
+    def add_live_update(self, trip_id: str, route_id: str, timestamp: int, latitude: float, longitude: float):
+        """Populates the object with the latest live bus data."""
+        self.latest_trip = trip_id
+        self.latest_route = route_id
+        self.latest_timestamp = timestamp   # Unix timestamp
+        self.lat = latitude
+        self.lon = longitude
+    
     def get_info(self) -> dict[str, str]:
         """Returns the bus's information in a dictionary."""
         return {
@@ -53,7 +61,12 @@ class Bus:
                 },
             "livery": self.livery,
             "withdrawn": self.withdrawn,
-            "special_features": self.special_features
+            "special_features": self.special_features,
+            "trip_id": self.latest_trip,
+            "route_id": self.latest_route,
+            "timestamp": self.latest_timestamp,
+            "latitude": self.lat,
+            "longitude": self.lon
         }
 
 
