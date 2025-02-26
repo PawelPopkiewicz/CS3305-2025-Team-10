@@ -17,7 +17,8 @@ export default function Search() {
     useEffect(() => {
         const timer = setTimeout(() => {
           if (inputRef.current) {
-            inputRef.current.focus(); // Open keyboard automatically
+            // @ts-ignore
+              inputRef.current.focus(); // Open keyboard automatically
           }
         }, 100); // Delay ensures the UI is ready
     
