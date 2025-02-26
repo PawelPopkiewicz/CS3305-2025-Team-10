@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {View, Text, StyleSheet, TouchableOpacity} from "react-native";
+import {View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView, Platform} from "react-native";
 import {Icon, Input} from '@rneui/themed';
 import MapView, {Marker} from "react-native-maps";
 import {useBusData} from "@/hooks/useBusData";
@@ -10,12 +10,59 @@ import fonts from "@/config/Fonts";
 import {Stop} from "@/types/stop";
 import {Bus} from "@/types/bus";
 
+
 const Map = () => {
     const { stops, buses } = useBusData();
     const [text, setText] = useState("");
+    const customBus = Image.resolveAssetSource(require('@/assets/images/Bus.png')).uri
+    const customBusStop = Image.resolveAssetSource(require('@/assets/images/BusStop.png')).uri
+
+    // const CustomMarker = ({ busNumber }) => (
+    //     <View style={{ transform: [{ rotate: `45deg` }], alignItems: 'center' }}>
+    //       {/* Image with Overlapping Text */}
+          
+          
+    //       <Image
+    //         source={{uri:customBus}}
+    //         style={{ width: 100, height: 55, resizeMode: 'contain' }}
+    //       />
+    //       <View style={{ position: 'absolute',alignItems: 'center' }}>
+    //         <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16, backgroundColor: 'rgba(0,0,0,0.6)', padding: 4, borderRadius: 5 }}>
+    //           {busNumber}
+    //         </Text>
+    //       </View>
+    //     </View>
+    //   );
+
+    const CustomMarkerBus = ({busNumber}) => (
+        <View style={{ alignItems: 'center' }}>
+            {/* Bus Number Label */}
+            <Text style={{ backgroundColor: 'black', padding: 4, borderRadius: 5, fontWeight: 'bold', color:'white' }}>
+            {busNumber}
+            </Text>
+
+            <View style={{ transform: [{ rotate: '45deg' }] }}> 
+            <Image
+                source={{uri:customBus}}
+                style={{ width: 25, height: 25, resizeMode: 'contain' }}
+            />
+            </View>
+        </View>
+      );
+    
+    const CustomMarkerStop = ({ }) => (
+        <View style={{ transform: [{ rotate: '0deg' }] }}> 
+            <Image
+                source={{uri:customBusStop}}
+                style={{ width: 25, height: 25, resizeMode: 'contain' }}
+            />
+            </View>
+    )
+    
+
     return (
         
-        <View style={styles.background}>
+        <SafeAreaView style={styles.background}>
 
             {/* <Input
             inputStyle={styles.textPrimary}
@@ -28,7 +75,10 @@ const Map = () => {
                             type="font-awesome"/>}
             >
             </Input> */}
-            <TouchableOpacity style={styles.input} onPress={() => router.push("/screens/search")}><Text style={styles.textSecondary}>Search bus stop or route</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.input} onPress={() => router.push("/screens/search")}>
+                <Icon iconStyle={styles.back} onPress={() => router.back()} name="chevron-left" type="font-awesome"/>
+                <Text style={styles.textSecondary}>Search bus stop or route</Text>
+            </TouchableOpacity>
             <MapView
                 style={{ flex: 1 }}
                 initialRegion={{
@@ -37,10 +87,12 @@ const Map = () => {
                     latitudeDelta: 0.03,
                     longitudeDelta: 0.03,
                 }}
+                rotateEnabled={false} // Prevents map rotation}
             >
                 {/* Bus Stop Markers */}
                 {stops?.length > 0 && stops.map((stop: Stop) => (
                     stop.lat && stop.lon ? (
+
                         <Marker
                         key={stop.id}
                         coordinate={{ latitude: stop.lat, longitude: stop.lon }}
@@ -51,7 +103,7 @@ const Map = () => {
 
                 ))}
 
-                {/* Bus Markers */}
+                Bus Markers
 
                 {buses?.length > 0 && buses.map((bus: Bus) => (
                     bus.lat && bus.lon ? (
@@ -63,7 +115,7 @@ const Map = () => {
                             description="Live Bus Location"
                         />
                     ) : null
-                ))}
+                ))} */}
 
                 {/* Example Route Line
 
@@ -79,7 +131,7 @@ const Map = () => {
 
             </MapView>
             
-        </View>
+        </SafeAreaView>
     );
 };
 
@@ -91,25 +143,38 @@ const styles = StyleSheet.create({
             // justifyContent: 'flex-end',
             backgroundColor: colors.backgroundPrimary,
             // height: '100%'
+            overflow: 'hidden',
+            // borderRadius: 30,
         },
     input: {
+        // backgroundColor: 'white',
         // paddingTop: 100,
         // top:70,
-        marginTop:70,
+        marginTop: Platform.OS === 'android' ? 20 : 0,
+        // marginBottom: 10,
+        overflow: 'hidden',
         // alignItems: "center",
-        borderRadius: 30 ,
-        borderWidth: 2,
+        borderRadius: 30,
+        borderWidth: 1,
+        // borderTopLeftRadius: 30,
+        // borderTopRightRadius: 30,
+        // borderTopWidth: 1,
+        // borderLeftWidth: 1,
+        // borderRightWidth: 1,
         // padding: 3,
+        flexDirection: 'row',
         paddingVertical: 15,
         paddingHorizontal: 15,
         borderColor: colors.border,
+
     },
     clear: {
         color: colors.textPrimary,
         transform: [{rotate: "45deg"}],
     },
     back: {
-        color: colors.textPrimary
+        color: colors.textPrimary,
+        paddingRight: 10,
     },
     textSelected: {
             color: colors.objectSelected,
