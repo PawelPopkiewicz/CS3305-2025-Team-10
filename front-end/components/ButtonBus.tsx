@@ -4,23 +4,27 @@ import {router} from 'expo-router';
 
 import colors from '@/config/Colors';
 import fonts from '@/config/Fonts';
+import {useBusData} from "@/hooks/useBusData";
+import {Bus} from "@/types/bus";
 
-const ButtonBus = ({buttonData}) => {
+const ButtonBus = () => {
+
+    const { buses } = useBusData();
 
     // dummy data
-    const bus = [
-        { id: 1, code: '2232', name: 'University College, Cork', arrival: '14:32' },
-        { id: 2, code: '7890', name: 'City Centre, Cork', arrival: '15:45' },
-        { id: 3, code: '4567', name: 'Kent Station, Cork', arrival: '15:00' }
-    ]
+    // const bus = [
+    //     { id: 1, code: '2232', name: 'University College, Cork', arrival: '14:32' },
+    //     { id: 2, code: '7890', name: 'City Centre, Cork', arrival: '15:45' },
+    //     { id: 3, code: '4567', name: 'Kent Station, Cork', arrival: '15:00' }
+    // ]
 
     return (
         <View>
 
             {/* create component for each bus route */}
-            {buttonData.map((item) => (
+            {buses.map((bus: Bus) => (
 
-                <View key={item.id} style={styles.buttonContainer}>
+                <View key={bus.id} style={styles.buttonContainer}>
 
                     <TouchableOpacity
                     style={styles.buttonContainer}
@@ -29,10 +33,10 @@ const ButtonBus = ({buttonData}) => {
                     >
                         <View>
                             <Text style={styles.textPrimary}>
-                                {item.title.split(",")[0]?.trim() || ""}        {/* treat text nicely */}
+                                {`Bus ${bus.route}`}       
                             </Text>
                             <Text style={styles.textSecondary}>
-                            {item.title.split(",")[1]?.trim() || ""}
+                                {`${bus.headsign}`}
                             </Text>
                         </View>
 

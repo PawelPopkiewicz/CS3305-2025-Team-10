@@ -4,23 +4,27 @@ import {router} from 'expo-router';
 
 import colors from '@/config/Colors';
 import fonts from '@/config/Fonts';
+import {useBusData} from "@/hooks/useBusData";
+import {Stop} from "@/types/stop";
 
-const ButtonList = ({buttonData}) => {
+const ButtonStop = () => {
+
+    const { stops } = useBusData();
 
     //Dummy data
-    const stop = [
-        { id: 1, route: '220', headsign: 'University College, Cork', arrival: '14:52' },
-        { id: 1, route: '220X', headsign: 'MTU', arrival: '14:42' },
-        { id: 1, route: '212', headsign: 'Patrick', arrival: '15:32' }
-    ];
+    // const stop = [
+    //     { id: 1, route: '220', headsign: 'University College, Cork', arrival: '14:52' },
+    //     { id: 1, route: '220X', headsign: 'MTU', arrival: '14:42' },
+    //     { id: 1, route: '212', headsign: 'Patrick', arrival: '15:32' }
+    // ];
 
     return (
         <View>
 
             {/* create component for each stop */}
-            {buttonData.map((item) => (
+            {stops.map((stop: Stop) => (
 
-                <View key={item.id} style={styles.buttonContainer}>
+                <View key={stop.id} style={styles.buttonContainer}>
 
                     <TouchableOpacity
                     style={styles.buttonContainer}
@@ -29,10 +33,10 @@ const ButtonList = ({buttonData}) => {
                     >
                         <View>
                             <Text style={styles.textPrimary}>
-                                {item.title.split(",")[0]?.trim() || ""}        {/* treat text nicely */}
+                                {`Stop ${stop.code}`}  
                             </Text>
                             <Text style={styles.textSecondary}>
-                            {item.title.split(",")[1]?.trim() || ""}
+                                {`${stop.name}`}  
                             </Text>
                         </View>
                     </TouchableOpacity>
@@ -59,4 +63,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default ButtonList;
+export default ButtonStop;

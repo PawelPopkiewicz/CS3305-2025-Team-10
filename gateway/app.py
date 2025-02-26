@@ -14,14 +14,14 @@ BACKEND_API_URL = "http://127.0.0.1:5002"
 
 # CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
-stops = [{"id": 1, "name": "Patrick Street", "lat": 51.8983, "lon": -8.4731},
-         {"id": 2, "name": "University College Cork", "lat": 51.8935, "lon": -8.4919}]
+stops = [{"id": 1, "name": "Patrick Street", "code": "2232", "lat": 51.8983, "lon": -8.4731},
+         {"id": 2, "name": "University College Cork", "code": "5212", "lat": 51.8935, "lon": -8.4919}]
 
 arrivingBuses = [{'id': 5, 'route': "220", "headsign": "MTU", "arrival": "14:44"},
                  {'id': 6, 'route': "220x", "headsign": "UCC", "arrival": "14:56"}]
 
-buses = [{'id': 5, 'route': "220", "headsign": "MTU", 'direction': 0, "lat": 51.8983, "lon": -8.4731},
-         {'id': 6, 'route': "220x", "headsign": "UCC", 'direction': 1, "lat": 51.8935, "lon": -8.4919}]
+buses = [{'id': 5, 'route': "220", "headsign": "MTU", 'direction': 25, "lat": 51.8983, "lon": -8.4731},
+         {'id': 6, 'route': "220x", "headsign": "UCC", 'direction': 11, "lat": 51.8935, "lon": -8.4919}]
 
 
 tripInfo = [{'id':1, 'name': "Patrick Street", 'arrival': "14:44"},

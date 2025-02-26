@@ -3,7 +3,7 @@ import {Icon, Input} from '@rneui/themed';
 import React, {useState, useRef, useEffect} from "react";
 import {router} from "expo-router";
 
-import ButtonList from "@/components/ButtonList";
+import ButtonStop from "@/components/ButtonStop";
 import ButtonBus from "@/components/ButtonBus";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
@@ -77,15 +77,11 @@ export default function Search() {
 
             {/* Display buses and stops based on search here */}
             <ScrollView>
-                <ButtonBus buttonData= {[
-                    { id: '3', title: 'Bus 220, Carrigaline - Crosshaven' },
-                    ]}/>
-                <ButtonList buttonData={[
-                    { id: '1', title: 'Stop 2232, University College Cork'},
-                ]}/>
+                <ButtonBus />
+                <ButtonStop />
 
             </ScrollView>
-            
+
         </SafeAreaView >
 
 
