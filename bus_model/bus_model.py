@@ -191,7 +191,7 @@ class Trip:
             "block_id": self.block_id
         }
     
-    def get_schedule_times(self) -> list[dict]:
+    def get_schedule_times(self) -> dict:
         """Returns a list of all timestamps for the trip.""" # this sort of should be returning something else, maybe combine into stop -> routes -> trips -> times
         all_timestamps: defaultdict = defaultdict(list)
         current_date = self.service.start_date
@@ -203,17 +203,17 @@ class Trip:
                     bus_stop_time: BusStopVisit = BusStopVisit._all[visit]
                     new_timestamp = int(current_date.timestamp()) + int(bus_stop_time.arrival_time.total_seconds())
                     timestamps.append({bus_stop_time.stop.stop_id: new_timestamp})
-                all_timestamps[current_date.date()] = timestamps
+                all_timestamps[current_date.date().strftime("%Y-%m-%d")] = timestamps
                 
         for exception in self.service.extra_exceptions:
             if exception not in self.service.cancelled_exceptions:
-                timestamps = all_timestamps[exception.date()]
+                timestamps = all_timestamps[exception.date().strftime("%Y-%m-%d")]
                 for visit in self.bus_stop_times:
                     bus_stop_time: BusStopVisit = BusStopVisit._all[visit]
                     new_timestamp = int(exception.timestamp()) + int(bus_stop_time.arrival_time.total_seconds())
                     timestamps.append({bus_stop_time.stop.stop_id: new_timestamp})
-                all_timestamps[exception.date()] = timestamps
-        return sorted(list(all_timestamps.items()), key=lambda x: x[0])
+                all_timestamps[exception.date().strftime("%Y-%m-%d")] = timestamps
+        return all_timestamps
 
 
     

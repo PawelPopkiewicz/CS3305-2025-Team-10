@@ -1,5 +1,5 @@
 from flask import Flask, g, abort, jsonify, request
-import time
+import time, datetime
 from gtfsr import GTFSR, StaticGTFSR, BustimesAPI
 import bus_model
 from GTFS_Static.db_funcs import get_route_id_to_name_dict
@@ -80,7 +80,24 @@ def shape(shape_id):
 @app.route("/v1/bus/<string:bus_id>")
 def bus(bus_id):
     """Fetches information for a specific bus based on bus_id."""
-    return generic_get_or_404(bus_model.Bus, int(bus_id))
+    all_stops: list = []
+    bus_obj = bus_model.Bus._all.get(bus_id, None)
+    if bus_obj:
+        trip = bus_model.Trip._all.get(bus_obj.latest_trip, None)
+        if trip:
+            stop_timestamps = trip.get_schedule_times()
+            today = datetime.datetime.now().strftime("%Y-%m-%d")
+            for stop, timestamp in stop_timestamps.get(today, []):
+                data = {
+                        "stop_id": stop.stop_id,
+                        "stop_code": stop.stop_code,
+                        "stop_name": stop.stop_name,
+                        "arrival": timestamp
+                        }
+                all_stops.append(data)
+            return {"stops": all_stops}
+    return abort(404)
+
 
 @app.route("/v1/bus")
 def buses():
