@@ -14,7 +14,7 @@ import {Bus} from "@/types/bus";
 const Map = () => {
     const { stops, buses } = useBusData();
     const [text, setText] = useState("");
-    const customBus = Image.resolveAssetSource(require('@/assets/images/Bus.png')).uri
+    const customBus = Image.resolveAssetSource(require('@/assets/images/bus.png')).uri
     const customBusStop = Image.resolveAssetSource(require('@/assets/images/BusStop.png')).uri
 
     // const CustomMarker = ({ busNumber }) => (
@@ -104,7 +104,7 @@ const Map = () => {
 
                 ))}
 
-                Bus Markers
+                {/* Bus Markers */}
 
                 {buses?.length > 0 && buses.map((bus: Bus) => (
                     bus.lat && bus.lon ? (

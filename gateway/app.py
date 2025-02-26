@@ -14,14 +14,28 @@ BACKEND_API_URL = "http://127.0.0.1:5002"
 
 # CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins
 
-stops = [{"id": 1, "name": "Patrick Street", "lat": 51.8983, "lon": -8.4731},
-         {"id": 2, "name": "University College Cork", "lat": 51.8935, "lon": -8.4919}]
+stops = [
+    {"id": 1, "name": "Patrick Street", "lat": 51.8983, "lon": -8.4731},
+    {"id": 2, "name": "University College Cork", "lat": 51.8935, "lon": -8.4919},
+    {"id": 3, "name": "Kent Station", "lat": 51.9043, "lon": -8.4695},
+    {"id": 4, "name": "Mahon Point", "lat": 51.9005, "lon": -8.4652},
+    {"id": 5, "name": "Blackpool", "lat": 51.9123, "lon": -8.4734},
+    {"id": 6, "name": "Douglas", "lat": 51.8772, "lon": -8.4351},
+    {"id": 7, "name": "Wilton", "lat": 51.8841, "lon": -8.5112},
+    {"id": 8, "name": "Ballincollig", "lat": 51.8865, "lon": -8.5703},
+]
 
 arrivingBuses = [{'id': 5, 'route': "220", "headsign": "MTU", "arrival": "14:44"},
                  {'id': 6, 'route': "220x", "headsign": "UCC", "arrival": "14:56"}]
 
-buses = [{'id': 5, 'route': "220", "headsign": "MTU", 'direction': 0, "lat": 51.8983, "lon": -8.4731},
-         {'id': 6, 'route': "220x", "headsign": "UCC", 'direction': 1, "lat": 51.8935, "lon": -8.4919}]
+buses = [
+    {'id': 5, 'route': "220", "headsign": "MTU", 'direction': 0, "lat": 51.8983, "lon": -8.4731},
+    {'id': 6, 'route': "220x", "headsign": "UCC", 'direction': 1, "lat": 51.8935, "lon": -8.4919},
+    {'id': 7, 'route': "215", "headsign": "Mahon Point", 'direction': 0, "lat": 51.9005, "lon": -8.4652},
+    {'id': 8, 'route': "208", "headsign": "Lotabeg", 'direction': 1, "lat": 51.9021, "lon": -8.4789},
+    {'id': 9, 'route': "205", "headsign": "Kent Station", 'direction': 0, "lat": 51.9043, "lon": -8.4695},
+    {'id': 10, 'route': "203", "headsign": "Bishopstown", 'direction': 1, "lat": 51.8927, "lon": -8.4861},
+]
 
 
 tripInfo = [{'id':1, 'name': "Patrick Street", 'arrival': "14:44"},
