@@ -7,9 +7,11 @@ import {router} from "expo-router";
 
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
+import {Stop} from "@/types/stop";
+import {Bus} from "@/types/bus";
 
 const Map = () => {
-    const { stops, busRoutes, busPositions } = useBusData();
+    const { stops, buses } = useBusData();
     const [text, setText] = useState("");
     return (
         
@@ -37,11 +39,11 @@ const Map = () => {
                 }}
             >
                 {/* Bus Stop Markers */}
-                {stops?.length > 0 && stops.map((stop: { id: any; latitude: number; longitude: number; name: string | undefined; }) => (
-                    stop.latitude && stop.longitude ? (
+                {stops?.length > 0 && stops.map((stop: Stop) => (
+                    stop.lat && stop.lon ? (
                         <Marker
                         key={stop.id}
-                        coordinate={{ latitude: stop.latitude, longitude: stop.longitude }}
+                        coordinate={{ latitude: stop.lat, longitude: stop.lon }}
                         title={stop.name}
                         description="Bus Stop"
                     />
@@ -51,11 +53,11 @@ const Map = () => {
 
                 {/* Bus Markers */}
 
-                {busPositions?.length > 0 && busPositions.map((bus: { id: any; latitude: number; longitude: number }) => (
-                    bus.latitude && bus.longitude ? (
+                {buses?.length > 0 && buses.map((bus: Bus) => (
+                    bus.lat && bus.lon ? (
                         <Marker
                             key={bus.id}
-                            coordinate={{ latitude: bus.latitude, longitude: bus.longitude }}
+                            coordinate={{ latitude: bus.lat, longitude: bus.lon }}
                             pinColor="blue"
                             title="Bus"
                             description="Live Bus Location"
