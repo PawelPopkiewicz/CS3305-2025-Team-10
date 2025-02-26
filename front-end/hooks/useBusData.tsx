@@ -1,6 +1,6 @@
 import {useEffect} from "react";
 import {useDispatch, useSelector} from "react-redux";
-import {setBusPositions, setBusStops, setLiveBuses} from "@/app/redux/busSlice";
+import {setBuses, setStops} from "@/app/redux/busSlice";
 import {RootState} from "@/app/redux/store";
 import {busApiUrl} from "@/config/constants";
 
@@ -8,28 +8,28 @@ export const useBusData = () => {
     const dispatch = useDispatch();
 
     // Select Redux state (so components can use this hook)
-    const stops = useSelector((state: RootState) => state.bus.busStops);
-    const busRoutes = useSelector((state: RootState) => state.bus.busRoutes);
-    const busPositions = useSelector((state: RootState) => state.bus.busPositions);
+    const stops = useSelector((state: RootState) => state.bus.stops);
+    const buses = useSelector((state: RootState) => state.bus.buses);
 
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                const stopsData = await fetch(`${busApiUrl}/stops`, {
+                const stopsData = await fetch(`${busApiUrl}/v1/stops`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
                     },
                 }).then((res) => res.json());
-                const routesData = await fetch(`${busApiUrl}/routes`, {
+                const busData = await fetch(`${busApiUrl}/v1/buses`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
                     },
                 }).then((res) => res.json());
-
-                dispatch(setBusStops(stopsData)); // Store in Redux
-                dispatch(setLiveBuses(routesData));
+                // console.log("fetched data")
+                // console.log(stopsData, busData);
+                dispatch(setStops(stopsData)); // Store in Redux
+                dispatch(setBuses(busData));
             } catch (error) {
                 console.error("Error fetching initial bus data:", error);
             }
@@ -40,13 +40,13 @@ export const useBusData = () => {
         // Poll live bus positions
         const interval = setInterval(async () => {
             try {
-                const positionsData = await fetch(`${busApiUrl}/positions`, {
+                const busData = await fetch(`${busApiUrl}/v1/buses`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
                     },
                 }).then((res) => res.json());
-                dispatch(setBusPositions(positionsData)); // Store live bus positions in Redux
+                dispatch(setBuses(busData)); // Store live bus positions in Redux
             } catch (error) {
                 console.error("Error fetching live bus positions:", error);
             }
@@ -55,5 +55,5 @@ export const useBusData = () => {
         return () => clearInterval(interval); // Cleanup interval on unmount
     }, [dispatch]);
 
-    return { stops, busRoutes, busPositions }; // Other components can access Redux state via this hook
+    return { stops, buses }; // Other components can access Redux state via this hook
 };

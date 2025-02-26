@@ -1,13 +1,19 @@
 import {createSlice, Dispatch, ThunkDispatch, UnknownAction} from '@reduxjs/toolkit';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-//something up with never[], need to figure out how ts works
+
+interface BusState {
+    favStops: string[];
+    //favRoutes: string[];
+}
+
+const initialState: BusState = {
+    favStops: [],
+    //favRoutes: [],
+};
+
 const favoritesSlice = createSlice({
     name: 'favorites',
-    initialState:
-        {
-            favStops: [],
-            favRoutes: [],
-        },
+    initialState,
     reducers: {
         addFavoriteStop: (state, action) => {
             // @ts-ignore

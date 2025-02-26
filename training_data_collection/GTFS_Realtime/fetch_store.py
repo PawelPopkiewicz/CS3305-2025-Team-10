@@ -42,4 +42,4 @@ class VehicleUpdates():
 
 if __name__ == "__main__":
     vu = VehicleUpdates()
-    vu.update_trips()
+    print(vu.update_trips())

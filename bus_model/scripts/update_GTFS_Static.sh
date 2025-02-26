@@ -1,4 +1,4 @@
-#!/bin/bash/
+#!/bin/bash
 
 PROJECT_ROOT=$(pwd | sed 's|bus_model/.*|bus_model/|' )
 
@@ -6,7 +6,7 @@ cd ${PROJECT_ROOT}/GTFS_Static/
 
 wget https://www.transportforireland.ie/transitData/Data/GTFS_Realtime.zip
 
-rm source_text_files/*.txt
+rm source_text_files/*.txt -f
 
 unzip -d source_text_files/ GTFS_Realtime.zip 
 

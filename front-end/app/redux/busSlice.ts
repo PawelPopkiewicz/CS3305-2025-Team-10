@@ -1,24 +1,29 @@
-import {createSlice} from "@reduxjs/toolkit";
+import {createSlice, PayloadAction} from "@reduxjs/toolkit";
+import {Bus} from "@/types/bus";
+import {Stop} from "@/types/stop";
+
+interface BusState {
+    stops: Stop[];
+    buses: Bus[];
+}
+
+const initialState: BusState = {
+    stops: [],
+    buses: [],
+};
 
 const busSlice = createSlice({
     name: "bus",
-    initialState: {
-        busStops: [],  // Static stops (loaded once)
-        busRoutes: [], // Updated every 20s
-        busPositions: []
-    },
+    initialState,
     reducers: {
-        setBusStops: (state , action) => {
-            state.busStops = action.payload;
+        setStops: (state, action: PayloadAction<Stop[]>) => {
+            state.stops = action.payload;
         },
-        setLiveBuses: (state, action) => {
-            state.busRoutes = action.payload;
+        setBuses: (state, action: PayloadAction<Bus[]>) => {
+            state.buses = action.payload;
         },
-        setBusPositions: (state, action) => {
-            state.busPositions = action.payload;
-        }
     },
 });
 
-export const { setBusStops, setLiveBuses, setBusPositions} = busSlice.actions;
+export const {setStops, setBuses} = busSlice.actions;
 export default busSlice.reducer;

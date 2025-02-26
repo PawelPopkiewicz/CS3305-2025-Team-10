@@ -4,7 +4,7 @@ Filters the response json data
 
 import json
 from .gtfsr import GTFSR
-from GTFS_Static.db_funcs import get_route_id_to_name_dict
+from .gtfs_static_funcs import get_route_id_to_name
 from .get_root import get_root
 
 
@@ -13,7 +13,8 @@ class JsonProcessor():
 
     def __init__(self):
         self.gtfsr = GTFSR()
-        self.route_id_to_name = get_route_id_to_name_dict()
+        self.route_id_to_name = get_route_id_to_name()
+        print(self.route_id_to_name)
 
     def filter_vehicles(self, vehicles_json):
         """filters the vehicles.json to only cork city"""
@@ -70,10 +71,10 @@ class JsonProcessor():
 
 if __name__ == "__main__":
     json_processor = JsonProcessor()
-    tu_json = json_processor.load_json_file("tripUpdates.json")
-    json_processor.filter_tripUpdates(tu_json)
-    json_processor.filter_tripUpdates(tu_json)
-    json_processor.create_json_file(tu_json, "filtered_tripUpdates.json")
+#     tu_json = json_processor.load_json_file("tripUpdates.json")
+#     json_processor.filter_tripUpdates(tu_json)
+#     json_processor.filter_tripUpdates(tu_json)
+#     json_processor.create_json_file(tu_json, "filtered_tripUpdates.json")
     v_json = json_processor.load_json_file("vehicles.json")
     json_processor.filter_vehicles(v_json)
     json_processor.filter_vehicles(v_json)

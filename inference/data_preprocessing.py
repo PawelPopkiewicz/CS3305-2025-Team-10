@@ -5,7 +5,7 @@ Preprocessing functions which transform json training data into a csv
 import json
 from datetime import time, datetime
 import pandas as pd
-from coordinates_mapping import map_coord_to_progress, get_next_stop_distance
+from coordinates_mapping import map_coord_to_progress, get_next_stop_distance, v1_get_next_stop_distance
 from get_root import get_root
 
 
@@ -63,7 +63,7 @@ def map_record_to_rows(record):
         progress = map_coord_to_progress(trip_id, direction, update["latitude"], update["longitude"])
         is_rush_hour = map_time_to_rush_hours(timestamp)
         is_weekday = map_date_to_weekday(record["start_date"])
-        next_stop_progress = get_next_stop_distance(progress, trip_id, direction)
+        next_stop_progress = v1_get_next_stop_distance(progress, trip_id, direction)
         if trip_rows:
             time_to_next_stop = trip_rows[-1]["timestamp"] - timestamp
         else:
@@ -83,3 +83,7 @@ def map_record_to_rows(record):
     trip_rows.reverse()
     # Potentially delete the first record as it does not have the time_to_next_stop with a valid value
     return trip_rows
+
+
+if __name__ == "__main__":
+    create_csv()

@@ -1,10 +1,11 @@
-from flask import Flask, g, abort
+from flask import Flask, g, abort, jsonify
 import time
 from gtfsr import GTFSR, StaticGTFSR
 import bus_model
+from GTFS_Static.db_funcs import get_route_id_to_name_dict
 app = Flask(__name__)
 load_before = time.time()
-StaticGTFSR.load_all_files()
+# StaticGTFSR.load_all_files()
 print(f"Loaded in {time.time() - load_before} seconds")
 print("Loaded")
 
@@ -81,6 +82,11 @@ def shape(shape_id):
 def bus(bus_id):
     """Fetches information for a specific bus based on bus_id."""
     return generic_get_or_404(bus_model.Bus, int(bus_id))
+
+@app.route("/route_id_to_name")
+def route_id_to_name():
+    """Fetches a mapping between route_id to route names"""
+    return jsonify(get_route_id_to_name_dict())
 
 @app.errorhandler(500)
 def internal_server_error(e) -> dict:

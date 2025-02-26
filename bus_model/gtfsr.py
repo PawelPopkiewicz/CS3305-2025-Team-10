@@ -15,7 +15,7 @@ class GTFSR:
     """A class to make requests to the GTFSR API. All methods can be used without initialising the class."""
     base_url = "https://api.nationaltransport.ie/gtfsr/v2/"
     format_json = "?format=json"
-    api_key = os.getenv("API_KEY", None)
+    api_key = os.getenv("api_key", None)
 
     @classmethod
     def fetch_vehicles(self) -> dict:
