@@ -14,7 +14,7 @@ import {Bus} from "@/types/bus";
 const Map = () => {
     const { stops, buses } = useBusData();
     const [text, setText] = useState("");
-    const customBus = Image.resolveAssetSource(require('@/assets/images/Bus.png')).uri
+    const customBus = Image.resolveAssetSource(require('@/assets/images/bus.png')).uri
     const customBusStop = Image.resolveAssetSource(require('@/assets/images/BusStop.png')).uri
 
     // const CustomMarker = ({ busNumber }) => (
@@ -34,30 +34,29 @@ const Map = () => {
     //     </View>
     //   );
 
-    const CustomMarkerBus = ({busNumber}) => (
-        <View style={{ alignItems: 'center' }}>
-            {/* Bus Number Label */}
-            <Text style={{ backgroundColor: 'black', padding: 4, borderRadius: 5, fontWeight: 'bold', color:'white' }}>
-            {busNumber}
-            </Text>
+    // const CustomMarkerBus = ({busNumber}) => (
+    //     <View style={{ alignItems: 'center' }}>
+    //         <Text style={{ backgroundColor: 'black', padding: 4, borderRadius: 5, fontWeight: 'bold', color:'white' }}>
+    //         {busNumber}
+    //         </Text>
 
-            <View style={{ transform: [{ rotate: '45deg' }] }}> 
-            <Image
-                source={{uri:customBus}}
-                style={{ width: 25, height: 25, resizeMode: 'contain' }}
-            />
-            </View>
-        </View>
-      );
+    //         <View style={{ transform: [{ rotate: '45deg' }] }}> 
+    //         <Image
+    //             source={{uri:customBus}}
+    //             style={{ width: 25, height: 25, resizeMode: 'contain' }}
+    //         />
+    //         </View>
+    //     </View>
+    //   );
     
-    const CustomMarkerStop = ({ }) => (
-        <View style={{ transform: [{ rotate: '0deg' }] }}> 
-            <Image
-                source={{uri:customBusStop}}
-                style={{ width: 25, height: 25, resizeMode: 'contain' }}
-            />
-            </View>
-    )
+    // const CustomMarkerStop = ({ }) => (
+    //     <View style={{ transform: [{ rotate: '0deg' }] }}> 
+    //         <Image
+    //             source={{uri:customBusStop}}
+    //             style={{ width: 25, height: 25, resizeMode: 'contain' }}
+    //         />
+    //     </View>
+    // )
     
 
     return (
@@ -98,12 +97,19 @@ const Map = () => {
                         coordinate={{ latitude: stop.lat, longitude: stop.lon }}
                         title={stop.name}
                         description="Bus Stop"
-                    />
+                        >
+                            <View> 
+                                <Image
+                                    source={{uri:customBusStop}}
+                                    style={{ width: 25, height: 25, resizeMode: 'contain' }}
+                                />
+                            </View>
+                        </Marker>
                 ): null
 
                 ))}
 
-                Bus Markers
+                {/* Bus Markers */}
 
                 {buses?.length > 0 && buses.map((bus: Bus) => (
                     bus.lat && bus.lon ? (
@@ -113,9 +119,25 @@ const Map = () => {
                             pinColor="blue"
                             title="Bus"
                             description="Live Bus Location"
-                        />
+                            onPress={() => router.push({ pathname: '/screens/bus', params: { bus: bus.id } })}
+                        >
+                            <View style={{ alignItems: 'center' }}>
+                                {/* Bus route label */}
+                                <Text style={{ backgroundColor: 'black', padding: 4, borderRadius: 5, fontWeight: 'bold', color:'white' }}>
+                                {bus.route}
+                                </Text>
+
+                                <View style={{ transform: [{ rotate: `${bus.direction}deg` }] }}> 
+                                <Image
+                                    source={{uri:customBus}}
+                                    style={{ width: 25, height: 25, resizeMode: 'contain' }}
+                                />
+                                </View>
+                            </View>
+                        </Marker>
+
                     ) : null
-                ))} */}
+                ))} 
 
                 {/* Example Route Line
 
