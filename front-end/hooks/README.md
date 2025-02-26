@@ -1,4 +1,4 @@
-## showStops()
+## getStops()
 
 - called in the map.tsx to display bus stops on the map
 - returns
@@ -9,6 +9,7 @@
 	[
 		{
 			"id": 1,
+			"code": "2232",
 			"name": "Patrick Street",
 			"lat": -51.1242,
 			"lon": 43.1242
@@ -24,9 +25,9 @@
 
 #### Parameters:
 
-- stop.id - unique identifier of the bus stop
-- stop.name - name of the bus stop, human readable
-- stop.lat, stop.lon - latitude and longitude of the bus stop, used to locate it on the map
+- stop.id(int): unique identifier of the bus stop
+- stop.name(str): name of the bus stop, human readable
+- stop.lat, stop.lon(float): latitude and longitude of the bus stop, used to locate it on the map
 
 ## getArrivingBuses(stop.id)
 
@@ -45,7 +46,7 @@
 		},
 		{
 			"id": 2,
-			"route": "220x",
+			"route": "220X",
 			"...."
 		},
 		"..."
@@ -56,9 +57,14 @@
 
 #### Parameters:
 
-contains: - bus.id - trip identifier - bus.route - number of the bus (i.e 220) - bus.headsign - trip destination (i.e MTU) - bus.arrival - predicted arrival time for bus.id
+contains:
 
-## showBuses()
+- bus.id(int): trip identifier
+- bus.route(str): number of the bus (i.e 220)
+- bus.headsign(str): trip destination (i.e MTU)
+- bus.arrival(str): predicted arrival time for bus.id
+
+## getBuses()
 
 - called in the map.tsx to display all buses on the map
 - returns
@@ -71,7 +77,7 @@ contains: - bus.id - trip identifier - bus.route - number of the bus (i.e 220) -
 			"id": 1,
 			"route": "220",
 			"headsign":  "MTU",
-			"direction": 0,
+			"direction": "25deg",
 			"lat": -51.1242,
 			"bus.lon": 43.1242
 		},
@@ -86,11 +92,11 @@ contains: - bus.id - trip identifier - bus.route - number of the bus (i.e 220) -
 
 #### Parameters:
 
-- bus.id - trip identifier
-- bus.route - number of the bus (i.e 220)
-- bus.headsign - trip destination (i.e MTU)
-- bus.direction - 0 or 1 depending on inbound or outbound travel
-- bus.lon, bus.lat - longitude and latitude to display movement of the bus
+- bus.id(int): trip identifier
+- bus.route(str): number of the bus (i.e 220)
+- bus.headsign(str): trip destination (i.e MTU)
+- bus.direction(str): an angle of inclination from top Y-axis to point to direction of movement (degrees + 'deg')
+- bus.lon, bus.lat(float): longitude and latitude to display movement of the bus
 
 ## getTripInfo(bus.id)
 
@@ -103,6 +109,7 @@ contains: - bus.id - trip identifier - bus.route - number of the bus (i.e 220) -
 	[
 		{
 			"id": 1,
+			"code": "2232",
 			"name": "Patrick Street",
 			"arrival": "14:44"
 		},
@@ -117,4 +124,8 @@ contains: - bus.id - trip identifier - bus.route - number of the bus (i.e 220) -
 
 #### Parameters:
 
-list of bus stop that this bus is visiting, (probably including the once already visited?), contains: - stop.id - unique identifier of the bus stop - stop.name - name of the bus stop, human readable - stop.arrival - predicted arrival time to this bus stop
+list of bus stop that this bus is visiting, (probably including the once already visited?), contains:
+
+- stop.id(int): unique identifier of the bus stop
+- stop.name(str): name of the bus stop, human readable
+- stop.arrival(str): predicted arrival time to this bus stop

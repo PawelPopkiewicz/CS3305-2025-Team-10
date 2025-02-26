@@ -1,4 +1,4 @@
-import {ScrollView, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {Platform, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View} from "react-native";
 import {Icon, Input} from '@rneui/themed';
 import React, {useState, useRef, useEffect} from "react";
 import {router} from "expo-router";
@@ -28,7 +28,7 @@ export default function Search() {
         return () => clearTimeout(timer);
       }, []);
     return (
-        <View style={styles.background}>
+        <SafeAreaView style={styles.background}>
 
             <Input
             ref={inputRef}
@@ -79,7 +79,7 @@ export default function Search() {
                     { id: '1', title: 'Stop 2232, University College Cork'},
                 ]}/>
             </ScrollView>
-        </View >
+        </SafeAreaView >
 
 
     );
@@ -91,8 +91,8 @@ const styles = StyleSheet.create({
         // borderBottomColor: colors.border,
     },
     background: {
-        // paddingTop: Platform.OS === 'android' ? 20 : 0,
-        paddingTop: 50,
+        paddingTop: Platform.OS === 'android' ? 20 : 0,
+        // paddingTop: 50,
         flex: 1,
         // justifyContent: 'flex-end',
         backgroundColor: colors.backgroundPrimary,

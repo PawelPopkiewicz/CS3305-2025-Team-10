@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {View, Text, StyleSheet, TouchableOpacity, Image} from "react-native";
+import {View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView, Platform} from "react-native";
 import {Icon, Input} from '@rneui/themed';
 import MapView, {Marker} from "react-native-maps";
 import {useBusData} from "@/hooks/useBusData";
@@ -8,10 +8,12 @@ import {router} from "expo-router";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 
+
 const Map = () => {
     const { stops, busRoutes, busPositions } = useBusData();
     const [text, setText] = useState("");
-    const customBus = Image.resolveAssetSource(require('@/assets/images/bus.png')).uri
+    const customBus = Image.resolveAssetSource(require('@/assets/images/Bus.png')).uri
+    const customBusStop = Image.resolveAssetSource(require('@/assets/images/BusStop.png')).uri
 
     // const CustomMarker = ({ busNumber }) => (
     //     <View style={{ transform: [{ rotate: `45deg` }], alignItems: 'center' }}>
@@ -30,7 +32,7 @@ const Map = () => {
     //     </View>
     //   );
 
-    const CustomMarker = ({busNumber}) => (
+    const CustomMarkerBus = ({busNumber}) => (
         <View style={{ alignItems: 'center' }}>
             {/* Bus Number Label */}
             <Text style={{ backgroundColor: 'black', padding: 4, borderRadius: 5, fontWeight: 'bold', color:'white' }}>
@@ -45,10 +47,20 @@ const Map = () => {
             </View>
         </View>
       );
+    
+    const CustomMarkerStop = ({ }) => (
+        <View style={{ transform: [{ rotate: '0deg' }] }}> 
+            <Image
+                source={{uri:customBusStop}}
+                style={{ width: 25, height: 25, resizeMode: 'contain' }}
+            />
+            </View>
+    )
+    
 
     return (
         
-        <View style={styles.background}>
+        <SafeAreaView style={styles.background}>
 
             {/* <Input
             inputStyle={styles.textPrimary}
@@ -81,7 +93,13 @@ const Map = () => {
                 <Marker
                 coordinate={{ latitude: 51.9000, longitude: -8.4800 }}
                 >
-                    <CustomMarker busNumber='123'/>
+                    <CustomMarkerBus busNumber='123'/>
+                </Marker>
+
+                <Marker
+                coordinate={{ latitude: 51.8000, longitude: -8.4700 }}
+                >
+                    <CustomMarkerStop />
                 </Marker>
 
                 {/* Bus Stop Markers
@@ -125,7 +143,7 @@ const Map = () => {
 
             </MapView>
             
-        </View>
+        </SafeAreaView>
     );
 };
 
@@ -144,7 +162,7 @@ const styles = StyleSheet.create({
         // backgroundColor: 'white',
         // paddingTop: 100,
         // top:70,
-        marginTop:60,
+        marginTop: Platform.OS === 'android' ? 20 : 0,
         // marginBottom: 10,
         overflow: 'hidden',
         // alignItems: "center",

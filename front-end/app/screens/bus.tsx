@@ -1,10 +1,45 @@
-import {SafeAreaView, StyleSheet, Text, View} from "react-native";
+import {Platform, SafeAreaView, StyleSheet, Text, View} from "react-native";
 import {Button, Icon} from 'react-native-elements';
-import {router} from 'expo-router';
+import {router, useLocalSearchParams} from 'expo-router';
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
+import { ScrollView } from "react-native";
+
+
+const TripInfo = ({ bus }) => (
+    // Display each bus stop of selected bus ordered by arrival time, barebones given below 
+    <ScrollView style={styles.path}>
+        {bus.map((busStop) => (
+            <View key={busStop.id} style={styles.stop}>
+                <View style={styles.first}>
+                    <Icon iconStyle={styles.busPathVisited} name="arrow-down" type="font-awesome"/>
+                </View>
+                <View style={styles.second}>
+                    <Text style={styles.textSecondary}>{`Stop ${busStop.code} ${busStop.name}`}</Text>
+                </View>
+                <View style={styles.third}>
+                    <Text style={styles.time}>{busStop.arrival}</Text>
+                </View>
+            </View>
+        ))}
+    </ScrollView>
+);
 
 export default function Bus() {
+
+        const params = useLocalSearchParams();
+        const bus = params.bus ? JSON.parse(params.bus) : [];
+
+        // const bus = [
+        //     { id: 1, code: '2232', name: 'University College, Cork', arrival: '14:32' },
+        //     { id: 2, code: '7890', name: 'City Centre, Cork', arrival: '15:45' },
+        //     { id: 3, code: '4567', name: 'Kent Station, Cork', arrival: '15:00' }
+        // ]
+
+        const sortedBus = [...bus].sort((a, b) => {
+            return a.arrival.localeCompare(b.arrival);
+        });
+
 return (
     <SafeAreaView
         style={styles.background}
@@ -49,28 +84,18 @@ return (
             </Button>
         </View>
 
-        {/* Display each bus stop of selected bus ordered by arrival time, make scrollView, barebones given below */}
-        <View style={styles.path}>
-            <View style={styles.stop}>
-                {/* Ideally, make arrows change colors depending on if the bus visited the stop yet or not */}
-                <Icon iconStyle={styles.busPathVisited} name="arrow-down" type="font-awesome"/>
-                <Text style={styles.textSecondary}>Stop 2232 University College, Cork</Text>
-                <Text style={styles.time}>14:32</Text>
-            </View>
+        <TripInfo bus={sortedBus} />
 
-            <View style={styles.stop}>
-                <Icon iconStyle={styles.busPathNotVisited} name="arrow-down" type="font-awesome"/>
-                <Text style={styles.textSecondary}>Stop 2238 Patrick Street, Cork</Text>
-                <Text style={styles.time}>14:44</Text>
-            </View>
-        </View>
     </SafeAreaView>
 );
 }
 
 const styles = StyleSheet.create({
+    first: {width: '20%'},
+    second: {width: '60%', flexShrink: 0, paddingRight: 10},
+    third: {width: '20%'},
     background: {
-        // paddingTop: Platform.OS === 'android' ? 20 : 0,
+        paddingTop: Platform.OS === 'android' ? 20 : 0,
         // paddingTop: 20,
         flex: 1,
         // justifyContent: 'flex-end',
@@ -113,7 +138,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         alignItems: 'center',
         flexDirection: 'row',
-        height: "10%",
+        // height: "10%",
         width: '100%',
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
@@ -160,8 +185,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     stop: {
-        justifyContent: 'space-evenly',
+        // justifyContent: 'space-evenly',
         flexDirection: 'row', 
         paddingTop: 20,
+        width: '100%',
     }
 });

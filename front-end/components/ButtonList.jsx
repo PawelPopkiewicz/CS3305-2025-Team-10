@@ -7,13 +7,22 @@ import fonts from '@/config/Fonts';
 
 const ButtonList = ({buttonData}) => {
 
+    //Dummy data
+    const stop = [
+        { id: 1, route: '220', headsign: 'University College, Cork', arrival: '14:52' },
+        { id: 1, route: '220X', headsign: 'MTU', arrival: '14:42' },
+        { id: 1, route: '212', headsign: 'Patrick', arrival: '15:32' }
+    ];
+
     return (
         <View>
             {buttonData.map((item) => (
                 <View key={item.id} style={styles.buttonContainer}>
                     <TouchableOpacity
                     style={styles.buttonContainer}
-                    onPress={() => router.push("/screens/stop")}
+
+                    // pass information about the chosen stop on click
+                    onPress={() => router.push({ pathname: '/screens/stop', params: { stop: JSON.stringify(stop) } })}
                     activeOpacity={0.1}
                     >
                         <View>
