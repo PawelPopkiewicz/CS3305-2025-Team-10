@@ -47,10 +47,10 @@ def test_route():
 
 
 
-@app.route('/v1/getStops', methods=['GET'])
+@app.route('/v1/stops', methods=['GET'])
 def get_stops():
 #     try:
-#         response = requests.get(f"{BACKEND_API_URL}/v1/getStops")
+#         response = requests.get(f"{BACKEND_API_URL}/v1/stops")
 #         return jsonify(response.json()), response.status_code
 #     except requests.exceptions.RequestException as e:
 #         return jsonify({"error": "Failed to fetch stops", "details": str(e)}), 500
@@ -65,10 +65,10 @@ def get_arriving_buses(id):
 #         return jsonify({"error": "Failed to fetch arriving buses", "details": str(e)}), 500
         return jsonify(arrivingBuses[id])
 
-@app.route('/v1/getBuses', methods=['GET'])
+@app.route('/v1/buses', methods=['GET'])
 def get_buses():
 #     try:
-#         response = requests.get(f"{BACKEND_API_URL}/v1/getBuses")
+#         response = requests.get(f"{BACKEND_API_URL}/v1/buses")
 #         return jsonify(response.json()), response.status_code
 #     except requests.exceptions.RequestException as e:
 #         return jsonify({"error": "Failed to fetch buses", "details": str(e)}), 500

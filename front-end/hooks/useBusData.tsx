@@ -14,13 +14,13 @@ export const useBusData = () => {
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                const stopsData = await fetch(`${busApiUrl}/v1/getStops`, {
+                const stopsData = await fetch(`${busApiUrl}/v1/stops`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
                     },
                 }).then((res) => res.json());
-                const busData = await fetch(`${busApiUrl}/v1/getBuses`, {
+                const busData = await fetch(`${busApiUrl}/v1/buses`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -40,13 +40,13 @@ export const useBusData = () => {
         // Poll live bus positions
         const interval = setInterval(async () => {
             try {
-                const positionsData = await fetch(`${busApiUrl}/v1/getBuses`, {
+                const busData = await fetch(`${busApiUrl}/v1/buses`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
                     },
                 }).then((res) => res.json());
-                dispatch(setBuses(positionsData)); // Store live bus positions in Redux
+                dispatch(setBuses(busData)); // Store live bus positions in Redux
             } catch (error) {
                 console.error("Error fetching live bus positions:", error);
             }
