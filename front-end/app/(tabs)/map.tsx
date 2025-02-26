@@ -34,6 +34,7 @@ const Map = () => {
     //     </View>
     //   );
 
+    // @ts-ignore
     const CustomMarkerBus = ({busNumber}) => (
         <View style={{ alignItems: 'center' }}>
             {/* Bus Number Label */}
@@ -115,7 +116,7 @@ const Map = () => {
                             description="Live Bus Location"
                         />
                     ) : null
-                ))} */}
+                ))}
 
                 {/* Example Route Line
 
