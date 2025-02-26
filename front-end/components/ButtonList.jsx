@@ -16,18 +16,20 @@ const ButtonList = ({buttonData}) => {
 
     return (
         <View>
+
+            {/* create component for each stop */}
             {buttonData.map((item) => (
+
                 <View key={item.id} style={styles.buttonContainer}>
+
                     <TouchableOpacity
                     style={styles.buttonContainer}
-
-                    // pass information about the chosen stop on click
-                    onPress={() => router.push({ pathname: '/screens/stop', params: { stop: JSON.stringify(stop) } })}
+                    onPress={() => router.push({ pathname: '/screens/stop', params: { stop: JSON.stringify(stop) } })}      // forward data of the selected stop to stop page
                     activeOpacity={0.1}
                     >
                         <View>
                             <Text style={styles.textPrimary}>
-                                {item.title.split(",")[0]?.trim() || ""}
+                                {item.title.split(",")[0]?.trim() || ""}        {/* treat text nicely */}
                             </Text>
                             <Text style={styles.textSecondary}>
                             {item.title.split(",")[1]?.trim() || ""}

@@ -1,7 +1,7 @@
-import {SafeAreaView, StyleSheet, Text, View, ScrollView, Platform} from "react-native";
+import {SafeAreaView, StyleSheet, Text, View, ScrollView, Platform, StatusBar} from "react-native";
+
 import ButtonList from "@/components/ButtonList";
 import ButtonBus from "@/components/ButtonBus";
-
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 
@@ -13,6 +13,7 @@ export default function Index() {
         { id: 3, code: '4567', name: 'Kent Station, Cork', arrival: '15:00' }
     ]
 return (
+
     <SafeAreaView
         style={styles.background}
     >
@@ -50,10 +51,8 @@ return (
 
 const styles = StyleSheet.create({
     background: {
-        paddingTop: Platform.OS === 'android' ? 20 : 0,
-        // paddingTop: 20,
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
         flex: 1,
-        // justifyContent: 'flex-end',
         backgroundColor: colors.backgroundPrimary,
     },
     tab: {
@@ -61,8 +60,6 @@ const styles = StyleSheet.create({
         justifyContent: "flex-end",
     },
     favourite: {
-        // padding: 7,
-        // flex: 1,
         height: 200,
         backgroundColor: colors.backgroundPrimary,
     },

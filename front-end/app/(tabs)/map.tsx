@@ -1,10 +1,10 @@
 import React, {useState} from "react";
-import {View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView, Platform} from "react-native";
-import {Icon, Input} from '@rneui/themed';
+import {View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView, Platform, StatusBar} from "react-native";
+import {Icon} from '@rneui/themed';
 import MapView, {Marker} from "react-native-maps";
-import {useBusData} from "@/hooks/useBusData";
 import {router} from "expo-router";
 
+import {useBusData} from "@/hooks/useBusData";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 import {Stop} from "@/types/stop";
@@ -63,21 +63,11 @@ const Map = () => {
         
         <SafeAreaView style={styles.background}>
 
-            {/* <Input
-            inputStyle={styles.textPrimary}
-            inputContainerStyle={styles.input}
-            value={text} // Controlled input
-            onChangeText={setText} // Update state on change
-            placeholder="Search bus stop or route"
-            rightIcon={<Icon iconStyle={styles.clear} onPress={() => setText("")} name="plus" type="font-awesome"/>}
-            leftIcon={<Icon iconStyle={styles.back} onPress={() => router.back()} name="chevron-left"
-                            type="font-awesome"/>}
-            >
-            </Input> */}
             <TouchableOpacity style={styles.input} onPress={() => router.push("/screens/search")}>
                 <Icon iconStyle={styles.back} onPress={() => router.back()} name="chevron-left" type="font-awesome"/>
                 <Text style={styles.textSecondary}>Search bus stop or route</Text>
             </TouchableOpacity>
+
             <MapView
                 style={{ flex: 1 }}
                 initialRegion={{
@@ -152,38 +142,21 @@ const Map = () => {
                 */}
 
             </MapView>
-            
         </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
     background: {
-            // paddingTop: Platform.OS === 'android' ? 20 : 0,
-            // paddingTop: 20,
-            flex: 1,
-            // justifyContent: 'flex-end',
+            flex: 1, 
             backgroundColor: colors.backgroundPrimary,
-            // height: '100%'
             overflow: 'hidden',
-            // borderRadius: 30,
         },
     input: {
-        // backgroundColor: 'white',
-        // paddingTop: 100,
-        // top:70,
-        marginTop: Platform.OS === 'android' ? 20 : 0,
-        // marginBottom: 10,
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
         overflow: 'hidden',
-        // alignItems: "center",
         borderRadius: 30,
         borderWidth: 1,
-        // borderTopLeftRadius: 30,
-        // borderTopRightRadius: 30,
-        // borderTopWidth: 1,
-        // borderLeftWidth: 1,
-        // borderRightWidth: 1,
-        // padding: 3,
         flexDirection: 'row',
         paddingVertical: 15,
         paddingHorizontal: 15,

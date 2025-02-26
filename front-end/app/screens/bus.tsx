@@ -1,26 +1,32 @@
-import {Platform, SafeAreaView, StyleSheet, Text, View} from "react-native";
+import {Platform, SafeAreaView, StyleSheet, Text, View, StatusBar} from "react-native";
 import {Button, Icon} from 'react-native-elements';
 import {router, useLocalSearchParams} from 'expo-router';
+import { ScrollView } from "react-native";
+
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
-import { ScrollView } from "react-native";
 
 
 const TripInfo = ({ bus }) => (
-    // Display each bus stop of selected bus ordered by arrival time, barebones given below 
+
+    // Display each stop of the selected bus ordered by arrival time
     <ScrollView style={styles.path}>
+
+        {/* component for each stop */}
         {bus.map((busStop) => (
+
             <View key={busStop.id} style={styles.stop}>
                 <View style={styles.first}>
                     <Icon iconStyle={styles.busPathVisited} name="arrow-down" type="font-awesome"/>
                 </View>
                 <View style={styles.second}>
-                    <Text style={styles.textSecondary}>{`Stop ${busStop.code} ${busStop.name}`}</Text>
+                    <Text style={styles.textSecondary}>{`Stop ${busStop.code} ${busStop.name}`}</Text>      {/* Stop info i.e. Stop 223 University College Cork */}
                 </View>
                 <View style={styles.third}>
-                    <Text style={styles.time}>{busStop.arrival}</Text>
+                    <Text style={styles.time}>{busStop.arrival}</Text>      {/* arrival time */}
                 </View>
             </View>
+
         ))}
     </ScrollView>
 );
@@ -48,17 +54,17 @@ return (
         <View style={styles.bus}>
             <Button
                 icon={<Icon iconStyle={styles.icon} name="chevron-left" type="font-awesome"/>}
-                buttonStyle={styles.button}
+                buttonStyle={styles.button}     // go back button
                 onPress={() => router.back()}
                 >
             </Button>
 
             <View style={styles.route}>
-                <Text style={styles.textPrimary}>220</Text>
+                <Text style={styles.textPrimary}>220</Text>     {/*bus route */}
             </View>
 
             <View style={styles.heading}>
-                <Text style={styles.textPrimary}>Carrigaline-Crosshaven</Text>
+                <Text style={styles.textPrimary}>Carrigaline-Crosshaven</Text>  {/*bus headsign */}
             </View>
 
             {/* to be made functional once we store favourites */}
@@ -91,19 +97,23 @@ return (
 }
 
 const styles = StyleSheet.create({
-    first: {width: '20%'},
-    second: {width: '60%', flexShrink: 0, paddingRight: 10},
-    third: {width: '20%'},
+    first: {
+        width: '20%'
+    },
+    second: {
+        width: '60%',
+        flexShrink: 0,
+        paddingRight: 10
+    },
+    third: {
+        width: '20%'
+    },
     background: {
-        paddingTop: Platform.OS === 'android' ? 20 : 0,
-        // paddingTop: 20,
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
         flex: 1,
-        // justifyContent: 'flex-end',
         backgroundColor: colors.backgroundPrimary,
-        // height: '100%'
     },
     bus: {
-        // alignContent: 'center',
         alignItems: 'center',
         flexDirection: 'row',
         height: '10%',
@@ -115,8 +125,6 @@ const styles = StyleSheet.create({
     route: {
         backgroundColor: colors.backgroundSecondary,
         color: colors.textPrimary,
-        // flexGrow: 1,
-        // justifyContent: 'center',
         fontSize: fonts.heading,
     },
     heading: {
@@ -138,7 +146,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         alignItems: 'center',
         flexDirection: 'row',
-        // height: "10%",
         width: '100%',
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
@@ -147,14 +154,9 @@ const styles = StyleSheet.create({
         height: '70%'
     },
     busPathVisited: {
-        // flexBasis: 'auto',
-        // flexShrink: 3,
-        // transform: [{rotate: "80deg"}],
         color: colors.objectSelected,
     },
     busPathNotVisited: {
-        // width: '20%',
-        // flex: 1,
         color: colors.objectNotSelected,
     },
     textPrimary: {
@@ -164,16 +166,11 @@ const styles = StyleSheet.create({
         color: colors.textPrimary
     },
     textSecondary: {
-        // flexBasis: 100,
-        // flex: 1,
-        // width: '20%',
         color: colors.textPrimary,
-        // alignSelf: 'flex-end',
         fontSize: fonts.subHeading,
     },
     time: {
         color: colors.textPrimary,
-        // alignItems: 'flex-end',
         fontSize: fonts.subHeading,
     },
     textDescription: {
@@ -185,7 +182,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     stop: {
-        // justifyContent: 'space-evenly',
         flexDirection: 'row', 
         paddingTop: 20,
         width: '100%',
