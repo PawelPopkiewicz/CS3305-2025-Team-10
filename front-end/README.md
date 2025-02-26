@@ -16,13 +16,15 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
     npx expo start
    ```
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
+3. install ngrok and make an account
+   https://ngrok.com/blog-post/introducing-internal-endpoints
+4. run ngrok when running the gateway container
+```bash
+   ngrok http http://localhost:5004
+```
+5. Copy over the redirection url to config/constants.ts and never push it
+   
+   
 ## Learn more
 
 To learn more about developing your project with Expo, look at the following resources:
