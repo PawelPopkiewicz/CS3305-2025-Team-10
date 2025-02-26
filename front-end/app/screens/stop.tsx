@@ -1,16 +1,50 @@
 import {Platform, SafeAreaView, ScrollView, StyleSheet, Text, View} from "react-native";
 import {Button, Icon} from 'react-native-elements';
-import {router} from 'expo-router';
+import {router, useLocalSearchParams} from 'expo-router';
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 import {useDispatch, useSelector} from "react-redux";
 import {RootState} from "@/app/redux/store";
 import {addFavoriteStop, removeFavoriteStop} from "@/app/redux/favSlice";
 
+const ArrivingBuses = ({ stop }) => (
+    // Display each arriving bus of selected bus stop ordered by arrival time, barebones given below 
+
+    <ScrollView style={styles.departures}>
+        {stop.map((bus) => (
+            <View key={bus.id} style={styles.bus}>
+                <View style={styles.first}>
+                    <Text style={styles.textSecondary}>{`${bus.route}`}</Text>
+                </View>
+                <View style={styles.second}>
+                    <Text style={styles.textSecondary}>{`${bus.headsign}`}</Text>
+                </View>
+                <View style={styles.third}>
+                    <Text style={styles.textSecondary}>{`${bus.arrival}`}</Text>
+                </View>
+            </View>
+        ))}
+    </ScrollView>
+);
+
 export default function Stop() {
-    const stop = "WGB";
+
+    const params = useLocalSearchParams();
+    const stop = params.stop ? JSON.parse(params.stop) : [];
+    
+    // const bus = [
+    //     { id: 1, code: '2232', name: 'University College, Cork', arrival: '14:32' },
+    //     { id: 2, code: '7890', name: 'City Centre, Cork', arrival: '15:45' },
+    //     { id: 3, code: '4567', name: 'Kent Station, Cork', arrival: '15:00' }
+    // ]
+    
+    const sortedStop = [...stop].sort((a, b) => {
+        return a.arrival.localeCompare(b.arrival);
+    });
+
+    const stopFav = "WGB";
     const favStops = useSelector((state: RootState) => state.fav.favStops);
-    const isFav = favStops.includes(stop);
+    const isFav = favStops.includes(stopFav);
     const dispatch = useDispatch();
 return (
     <SafeAreaView
@@ -31,7 +65,7 @@ return (
             <Button                
                 icon={<Icon iconStyle={styles.icon} name= {isFav ? "star" : "star-o"} type="font-awesome"/>}
                 buttonStyle={styles.button}
-                onPress={() => { isFav ? dispatch(removeFavoriteStop(stop)) : dispatch(addFavoriteStop(stop)) }}
+                onPress={() => { isFav ? dispatch(removeFavoriteStop(stopFav)) : dispatch(addFavoriteStop(stopFav)) }}
             >
 
             </Button>
@@ -52,35 +86,8 @@ return (
 
         </View>
 
-        {/* Display each bus at selected bus stop here, make scrollView, bare-bones given below */}
-        <ScrollView style={styles.departures}>
+        <ArrivingBuses stop={sortedStop} />
 
-            <View style={styles.bus}>
-                <View style={styles.first}>
-                    <Text style={styles.textSecondary}>220</Text>
-                </View>
-                <View style={styles.second}>
-                    <Text style={styles.textSecondary}>Fort Camden</Text>
-                </View>
-                <View style={styles.third}>
-                    <Text style={styles.textSecondary}>6 mins</Text>
-                </View>
-            
-            </View>
-            <View style={styles.bus}>
-
-                <View style={styles.first}>
-                    <Text style={styles.textSecondary}>214</Text>
-                </View>
-                <View style={styles.second}>
-                    <Text style={styles.textSecondary}>Glanmire</Text>
-                </View>
-                <View style={styles.third}>
-                    <Text style={styles.textSecondary}>12 mins</Text>
-                </View>
-            </View>
-
-        </ScrollView>
     </SafeAreaView>
 );
 }

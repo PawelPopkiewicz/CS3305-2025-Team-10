@@ -1,13 +1,13 @@
 import {Platform, SafeAreaView, StyleSheet, Text, View} from "react-native";
 import {Button, Icon} from 'react-native-elements';
-import {router} from 'expo-router';
+import {router, useLocalSearchParams} from 'expo-router';
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 import { ScrollView } from "react-native";
 
 
 const TripInfo = ({ bus }) => (
-    // Display each bus stop of selected bus ordered by arrival time, make scrollView, barebones given below 
+    // Display each bus stop of selected bus ordered by arrival time, barebones given below 
     <ScrollView style={styles.path}>
         {bus.map((busStop) => (
             <View key={busStop.id} style={styles.stop}>
@@ -18,7 +18,7 @@ const TripInfo = ({ bus }) => (
                     <Text style={styles.textSecondary}>{`Stop ${busStop.code} ${busStop.name}`}</Text>
                 </View>
                 <View style={styles.third}>
-                    <Text style={styles.time}>{busStop.time}</Text>
+                    <Text style={styles.time}>{busStop.arrival}</Text>
                 </View>
             </View>
         ))}
@@ -27,11 +27,18 @@ const TripInfo = ({ bus }) => (
 
 export default function Bus() {
 
-        const bus = [
-            { id: 1, code: '2232', name: 'Stop 2232 University College, Cork', arrival: '14:32' },
-            { id: 2, code: '2232', name: 'Stop 4567 City Centre, Cork', arrival: '14:45' },
-            { id: 3, code: '2232', name: 'Stop 7890 Kent Station, Cork', arrival: '15:00' }
-        ]
+        const params = useLocalSearchParams();
+        const bus = params.bus ? JSON.parse(params.bus) : [];
+
+        // const bus = [
+        //     { id: 1, code: '2232', name: 'University College, Cork', arrival: '14:32' },
+        //     { id: 2, code: '7890', name: 'City Centre, Cork', arrival: '15:45' },
+        //     { id: 3, code: '4567', name: 'Kent Station, Cork', arrival: '15:00' }
+        // ]
+
+        const sortedBus = [...bus].sort((a, b) => {
+            return a.arrival.localeCompare(b.arrival);
+        });
 
 return (
     <SafeAreaView
@@ -77,7 +84,7 @@ return (
             </Button>
         </View>
 
-        <TripInfo bus={bus} />
+        <TripInfo bus={sortedBus} />
 
     </SafeAreaView>
 );
@@ -85,7 +92,7 @@ return (
 
 const styles = StyleSheet.create({
     first: {width: '20%'},
-    second: {width: '60%', flexShrink: 0},
+    second: {width: '60%', flexShrink: 0, paddingRight: 10},
     third: {width: '20%'},
     background: {
         paddingTop: Platform.OS === 'android' ? 20 : 0,

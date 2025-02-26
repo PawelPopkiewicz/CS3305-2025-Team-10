@@ -7,6 +7,11 @@ import fonts from '@/config/Fonts';
 
 const ButtonBus = ({buttonData}) => {
 
+    const bus = [
+        { id: 1, code: '2232', name: 'University College, Cork', arrival: '14:32' },
+        { id: 2, code: '7890', name: 'City Centre, Cork', arrival: '15:45' },
+        { id: 3, code: '4567', name: 'Kent Station, Cork', arrival: '15:00' }
+    ]
     const handlePress = (title) => {
         alert(`You pressed ${title}`);
     };
@@ -18,7 +23,7 @@ const ButtonBus = ({buttonData}) => {
                     <TouchableOpacity
                     style={styles.buttonContainer}
                     // {/* onPress={() => handlePress(item.title)} */}
-                    onPress={() => router.push("/screens/bus")}
+                    onPress={() => router.push({ pathname: '/screens/bus', params: { bus: JSON.stringify(bus) } })}
                     activeOpacity={0.1}
                     >
                         <View>
