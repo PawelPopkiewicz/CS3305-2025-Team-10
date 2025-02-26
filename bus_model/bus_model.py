@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from time import time
+from collections import defaultdict
 
 class Bus:
     """A class to represent a bus and its relevant information."""
@@ -190,23 +191,29 @@ class Trip:
             "block_id": self.block_id
         }
     
-    def get_times(self) -> list[datetime]:
+    def get_schedule_times(self) -> list[dict]:
         """Returns a list of all timestamps for the trip.""" # this sort of should be returning something else, maybe combine into stop -> routes -> trips -> times
-        timestamps: list[datetime] = []
+        all_timestamps: defaultdict = defaultdict(list)
         current_date = self.service.start_date
         while current_date <= self.service.end_date:
             day = current_date.weekday()
-            if self.service.schedule_days[day]:
-                if current_date not in self.service.cancelled_exceptions:
-                    for visit in self.bus_stop_times:
-                        new_timestamp = current_date.combine(current_date, visit.arrival_time)
-                        timestamps.append(new_timestamp)
+            if self.service.schedule_days[day] and current_date not in self.service.cancelled_exceptions:
+                timestamps: list[int] = []
+                for visit in self.bus_stop_times:
+                    bus_stop_time: BusStopVisit = BusStopVisit._all[visit]
+                    new_timestamp = int(current_date.timestamp()) + int(bus_stop_time.arrival_time.total_seconds())
+                    timestamps.append({bus_stop_time.stop.stop_id: new_timestamp})
+                all_timestamps[current_date.date()] = timestamps
+                
         for exception in self.service.extra_exceptions:
             if exception not in self.service.cancelled_exceptions:
+                timestamps = all_timestamps[exception.date()]
                 for visit in self.bus_stop_times:
-                    new_timestamp = exception.combine(exception, visit.arrival_time)
-                    timestamps.append(new_timestamp)
-        return timestamps
+                    bus_stop_time: BusStopVisit = BusStopVisit._all[visit]
+                    new_timestamp = int(exception.timestamp()) + int(bus_stop_time.arrival_time.total_seconds())
+                    timestamps.append({bus_stop_time.stop.stop_id: new_timestamp})
+                all_timestamps[exception.date()] = timestamps
+        return sorted(list(all_timestamps.items()), key=lambda x: x[0])
 
 
     
