@@ -9,6 +9,7 @@
 	[
 		{
 			"id": 1,
+			"code": "2232",
 			"name": "Patrick Street",
 			"lat": -51.1242,
 			"lon": 43.1242
@@ -108,6 +109,7 @@ contains:
 	[
 		{
 			"id": 1,
+			"code": "2232",
 			"name": "Patrick Street",
 			"arrival": "14:44"
 		},

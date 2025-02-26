@@ -40,23 +40,44 @@ return (
 
         {/* Description part */}
         <View style={styles.description}>
-            <Text style={styles.textDescription}>Route</Text>
-            <Text style={styles.textDescription}>Direction</Text>
-            <Text style={styles.textDescription}>Departs</Text>
+                <View style={styles.first}>
+                    <Text style={styles.textDescription}>Route</Text>
+                </View>
+                <View style={styles.second}>
+                    <Text style={styles.textDescription}>Direction</Text>
+                </View>
+                <View style={styles.third}>
+                    <Text style={styles.textDescription}>Departs</Text>
+                </View>
+
         </View>
 
         {/* Display each bus at selected bus stop here, make scrollView, bare-bones given below */}
         <ScrollView style={styles.departures}>
 
             <View style={styles.bus}>
-                <Text style={styles.textSecondary}>220</Text>
-                <Text style={styles.textSecondary}>Fort Camden</Text>
-                <Text style={styles.textSecondary}>6 mins</Text>
+                <View style={styles.first}>
+                    <Text style={styles.textSecondary}>220</Text>
+                </View>
+                <View style={styles.second}>
+                    <Text style={styles.textSecondary}>Fort Camden</Text>
+                </View>
+                <View style={styles.third}>
+                    <Text style={styles.textSecondary}>6 mins</Text>
+                </View>
+            
             </View>
             <View style={styles.bus}>
-                <Text style={styles.textSecondary}>214</Text>
-                <Text style={styles.textSecondary}>Glanmire</Text>
-                <Text style={styles.textSecondary}>12 mins</Text>
+
+                <View style={styles.first}>
+                    <Text style={styles.textSecondary}>214</Text>
+                </View>
+                <View style={styles.second}>
+                    <Text style={styles.textSecondary}>Glanmire</Text>
+                </View>
+                <View style={styles.third}>
+                    <Text style={styles.textSecondary}>12 mins</Text>
+                </View>
             </View>
 
         </ScrollView>
@@ -65,6 +86,9 @@ return (
 }
 
 const styles = StyleSheet.create({
+    first: {width: '20%',alignItems: 'center'},
+    second: {width: '60%', flexShrink: 0,alignItems: 'center'},
+    third: {width: '20%',alignItems: 'center', paddingRight: 10,},
     background: {
         paddingTop: Platform.OS === 'android' ? 20 : 0,
         // paddingTop: 20,
@@ -118,11 +142,14 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     departures: {
+        
         // paddingTop: 20,
     },
     bus: {
         paddingTop: 20,
-        justifyContent: 'space-evenly',
+        // justifyContent: 'space-evenly',
+        
         flexDirection: 'row', 
+        width: '100%',
     }
 });
