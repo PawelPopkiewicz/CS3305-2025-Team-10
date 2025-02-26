@@ -119,8 +119,9 @@ class StaticGTFSR:
         query = """SELECT * FROM STOPS"""
         cursor.execute(query)
         res = cursor.fetchall()
+        type_coerce = lambda x: str(int(float(x)))
         for row in res:
-            bus_model.Stop(stop_id=row[0], stop_code=str(int(row[1])), stop_name=row[2], stop_lat=row[3], stop_lon=row[4])
+            bus_model.Stop(stop_id=row[0], stop_code=type_coerce(row[1]), stop_name=row[2], stop_lat=row[3], stop_lon=row[4])
 
     @classmethod
     @manage_read_only_connection
@@ -138,8 +139,8 @@ class StaticGTFSR:
         cursor.execute(query)
         res = cursor.fetchall()
         for row in res:
-            start_date = datetime.datetime.strptime(row[4], cls.date_format)
-            end_date = datetime.datetime.strptime(row[5], cls.date_format)
+            start_date = datetime.datetime.strptime(row[8], cls.date_format)
+            end_date = datetime.datetime.strptime(row[9], cls.date_format)
             bus_model.Service(service_id=row[0], monday=row[1], tuesday=row[2], wednesday=row[3], thursday=row[4], friday=row[5], saturday=row[6], sunday=row[7], start_date=start_date, end_date=end_date)
 
     @classmethod
@@ -174,7 +175,7 @@ class StaticGTFSR:
         cursor.execute(query)
         res = cursor.fetchall()
         for row in res:
-            bus_model.Trip(route_id=row[0], service_id=row[1], trip_id=row[2], trip_headsign=row[3], trip_short_name=row[4], direction_id=row[5], block_id=row[6], shape_id=row[7])
+            bus_model.Trip(route_id=row[0], service_id=row[1], trip_id=row[2], trip_headsign=row[3], trip_short_name=row[4], direction=row[5], block_id=row[6], shape_id=row[7])
 
     @classmethod
     @manage_read_only_connection
@@ -193,21 +194,21 @@ class StaticGTFSR:
     @classmethod
     def load_all_files(self):
         t = time.time()
-        self.read_agencies()
+        self.get_agencies()
         print(f"Agencies loaded in {(t1:=time.time()) - t}s")
-        self.read_calendar()
+        self.get_calendar()
         print(f"Calendar loaded in {(t:=time.time()) - t1}s")
-        self.read_stops()
+        self.get_stops()
         print(f"Stops loaded in {(t1:=time.time()) - t}s")
-        self.read_shapes()
+        self.get_shapes()
         print(f"Shapes loaded in {(t:=time.time()) - t1}s")
-        self.read_routes()
+        self.get_routes()
         print(f"Routes loaded in {(t1:=time.time()) - t}s")
-        self.read_calendar_dates()
+        self.get_calendar_dates()
         print(f"Calendar dates loaded in {(t:=time.time()) - t1}s")
-        self.read_trips()
+        self.get_trips()
         print(f"Trips loaded in {(t1:=time.time()) - t}s")
-        self.read_stop_times()
+        self.get_stop_times()
         print(f"Stop times loaded in {(t:=time.time()) - t1}s")
 
 
