@@ -14,7 +14,8 @@ from .coordinates_mapping import (map_coord_to_distance,
                                   get_route_name_from_trip,
                                   get_stop_distances_for_trip)
 from .get_root import get_root
-from .trip_to_update_times import map_record_to_update_rows
+# from .trip_to_update_times import map_record_to_update_rows
+from .trip_to_stop_times import Trip
 
 logging.basicConfig(level=logging.INFO)
 
@@ -41,7 +42,10 @@ def create_csv(raw_json_filename, csv_filename, subset_trips=None):
     for processed, record in enumerate(data[:num_of_rows_to_process]):
         if processed % report_freq == 0:
             logging.info(f"progress = {100*processed/num_of_rows_to_process:.2f}%")
-        row = map_record_to_update_rows(record)
+
+        trip = Trip(record)
+        row = trip.map_record_to_stop_rows()
+        # row = map_record_to_update_rows(record)
         if row is None:
             non_existent += 1
         else:

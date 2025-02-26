@@ -42,3 +42,7 @@ def calc_interpolation(dist_1, t_1, dist_2, t_2, stop_dist):
         return stop_time
     return None
 
+
+def calc_speed(dist_1, t_1, dist_2, t_2):
+    """Calculates the speed between two updates"""
+    return abs(dist_1 - dist_2)/abs(t_1 - t_2)
