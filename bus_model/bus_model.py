@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from time import time
 
 class Bus:
     """A class to represent a bus and its relevant information."""
@@ -22,6 +23,11 @@ class Bus:
     def __init__(self, slug: str):
         self._all[slug] = self
         self.slug = slug
+        self.latest_timestamp = 0
+        self.latest_trip = None
+        self.latest_route = None
+        self.lat = None
+        self.lon = None
     
     def set_details(self, reg: str, fleet_code: str, name: str, style: int, fuel: int, double_decker: bool, coach: bool, electric: bool, livery: dict, withdrawn: bool, special_features: str):
         """Sets the details of the bus."""
@@ -68,6 +74,28 @@ class Bus:
             "latitude": self.lat,
             "longitude": self.lon
         }
+    
+    @classmethod
+    def get_all_buses(cls) -> list[dict]:
+        """Returns a list of all buses."""
+        buses = []
+        threshold_time = time() - 600   # 10 mins ago 
+        for bus in cls._all.values():
+            if bus.latest_timestamp > threshold_time:
+                trip = Trip._all.get(bus.latest_trip, None)
+                route = Route._all.get(bus.latest_route, None)
+                if trip and route:
+                    data = {"id" : bus.slug,
+                            "route" : route.route_short_name,
+                            "headsign" : trip.trip_headsign,
+                            "direction" : trip.direction,
+                            "lat" : bus.lat,
+                            "lon" : bus.lon,
+                            "timestamp" : bus.latest_timestamp
+                            }
+                    buses.append(data)
+        return buses
+            
 
 
 class Stop:
@@ -134,7 +162,7 @@ class Trip:
     """A class to represent a trip and its relevant information."""
     _all: dict[str, "Trip"] = {}
 
-    def __init__(self, trip_id: str, route_id: str, service_id: str, shape_id: str, trip_headsign: str, trip_short_name: str, direction_id: bool, block_id: str):
+    def __init__(self, trip_id: str, route_id: str, service_id: str, shape_id: str, trip_headsign: str, trip_short_name: str, direction: bool, block_id: str):
         self._all[trip_id] = self
         self.trip_id = trip_id
         self.route = Route._all[route_id]
@@ -142,7 +170,7 @@ class Trip:
         self.shape = Shape._all.get(shape_id, None)
         self.trip_headsign = trip_headsign
         self.trip_short_name = trip_short_name
-        self.direction_id = direction_id
+        self.direction = direction
         self.block_id = block_id
         self.bus_stop_times: list[str] = []
         self.stop_id_stop_seq: dict[str, int] = {}
@@ -158,7 +186,7 @@ class Trip:
             "shape_id": self.shape.shape_id,
             "trip_headsign": self.trip_headsign,
             "trip_short_name": self.trip_short_name,
-            "direction_id": self.direction_id,
+            "direction": self.direction,
             "block_id": self.block_id
         }
     
@@ -192,7 +220,7 @@ class Trip:
 class BusStopVisit:
     """A class to record the time of a stop in a trip."""
 
-    def __init__(self, trip_id: str, stop_id: str, arrival_time: timedelta, departure_time: timedelta, stop_sequence: int, stop_headsign: str, pickup_type: bool, drop_off_type: bool, timepoint_type: bool):
+    def __init__(self, trip_id: str, stop_id: str, arrival_time: timedelta, departure_time: timedelta, stop_sequence: int, stop_headsign: str, pickup_type: bool, drop_off_type: bool, timepoint: bool):
         self.trip = Trip._all[trip_id]
         self.stop = Stop._all[stop_id]
         self.arrival_time = arrival_time
@@ -201,7 +229,7 @@ class BusStopVisit:
         self.stop_headsign = stop_headsign
         self.pickup_type = pickup_type
         self.drop_off_type = drop_off_type
-        self.timepoint_type = timepoint_type
+        self.timepoint_type = timepoint
         self._id = f"{trip_id}_{stop_id}_{stop_sequence}"
 
         self.stop.bus_visits.append(self._id)
