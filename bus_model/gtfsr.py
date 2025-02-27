@@ -29,11 +29,10 @@ class BustimesAPI:
         """Fetches and filters all of the vehicles from the Bustimes API."""
         url = self.base_url + "?" + self.limit
         try:
-            response = requests.get(url)
+            data = requests.get(url).json()
         except Exception as e:
             print(e)
             return None
-        data = response.json()
         vehicles: list[dict] = data.get("results", [])
         if vehicles:
             filtered = [vehicle for vehicle in vehicles if vehicle.get("slug", "").startswith("ie-")]

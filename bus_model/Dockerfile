@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     unzip \
     cron \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 RUN apt-get update && apt-get install -y libpq-dev build-essential
@@ -22,8 +23,16 @@ ENV FLASK_RUN_HOST=0.0.0.0
 EXPOSE 5002
 
 # cronjob minutely running update_GTFS_Realtime.sh
-RUN chmod +x /bus_model/scripts/update_GTFS_Realtime.sh
-RUN (crontab -l ; echo "* * * * * /bus_model/scripts/update_GTFS_Realtime.sh") | crontab
+RUN chmod 777 /bus_model/scripts/update_GTFS_Realtime.sh
+
+RUN echo "* * * * * root /bus_model/scripts/update_GTFS_Realtime.sh >> /var/log/cron.log 2>&1" > /etc/cron.d/bus_update
+RUN chmod 0644 /etc/cron.d/bus_update
+
+# Register the cron job
+RUN crontab /etc/cron.d/bus_update
+
+# We still need to start the cron service
+RUN cron start
 
 RUN pip install gunicorn
 CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5002", "app:app"]
