@@ -39,14 +39,12 @@ export default function Bus_id() {
 
     useFocusEffect(
         useCallback(() => {
-        const fetchTrips = async () => {
+        const fetchTrip = async () => {
             try {
                 const response = await fetch(`${busApiUrl}/v1/trips/${parseInt(bus_id)}`, {
                     method: "GET",
                     headers: {"Content-Type": "application/json"},
                 });
-                console.log(`${busApiUrl}/v1/trips/${parseInt(bus_id)}`);
-                console.log(response);
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
@@ -59,8 +57,8 @@ export default function Bus_id() {
         };
 
         // Fetch initially and then set up interval
-        fetchTrips();
-        const interval = setInterval(fetchTrips, 10000);
+        fetchTrip();
+        const interval = setInterval(fetchTrip, 10000);
 
         return () => clearInterval(interval); // Cleanup interval on unmount
     }, [bus_id])
