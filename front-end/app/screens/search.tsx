@@ -6,6 +6,7 @@ import {router} from "expo-router";
 
 import ButtonStop from "@/components/ButtonStop";
 import ButtonBus from "@/components/ButtonBus";
+import SearchButtonStop from "@/components/SearchButtonStop";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 import {useBusData} from "@/hooks/useBusData";
@@ -101,9 +102,10 @@ export default function Search() {
                 data={filteredStops}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
-                    <TouchableOpacity onPress={() => setQuery(item.name)}>
-                        <Text>{item.name} ({item.code})</Text>
-                    </TouchableOpacity>
+                    // <TouchableOpacity onPress={() => setQuery(item.name)}>
+                    //     <Text>{item.name} {item.code}</Text>
+                    // </TouchableOpacity>
+                    <SearchButtonStop item={item} />
                 )}
             />
 
