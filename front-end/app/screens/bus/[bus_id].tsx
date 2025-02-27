@@ -1,4 +1,4 @@
-import {Platform, SafeAreaView, ScrollView, StyleSheet, Text, View} from "react-native";
+import {Platform, SafeAreaView, ScrollView, StyleSheet, Text, View, StatusBar} from "react-native";
 import {Button, Icon} from 'react-native-elements';
 import {router, useFocusEffect, useLocalSearchParams} from 'expo-router';
 import colors from "@/config/Colors";
@@ -10,18 +10,22 @@ import {useBusData} from "@/hooks/useBusData";
 type TripInfo = {'bus_id': number, 'code': string, 'name': string, 'arrival': string}
 
 const TripDisplay = ({ trips }: { trips: TripInfo[] }) => (
-    // Display each bus stop of selected bus ordered by arrival time, barebones given below 
+
+    // Display each stop of the selected bus ordered by arrival time
     <ScrollView style={styles.path}>
+
+        {/* component for each stop */}
         {trips.map((trip) => (
+
             <View key={trip.bus_id} style={styles.stop}>
                 <View style={styles.first}>
                     <Icon iconStyle={styles.busPathVisited} name="arrow-down" type="font-awesome"/>
                 </View>
                 <View style={styles.second}>
-                    <Text style={styles.textSecondary}>{`Stop ${trip.code} ${trip.name}`}</Text>
+                    <Text style={styles.textSecondary}>{`Stop ${trip.code} ${trip.name}`}</Text>      {/* Stop info i.e. Stop 223 University College Cork */}
                 </View>
                 <View style={styles.third}>
-                    <Text style={styles.time}>{trip.arrival}</Text>
+                    <Text style={styles.time}>{trip.arrival}</Text>      {/* arrival time */}
                 </View>
             </View>
         ))}
@@ -75,7 +79,7 @@ export default function Bus_id() {
         <View style={styles.bus}>
             <Button
                 icon={<Icon iconStyle={styles.icon} name="chevron-left" type="font-awesome"/>}
-                buttonStyle={styles.button}
+                buttonStyle={styles.button}     // go back button
                 onPress={() => router.back()}
                 >
             </Button>
@@ -118,19 +122,23 @@ export default function Bus_id() {
 }
 
 const styles = StyleSheet.create({
-    first: {width: '20%'},
-    second: {width: '60%', flexShrink: 0, paddingRight: 10},
-    third: {width: '20%'},
+    first: {
+        width: '20%'
+    },
+    second: {
+        width: '60%',
+        flexShrink: 0,
+        paddingRight: 10
+    },
+    third: {
+        width: '20%'
+    },
     background: {
-        paddingTop: Platform.OS === 'android' ? 20 : 0,
-        // paddingTop: 20,
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
         flex: 1,
-        // justifyContent: 'flex-end',
         backgroundColor: colors.backgroundPrimary,
-        // height: '100%'
     },
     bus: {
-        // alignContent: 'center',
         alignItems: 'center',
         flexDirection: 'row',
         height: '10%',
@@ -142,8 +150,6 @@ const styles = StyleSheet.create({
     route: {
         backgroundColor: colors.backgroundSecondary,
         color: colors.textPrimary,
-        // flexGrow: 1,
-        // justifyContent: 'center',
         fontSize: fonts.heading,
     },
     heading: {
@@ -165,7 +171,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         alignItems: 'center',
         flexDirection: 'row',
-        // height: "10%",
         width: '100%',
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
@@ -174,14 +179,9 @@ const styles = StyleSheet.create({
         height: '70%'
     },
     busPathVisited: {
-        // flexBasis: 'auto',
-        // flexShrink: 3,
-        // transform: [{rotate: "80deg"}],
         color: colors.objectSelected,
     },
     busPathNotVisited: {
-        // width: '20%',
-        // flex: 1,
         color: colors.objectNotSelected,
     },
     textPrimary: {
@@ -191,16 +191,11 @@ const styles = StyleSheet.create({
         color: colors.textPrimary
     },
     textSecondary: {
-        // flexBasis: 100,
-        // flex: 1,
-        // width: '20%',
         color: colors.textPrimary,
-        // alignSelf: 'flex-end',
         fontSize: fonts.subHeading,
     },
     time: {
         color: colors.textPrimary,
-        // alignItems: 'flex-end',
         fontSize: fonts.subHeading,
     },
     textDescription: {
@@ -212,7 +207,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     stop: {
-        // justifyContent: 'space-evenly',
         flexDirection: 'row',
         paddingTop: 20,
         width: '100%',

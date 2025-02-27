@@ -1,51 +1,76 @@
-import {Platform, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {Platform, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, StatusBar, FlatList} from "react-native";
 import {Icon, Input} from '@rneui/themed';
 import React, {useState, useRef, useEffect} from "react";
 import {router} from "expo-router";
 
-import ButtonList from "@/components/ButtonList";
+
+import ButtonStop from "@/components/ButtonStop";
 import ButtonBus from "@/components/ButtonBus";
+import SearchButtonStop from "@/components/SearchButtonStop";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
-
+import {useBusData} from "@/hooks/useBusData";
+import {Stop} from "@/types/stop";
+import {Bus} from "@/types/bus";
 
 export default function Search() {
 
     const [selected, setSelected] = useState(null);
-    const [text, setText] = useState("");
-    const inputRef = useRef(null);
     const changeFilter = (filter) => {
         setSelected(filter);
     };
 
+
+    const { stops } = useBusData();
+    const [query, setQuery] = useState("");
+    const [filteredStops, setFilteredStops] = useState(stops);
+    const inputRef = useRef(null);
+
+    const handleSearch = (text: string) => {
+        setQuery(text);
+        if (text.length > 0) {
+            const results = stops.filter((stop) =>
+                stop.name.toLowerCase().includes(text.toLowerCase()) ||
+                stop.code.toLowerCase().includes(text.toLowerCase())
+            );
+            setFilteredStops(results);
+        } else {
+            setFilteredStops(stops); // Show all stops when input is empty
+        }
+    };
+
     useEffect(() => {
         const timer = setTimeout(() => {
-          if (inputRef.current) {
-            // @ts-ignore
-              inputRef.current.focus(); // Open keyboard automatically
-          }
-        }, 100); // Delay ensures the UI is ready
-    
+            if (inputRef.current) {
+                // @ts-ignore
+                inputRef.current.focus(); // Automatically focus input
+            }
+        }, 100);
+
         return () => clearTimeout(timer);
-      }, []);
+    }, []);
+
     return (
+
         <SafeAreaView style={styles.background}>
 
+            {/* input field */}
             <Input
             ref={inputRef}
             inputStyle={styles.textPrimary}
             inputContainerStyle={styles.input}
-            value={text} // Controlled input
-            onChangeText={setText} // Update state on change
+            value={query} // Controlled input
+            onChangeText={handleSearch} // Update state on change
             placeholder="Search bus stop or route"
-            rightIcon={<Icon iconStyle={styles.clear} onPress={() => setText("")} name="plus" type="font-awesome"/>}
-            leftIcon={<Icon iconStyle={styles.back} onPress={() => router.back()} name="chevron-left"
+            rightIcon={<Icon iconStyle={styles.clear} onPress={() => handleSearch("")} name="plus" type="font-awesome"/>}    // clean input
+            leftIcon={<Icon iconStyle={styles.back} onPress={() => router.back()} name="chevron-left"       // go back
                             type="font-awesome"/>}
             >
             </Input>
 
             <View style={styles.filters}>
 
+                {/* bus filter button */}
                 <TouchableOpacity
                 style={[styles.filter, {backgroundColor: selected === "Bus" ? colors.backgroundSecondary : colors.backgroundPrimary},]}
                 onPress={() => changeFilter("Bus")} 
@@ -58,6 +83,7 @@ export default function Search() {
                     </View>
                 </TouchableOpacity>
 
+                {/* stop filter button */}
                 <TouchableOpacity
                 style={[styles.filter, {backgroundColor: selected === "Stop" ? colors.backgroundSecondary : colors.backgroundPrimary},]}
                 onPress={() => changeFilter("Stop")} 
@@ -71,15 +97,27 @@ export default function Search() {
                 </TouchableOpacity>
             </View>
 
-            {/* Display buses and stops based on search here*/}
-            <ScrollView style={styles.test}>
-                <ButtonBus buttonData= {[
-                    { id: '3', title: 'Bus 220, Carrigaline - Crosshaven' },
-                    ]}/>
-                <ButtonList buttonData={[
-                    { id: '1', title: 'Stop 2232, University College Cork'},
-                ]}/>
-            </ScrollView>
+            {/* List of filtered stops */}
+            <FlatList
+                data={filteredStops}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                    // <TouchableOpacity onPress={() => setQuery(item.name)}>
+                    //     <Text>{item.name} {item.code}</Text>
+                    // </TouchableOpacity>
+                    <SearchButtonStop item={item} />
+                )}
+            />
+
+            
+
+            {/* Display buses and stops based on search here */}
+            {/* <ScrollView>
+                <ButtonBus />
+                <ButtonStop />
+
+            </ScrollView> */}
+
         </SafeAreaView >
 
 
@@ -87,17 +125,10 @@ export default function Search() {
 }
 
 const styles = StyleSheet.create({
-    test: {
-        // borderBottomWidth: 3,
-        // borderBottomColor: colors.border,
-    },
     background: {
-        paddingTop: Platform.OS === 'android' ? 20 : 0,
-        // paddingTop: 50,
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
         flex: 1,
-        // justifyContent: 'flex-end',
         backgroundColor: colors.backgroundPrimary,
-        // height: '100%'
     },
     input: {
         alignItems: "center",
