@@ -7,25 +7,25 @@ import {useCallback, useEffect, useState} from "react";
 import {busApiUrl} from "@/config/constants";
 import {useBusData} from "@/hooks/useBusData";
 
-type TripInfo = {'bus_id': number, 'code': string, 'name': string, 'arrival': string}
+type StopInfo = {'stopId': number, 'code': string, 'name': string, 'arrival': string}
 
-const TripDisplay = ({ trips }: { trips: TripInfo[] }) => (
+const TripDisplay = ({ trip }: { trip: StopInfo[] }) => (
 
     // Display each stop of the selected bus ordered by arrival time
     <ScrollView style={styles.path}>
 
         {/* component for each stop */}
-        {trips.map((trip) => (
+        {trip.map((stop) => (
 
-            <View key={trip.bus_id} style={styles.stop}>
+            <View key={stop.stopId} style={styles.stop}>
                 <View style={styles.first}>
                     <Icon iconStyle={styles.busPathVisited} name="arrow-down" type="font-awesome"/>
                 </View>
                 <View style={styles.second}>
-                    <Text style={styles.textSecondary}>{`Stop ${trip.code} ${trip.name}`}</Text>      {/* Stop info i.e. Stop 223 University College Cork */}
+                    <Text style={styles.textSecondary}>{`Stop ${stop.code} ${stop.name}`}</Text>      {/* Stop info i.e. Stop 223 University College Cork */}
                 </View>
                 <View style={styles.third}>
-                    <Text style={styles.time}>{trip.arrival}</Text>      {/* arrival time */}
+                    <Text style={styles.time}>{stop.arrival}</Text>      {/* arrival time */}
                 </View>
             </View>
         ))}
@@ -34,7 +34,7 @@ const TripDisplay = ({ trips }: { trips: TripInfo[] }) => (
 
 export default function Bus_id() {
     const {bus_id} = useLocalSearchParams() as { bus_id: string };
-    const [trips, setTrips] = useState<TripInfo[]>([]);
+    const [trip, setTrip] = useState<StopInfo[]>([]);
     const {buses} = useBusData();
 
     useFocusEffect(
@@ -51,8 +51,8 @@ export default function Bus_id() {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
 
-                const data : TripInfo[] = await response.json();
-                setTrips(data);
+                const data : StopInfo[] = await response.json();
+                setTrip(data);
             } catch (error) {
                 console.error("Error fetching trips data:", error);
             }
@@ -67,7 +67,7 @@ export default function Bus_id() {
     );
 
     // We can make a loading screen later
-    if (trips.length === 0) return <Text>Loading...</Text>;
+    if (trip.length === 0) return <Text>Loading...</Text>;
     const busData = buses.find(bus => bus.id === +bus_id); //converting to number
     if (!busData) return <Text>This bus isn't tracked anymore</Text>;
 
@@ -92,14 +92,6 @@ export default function Bus_id() {
                 <Text style={styles.textPrimary}>{busData.headsign}</Text>
             </View>
 
-            {/* to be made functional once we store favourites */}
-            <Button
-                icon={<Icon iconStyle={styles.icon} name="star" type="font-awesome"/>}
-                buttonStyle={styles.button}
-                onPress={() => alert("favs")}
-            >
-            </Button>
-
         </View>
 
         {/* See on the map part */}
@@ -115,7 +107,7 @@ export default function Bus_id() {
             </Button>
         </View>
 
-        <TripDisplay trips={trips} />
+        <TripDisplay trip={trip} />
 
     </SafeAreaView>
 );
