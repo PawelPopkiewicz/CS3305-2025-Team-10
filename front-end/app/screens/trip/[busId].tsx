@@ -32,21 +32,19 @@ const TripDisplay = ({ trip }: { trip: StopInfo[] }) => (
     </ScrollView>
 );
 
-export default function Bus_id() {
-    const {bus_id} = useLocalSearchParams() as { bus_id: string };
+export default function TripScreen() {
+    const {busId} = useLocalSearchParams() as { busId: string };
     const [trip, setTrip] = useState<StopInfo[]>([]);
     const {buses} = useBusData();
 
     useFocusEffect(
         useCallback(() => {
-        const fetchTrips = async () => {
+        const fetchTrip = async () => {
             try {
-                const response = await fetch(`${busApiUrl}/v1/trips/${parseInt(bus_id)}`, {
+                const response = await fetch(`${busApiUrl}/v1/trips/${parseInt(busId)}`, {
                     method: "GET",
                     headers: {"Content-Type": "application/json"},
                 });
-                console.log(`${busApiUrl}/v1/trips/${parseInt(bus_id)}`);
-                console.log(response);
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
@@ -59,16 +57,16 @@ export default function Bus_id() {
         };
 
         // Fetch initially and then set up interval
-        fetchTrips();
-        const interval = setInterval(fetchTrips, 10000);
+        fetchTrip();
+        const interval = setInterval(fetchTrip, 10000);
 
         return () => clearInterval(interval); // Cleanup interval on unmount
-    }, [bus_id])
+    }, [busId])
     );
 
     // We can make a loading screen later
     if (trip.length === 0) return <Text>Loading...</Text>;
-    const busData = buses.find(bus => bus.id === +bus_id); //converting to number
+    const busData = buses.find(bus => bus.id === +busId); //converting to number
     if (!busData) return <Text>This bus isn't tracked anymore</Text>;
 
     return (
