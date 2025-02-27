@@ -29,9 +29,11 @@ class BustimesAPI:
         """Fetches and filters all of the vehicles from the Bustimes API."""
         url = self.base_url + "?" + self.limit
         try:
-            data = requests.get(url).json()
+            data = requests.get(url)
+            data = data.json()
         except Exception as e:
-            print(e)
+            print("Non-fatal Error:", e)
+            print(data.text)
             return None
         vehicles: list[dict] = data.get("results", [])
         if vehicles:

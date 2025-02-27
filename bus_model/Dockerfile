@@ -31,8 +31,5 @@ RUN chmod 0644 /etc/cron.d/bus_update
 # Register the cron job
 RUN crontab /etc/cron.d/bus_update
 
-# We still need to start the cron service
-RUN cron start
-
 RUN pip install gunicorn
 CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5002", "app:app"]
