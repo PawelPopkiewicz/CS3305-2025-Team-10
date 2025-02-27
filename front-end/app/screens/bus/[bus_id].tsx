@@ -1,46 +1,73 @@
-import {Platform, SafeAreaView, StyleSheet, Text, View} from "react-native";
+import {Platform, SafeAreaView, ScrollView, StyleSheet, Text, View} from "react-native";
 import {Button, Icon} from 'react-native-elements';
-import {router, useLocalSearchParams} from 'expo-router';
+import {router, useFocusEffect, useLocalSearchParams} from 'expo-router';
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
-import { ScrollView } from "react-native";
+import {useCallback, useEffect, useState} from "react";
+import {busApiUrl} from "@/config/constants";
+import {useBusData} from "@/hooks/useBusData";
 
+type TripInfo = {'bus_id': number, 'code': string, 'name': string, 'arrival': string}
 
-const TripInfo = ({ bus }) => (
+const TripDisplay = ({ trips }: { trips: TripInfo[] }) => (
     // Display each bus stop of selected bus ordered by arrival time, barebones given below 
     <ScrollView style={styles.path}>
-        {bus.map((busStop) => (
-            <View key={busStop.id} style={styles.stop}>
+        {trips.map((trip) => (
+            <View key={trip.bus_id} style={styles.stop}>
                 <View style={styles.first}>
                     <Icon iconStyle={styles.busPathVisited} name="arrow-down" type="font-awesome"/>
                 </View>
                 <View style={styles.second}>
-                    <Text style={styles.textSecondary}>{`Stop ${busStop.code} ${busStop.name}`}</Text>
+                    <Text style={styles.textSecondary}>{`Stop ${trip.code} ${trip.name}`}</Text>
                 </View>
                 <View style={styles.third}>
-                    <Text style={styles.time}>{busStop.arrival}</Text>
+                    <Text style={styles.time}>{trip.arrival}</Text>
                 </View>
             </View>
         ))}
     </ScrollView>
 );
 
-export default function Bus() {
+export default function Bus_id() {
+    const {bus_id} = useLocalSearchParams() as { bus_id: string };
+    const [trips, setTrips] = useState<TripInfo[]>([]);
+    const {buses} = useBusData();
 
-        const params = useLocalSearchParams();
-        const bus = params.bus ? JSON.parse(params.bus) : [];
+    useFocusEffect(
+        useCallback(() => {
+        const fetchTrips = async () => {
+            try {
+                const response = await fetch(`${busApiUrl}/v1/trips/${parseInt(bus_id)}`, {
+                    method: "GET",
+                    headers: {"Content-Type": "application/json"},
+                });
+                console.log(`${busApiUrl}/v1/trips/${parseInt(bus_id)}`);
+                console.log(response);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
 
-        // const bus = [
-        //     { id: 1, code: '2232', name: 'University College, Cork', arrival: '14:32' },
-        //     { id: 2, code: '7890', name: 'City Centre, Cork', arrival: '15:45' },
-        //     { id: 3, code: '4567', name: 'Kent Station, Cork', arrival: '15:00' }
-        // ]
+                const data : TripInfo[] = await response.json();
+                setTrips(data);
+            } catch (error) {
+                console.error("Error fetching trips data:", error);
+            }
+        };
 
-        const sortedBus = [...bus].sort((a, b) => {
-            return a.arrival.localeCompare(b.arrival);
-        });
+        // Fetch initially and then set up interval
+        fetchTrips();
+        const interval = setInterval(fetchTrips, 10000);
 
-return (
+        return () => clearInterval(interval); // Cleanup interval on unmount
+    }, [bus_id])
+    );
+
+    // We can make a loading screen later
+    if (trips.length === 0) return <Text>Loading...</Text>;
+    const busData = buses.find(bus => bus.id === +bus_id); //converting to number
+    if (!busData) return <Text>This bus isn't tracked anymore</Text>;
+
+    return (
     <SafeAreaView
         style={styles.background}
     >
@@ -54,15 +81,15 @@ return (
             </Button>
 
             <View style={styles.route}>
-                <Text style={styles.textPrimary}>220</Text>
+                <Text style={styles.textPrimary}>{busData.route}</Text>
             </View>
 
             <View style={styles.heading}>
-                <Text style={styles.textPrimary}>Carrigaline-Crosshaven</Text>
+                <Text style={styles.textPrimary}>{busData.headsign}</Text>
             </View>
 
             {/* to be made functional once we store favourites */}
-            <Button                
+            <Button
                 icon={<Icon iconStyle={styles.icon} name="star" type="font-awesome"/>}
                 buttonStyle={styles.button}
                 onPress={() => alert("favs")}
@@ -74,9 +101,9 @@ return (
         {/* See on the map part */}
         <View style={styles.map}>
             <Text style={styles.heading}>See on the map</Text>
-            
+
             {/* Return map page with selected bus route highlighted */}
-            <Button                
+            <Button
                 icon={<Icon iconStyle={styles.icon} name="arrow-right" type="font-awesome"/>}
                 buttonStyle={styles.button}
                 onPress={() => router.push('/map')}
@@ -84,7 +111,7 @@ return (
             </Button>
         </View>
 
-        <TripInfo bus={sortedBus} />
+        <TripDisplay trips={trips} />
 
     </SafeAreaView>
 );
@@ -186,7 +213,7 @@ const styles = StyleSheet.create({
     },
     stop: {
         // justifyContent: 'space-evenly',
-        flexDirection: 'row', 
+        flexDirection: 'row',
         paddingTop: 20,
         width: '100%',
     }

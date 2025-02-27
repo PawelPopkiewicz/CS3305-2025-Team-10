@@ -113,22 +113,11 @@ const Map = () => {
                             coordinate={{ latitude: bus.lat, longitude: bus.lon }}
                             pinColor="blue"
                             title="Bus"
+                            onPress={() => router.push(`/screens/bus/${String(bus.id)}`)}
                             description="Live Bus Location"
                         />
                     ) : null
                 ))}
-
-                {/* Example Route Line
-
-                <Polyline
-                    coordinates={busRoutes.map((stop: { latitude: number; longitude: number; }) => ({
-                        latitude: stop.latitude,
-                        longitude: stop.longitude,
-                    }))}
-                    strokeWidth={3}
-                    strokeColor="red"
-                />
-                */}
 
             </MapView>
             
