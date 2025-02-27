@@ -15,6 +15,7 @@ import {Bus} from "@/types/bus";
 
 const Map = () => {
     const { stops, buses } = useBusData();
+    const [text, setText] = useState("");
     // const [text, setText] = useState("");
 
 
@@ -53,30 +54,18 @@ const Map = () => {
                     bus.lat && bus.lon ? (
                         <BusMarker />
                     ) : null
-                ))} 
+                ))}
 
-                {/* <BusMarker /> */}
-
-                {/* Example Route Line
-
-                <Polyline
-                    coordinates={busRoutes.map((stop: { latitude: number; longitude: number; }) => ({
-                        latitude: stop.latitude,
-                        longitude: stop.longitude,
-                    }))}
-                    strokeWidth={3}
-                    strokeColor="red"
-                />
-                */}
 
             </MapView>
+            
         </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
     background: {
-            flex: 1, 
+            flex: 1,
             backgroundColor: colors.backgroundPrimary,
             overflow: 'hidden',
         },
