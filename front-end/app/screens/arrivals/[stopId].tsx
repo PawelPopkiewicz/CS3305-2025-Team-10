@@ -2,7 +2,6 @@ import {Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View} f
 import {Button, Icon} from 'react-native-elements';
 import {router, useFocusEffect, useLocalSearchParams} from 'expo-router';
 import {useDispatch, useSelector} from "react-redux";
-
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 import {RootState} from "@/app/redux/store";
@@ -75,8 +74,8 @@ export default function Stop() {
 
     // We can make a loading screen later
     if (arrivals.length === 0) return <Text>Loading...</Text>;
-    const stopData = arrivals.find(stop => stop.busId === +stopId); //converting to number
-    if (!stopData) return <Text>This bus isn't tracked anymore</Text>;
+    const stopData = stops.find(stop  => stop.id === +stopId); //converting to number
+    if (!stopData) return <Text>This stop isn't tracked anymore</Text>;
 
     return (
 
@@ -94,7 +93,7 @@ export default function Stop() {
                 </Button>
 
                 <View style={styles.heading}>
-                    <Text style={styles.textPrimary}>Stop 2232 University College, Cork</Text>      {/* Name of the bus stop */}
+                    <Text style={styles.textPrimary}> {stopData.name} </Text>      {/* Name of the bus stop */}
                 </View>
 
                 <Button                
