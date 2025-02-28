@@ -15,28 +15,56 @@ import {Bus} from "@/types/bus";
 
 export default function Search() {
 
-    const [selected, setSelected] = useState(null);
-    const changeFilter = (filter) => {
-        setSelected(filter);
-    };
-
-
-    const { stops } = useBusData();
-    const [query, setQuery] = useState("");
-    const [filteredStops, setFilteredStops] = useState(stops);
+    const [selected, setSelected] = useState<"Bus" | "Stop" | null>(null);
+    const [query, setQuery] = useState<string>("");
+    const [filteredResults, setFilteredResults] = useState<(Bus | Stop)[]>([]);
     const inputRef = useRef(null);
 
+    // Access buses and stops from Redux
+    const { buses, stops } = useBusData();
+
+    // Type guards to check if an item is a Bus or a Stop
+    const isStop = (item: any): item is Stop => "name" in item && "code" in item;
+    const isBus = (item: any): item is Bus => "headsign" in item && "route" in item;
+
+    // Function to filter search results based on query and selected filter
+    const filterResults = (text: string, filter: "Bus" | "Stop" | null) => {
+        let results: (Bus | Stop)[] = [];
+
+        if (filter === "Bus") {
+            results = buses;
+        } else if (filter === "Stop") {
+            results = stops;
+        } else {
+            results = [...buses, ...stops]; // Show both if no filter is selected
+        }
+
+        if (text.length > 0) {
+            results = results.filter((item) => {
+                if (isStop(item)) {
+                    return item.name.toLowerCase().includes(text.toLowerCase()) ||
+                           item.code.toLowerCase().includes(text.toLowerCase());
+                } else if (isBus(item)) {
+                    return item.headsign.toLowerCase().includes(text.toLowerCase()) ||
+                           item.route.toLowerCase().includes(text.toLowerCase());
+                }
+                return false;
+            });
+        }
+
+        setFilteredResults(results);
+    };
+
+    // Handle input changes
     const handleSearch = (text: string) => {
         setQuery(text);
-        if (text.length > 0) {
-            const results = stops.filter((stop) =>
-                stop.name.toLowerCase().includes(text.toLowerCase()) ||
-                stop.code.toLowerCase().includes(text.toLowerCase())
-            );
-            setFilteredStops(results);
-        } else {
-            setFilteredStops(stops); // Show all stops when input is empty
-        }
+        filterResults(text, selected);
+    };
+
+    // Handle filter selection
+    const changeFilter = (filter: "Bus" | "Stop") => {
+        setSelected(filter);
+        filterResults(query, filter);
     };
 
     useEffect(() => {
@@ -49,6 +77,7 @@ export default function Search() {
 
         return () => clearTimeout(timer);
     }, []);
+
 
     return (
 
@@ -99,14 +128,10 @@ export default function Search() {
 
             {/* List of filtered stops */}
             <FlatList
-                data={filteredStops}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                    // <TouchableOpacity onPress={() => setQuery(item.name)}>
-                    //     <Text>{item.name} {item.code}</Text>
-                    // </TouchableOpacity>
-                    <SearchButtonStop item={item} />
-                )}
+                data={filteredResults?.filter(item => item !== undefined) || []} // Ensure no undefined items
+                keyExtractor={(item, index) => (item?.id ? item.id.toString() : `key-${index}`)}
+                renderItem={({ item }) => item ? <SearchButtonStop item={item} /> : null}
+                ListEmptyComponent={<Text>No results found</Text>}
             />
 
             
