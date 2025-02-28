@@ -18,7 +18,7 @@ const BusMarker = () => {
                     pinColor="blue"
                     title="Bus"
                     description="Live Bus Location"
-                    onPress={() => router.push({ pathname: `/screens/bus/${String(bus.id)}`, params: { bus: bus.id } })}
+                    onPress={() => router.push({ pathname: `/screens/trip/${String(bus.id)}`, params: { bus: bus.id } })}
                 >
                     <View style={{ alignItems: 'center' }}>
                         {/* Bus route label */}

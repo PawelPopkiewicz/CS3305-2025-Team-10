@@ -17,7 +17,7 @@ const StopMarker = () => {
             coordinate={{ latitude: stop.lat, longitude: stop.lon }}
             title={stop.name}
             description="Bus Stop"
-            onPress={() => router.push({ pathname: '/screens/bus', params: { stop: stop.id } })}
+            onPress={() => router.push({ pathname: `/screens/arrivals/${String(stop.id)}`, params: { stop: stop.id } })}
             >
                 <View> 
                     <Image
