@@ -28,7 +28,7 @@ const ButtonBus = () => {
 
                     <TouchableOpacity
                     style={styles.buttonContainer}
-                    onPress={() => router.push({ pathname: '/screens/bus', params: { bus: JSON.stringify(bus) } })} // forward data of the selected bus to bus page
+                    onPress={() => router.push({ pathname: `/screens/bus/${String(bus.id)}`, params: { bus: bus.id } })} // forward data of the selected bus to bus page
                     activeOpacity={0.1}
                     >
                         <View>
