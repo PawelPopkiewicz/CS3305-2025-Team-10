@@ -1,9 +1,9 @@
-import {Platform, SafeAreaView, ScrollView, StyleSheet, Text, View, StatusBar} from "react-native";
+import {Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View} from "react-native";
 import {Button, Icon} from 'react-native-elements';
 import {router, useFocusEffect, useLocalSearchParams} from 'expo-router';
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useState} from "react";
 import {busApiUrl} from "@/config/constants";
 import {useBusData} from "@/hooks/useBusData";
 
@@ -48,7 +48,6 @@ export default function TripScreen() {
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-
                 const data : StopInfo[] = await response.json();
                 setTrip(data);
             } catch (error) {

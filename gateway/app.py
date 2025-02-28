@@ -74,6 +74,9 @@ def get_stops():
 
 @app.route('/v1/arrivals/<int:id>', methods=['GET'])
 def get_arrivals(id):
+    if id < 10:
+        return [{'id': 5, 'route': "220", "headsign": "MTU", "arrival": "14:44"},
+                     {'id': 6, 'route': "220x", "headsign": "UCC", "arrival": "14:56"}]
 #     try:
 #         response = requests.get(f"{BACKEND_API_URL}/v1/getArrivingBuses/{id}")
 #         return jsonify(response.json()), response.status_code
