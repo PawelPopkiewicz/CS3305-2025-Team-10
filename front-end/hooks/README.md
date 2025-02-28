@@ -31,7 +31,7 @@
 
 ## getArrivingBuses(stop.id)
 
-- called in stop.tsx when users clicks on the bus stop on the map. When clicked, stop.id of selected bus stop is passed to the page, which is then extracted and used to call getStop(stop.id)
+- called in [stopId].tsx when users clicks on the bus stop on the map. When clicked, stop.id of selected bus stop is passed to the page, which is then extracted and used to call getStop(stop.id)
 - returns
 
 ```json

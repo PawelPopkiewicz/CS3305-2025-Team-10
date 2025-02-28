@@ -1,22 +1,27 @@
-import {Platform, SafeAreaView, ScrollView, StyleSheet, Text, View, StatusBar} from "react-native";
+import {Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View} from "react-native";
 import {Button, Icon} from 'react-native-elements';
-import {router, useLocalSearchParams} from 'expo-router';
+import {router, useFocusEffect, useLocalSearchParams} from 'expo-router';
 import {useDispatch, useSelector} from "react-redux";
 
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 import {RootState} from "@/app/redux/store";
 import {addFavoriteStop, removeFavoriteStop} from "@/app/redux/favSlice";
+import {useCallback, useState} from "react";
+import {useBusData} from "@/hooks/useBusData";
+import {busApiUrl} from "@/config/constants";
 
-const ArrivingBuses = ({ stop }) => (
+type BusInfo = { 'busId': number, 'route': string, 'headsign': string, 'arrival': string }
+
+const ArrivalsDisplay = ({arrivals}: { arrivals: BusInfo[] }) => (
 
     // Display each arriving bus of selected bus stop ordered by arrival time
     <ScrollView>
 
-        {stop.map((bus) => (
+        {arrivals.map((bus: BusInfo) => (
             //create component for each bus
 
-            <View key={bus.id} style={styles.bus}>
+            <View key={bus.busId} style={styles.bus}>
                 <View style={styles.first}>
                     <Text style={styles.textSecondary}>{`${bus.route}`}</Text>      {/* Bus route */}
                 </View>
@@ -34,26 +39,44 @@ const ArrivingBuses = ({ stop }) => (
 
 export default function Stop() {
 
-    const params = useLocalSearchParams();
-    const stop = params.stop ? JSON.parse(params.stop) : [];
-    
-    // Dummy data
-    // const bus = [
-    //     { id: 1, code: '2232', name: 'University College, Cork', arrival: '14:32' },
-    //     { id: 2, code: '7890', name: 'City Centre, Cork', arrival: '15:45' },
-    //     { id: 3, code: '4567', name: 'Kent Station, Cork', arrival: '15:00' }
-    // ]
-    
-    // sort data based in arriving time
-    const sortedStop = [...stop].sort((a, b) => {
-        return a.arrival.localeCompare(b.arrival);
-    });
+    const {stopId} = useLocalSearchParams() as { stopId: string };
+    const [arrivals, setArrivals] = useState<BusInfo[]>([]);
+    const {stops} = useBusData();
+    useFocusEffect(
+        useCallback(() => {
+            const fetchTrip = async () => {
+                try {
+                    const response = await fetch(`${busApiUrl}/v1/arrivals/${parseInt(stopId)}`, {
+                        method: "GET",
+                        headers: {"Content-Type": "application/json"},
+                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
 
-    // handle favourites
-    const stopFav = "WGB";
+                    const data: BusInfo[] = await response.json();
+                    setArrivals(data);
+                } catch (error) {
+                    console.error("Error fetching trips data:", error);
+                }
+            };
+
+            // Fetch initially and then set up interval
+            fetchTrip();
+            const interval = setInterval(fetchTrip, 10000);
+
+            return () => clearInterval(interval); // Cleanup interval on unmount
+        }, [stopId])
+    );
     const favStops = useSelector((state: RootState) => state.fav.favStops);
-    const isFav = favStops.includes(stopFav);
+    const isFav = favStops.includes(stopId);
     const dispatch = useDispatch();
+
+
+    // We can make a loading screen later
+    if (arrivals.length === 0) return <Text>Loading...</Text>;
+    const stopData = arrivals.find(stop => stop.busId === +stopId); //converting to number
+    if (!stopData) return <Text>This bus isn't tracked anymore</Text>;
 
     return (
 
@@ -77,7 +100,9 @@ export default function Stop() {
                 <Button                
                     icon={<Icon iconStyle={styles.icon} name= {isFav ? "star" : "star-o"} type="font-awesome"/>}        // favourite button
                     buttonStyle={styles.button}
-                    onPress={() => { isFav ? dispatch(removeFavoriteStop(stopFav)) : dispatch(addFavoriteStop(stopFav)) }}
+                    onPress={() => {
+                        isFav ? dispatch(removeFavoriteStop(stopId)) : dispatch(addFavoriteStop(stopId))
+                    }}
                 >
                 </Button>
 
@@ -97,7 +122,7 @@ export default function Stop() {
 
             </View>
 
-            <ArrivingBuses stop={sortedStop} />
+            <ArrivalsDisplay arrivals={arrivals}/>
 
         </SafeAreaView>
     );
