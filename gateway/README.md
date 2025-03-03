@@ -10,12 +10,16 @@
 		{
 			"id": 1,
 			"name": "Patrick Street",
+            "code": "2201",
 			"lat": -51.1242,
 			"lon": 43.1242
 		},
 		{
 			"id": 2,
-			"...."
+			"name": "Patrick Street",
+			"code": "2201",
+			"lat": -51.1242,
+			"lon": 43.1242
 		},
 		"..."
 	]
@@ -35,7 +39,7 @@
 
 ```json
 {
-	"buses" :
+	"arrivals" :
 	[
 		{
 			"id": 1,
@@ -46,7 +50,8 @@
 		{
 			"id": 2,
 			"route": "220X",
-			"...."
+			"headsign": "MTU",
+			"arrival": "14:44"
 		},
 		"..."
 	]
@@ -82,7 +87,11 @@ contains:
 		},
 		{
 			"id": 2,
-			"...."
+			"route": "220", 
+			"headsign":  "MTU",
+			"direction": "25deg",
+			"lat": -51.1242,
+			"bus.lon": 43.1242
 		},
 		"..."
 	]
@@ -113,7 +122,8 @@ contains:
 		},
 		{
 			"id": 2,
-			"..."
+			"name": "Patrick Street",
+			"arrival": "14:44"
 		},
 		"..."
 	]
