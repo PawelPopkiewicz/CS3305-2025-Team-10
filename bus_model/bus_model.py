@@ -153,7 +153,7 @@ class Stop:
                     #[print(f"{t.trip_id} : {BusStopVisit._all[t.bus_stop_times[0]].arrival_time} | {t.service.schedule_days[date.weekday()]}") for t in prev_trips[::-1]]
                     if len(prev_trips) > 0 and prev_trips[-1].latest_bus:
                         visits.append({
-                            "bus_id": trip.latest_bus,
+                            "bus_id": prev_trips[-1].latest_bus,
                             "route": trip.route.route_short_name,
                             "headsign": trip.trip_headsign,
                             "arrival": visit_time,
