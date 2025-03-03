@@ -52,7 +52,6 @@ class Bus:
         self.lat = latitude
         self.lon = longitude
         trip = Trip._all.get(trip_id, None)
-        if route_id == "4497_87348": print("On 220", trip, trip_id, self.slug)
         if trip:
             trip.latest_bus = self.slug
     
@@ -84,7 +83,7 @@ class Bus:
     def get_all_buses(cls) -> list[dict]:
         """Returns a list of all buses."""
         buses = []
-        threshold_time = time() - 600   # 10 mins ago 
+        threshold_time = time() - 600   # 10 mins ago
         for bus in cls._all.values():
             if bus.latest_timestamp > threshold_time:
                 trip = Trip._all.get(bus.latest_trip, None)
@@ -99,6 +98,7 @@ class Bus:
                             "timestamp" : bus.latest_timestamp
                             }
                     buses.append(data)
+        print(f"Active buses/total buses: {len(buses)}/{len(cls._all)}")
         return buses
             
 
@@ -130,20 +130,35 @@ class Stop:
     
     def get_timetables(self, date: datetime) -> dict:
         """Fetches the timestamps of all trip visits on the given date."""
-        date = date.date().strftime("%Y-%m-%d")
+        date_str = date.date().strftime("%Y-%m-%d")
         visits: list = []
         for trip_id in self.trips:
             trip = Trip._all.get(trip_id, None)
-            if trip:
-                timestamps = trip.get_schedule_times().get(date, {})
+            if trip:        # Current trip goes through stop
+                timestamps = trip.get_schedule_times().get(date_str, {})
                 visit_time = timestamps.get(self.stop_id, None)
                 if visit_time and trip.latest_bus:
                     visits.append({
-                        "bus_id": trip.latest_bus,  # null?
+                        "bus_id": trip.latest_bus,
                         "route": trip.route.route_short_name,
                         "headsign": trip.trip_headsign,
-                        "arrival": visit_time, 
+                        "arrival": visit_time,
+                        #"current_trip": True,
                     })
+                elif visit_time:    # Next trip goes through stop
+                    trips = trip.get_trips_in_block(date)
+                    #print(f"{[trip.trip_id for trip in trips]}")
+                    prev_trips = [t for t in sorted(trips, key=lambda t: BusStopVisit._all[t.bus_stop_times[0]].arrival_time) if BusStopVisit._all[t.bus_stop_times[0]].arrival_time < BusStopVisit._all[trip.bus_stop_times[0]].arrival_time]
+                    #print(f"Current trip: {trip.trip_id}\nPrev trips:")
+                    #[print(f"{t.trip_id} : {BusStopVisit._all[t.bus_stop_times[0]].arrival_time} | {t.service.schedule_days[date.weekday()]}") for t in prev_trips[::-1]]
+                    if len(prev_trips) > 0 and prev_trips[-1].latest_bus:
+                        visits.append({
+                            "bus_id": trip.latest_bus,
+                            "route": trip.route.route_short_name,
+                            "headsign": trip.trip_headsign,
+                            "arrival": visit_time,
+                            #"current_trip": False, 
+                        })
         d = sorted([v for v in visits if v["arrival"] > datetime.now().timestamp()], key=lambda x: x["arrival"])
         return d
 
@@ -216,6 +231,9 @@ class Trip:
             "block_id": self.block_id
         }
     
+    def sort_bus_stop_times(self):
+        self.bus_stop_times = sorted(self.bus_stop_times, key=lambda x: BusStopVisit._all[x].stop_sequence)
+    
     def get_schedule_times(self) -> dict[str, dict[str, int]]:
         """Returns a dict of all timestamps for the trip for each day.""" # this sort of should be returning something else, maybe combine into stop -> routes -> trips -> times
         all_timestamps: defaultdict = defaultdict(dict)
@@ -241,7 +259,18 @@ class Trip:
                 all_timestamps[exception.date().strftime("%Y-%m-%d")] = timestamps
         return all_timestamps
 
+    def get_trips_in_block(self, date: datetime, subsequent_only: bool = False) -> list['Trip']:
+        potential_trips = []
+        for trip_id in self._all:
+            trip = self._all[trip_id]
+            if trip.block_id == self.block_id:
+                if trip.service.check_in_range(date): # check if it is in date range
+                    potential_trips.append(trip)
+        return [t for t in sorted(potential_trips, key=lambda t: BusStopVisit._all[t.bus_stop_times[0]].arrival_time) if not subsequent_only or BusStopVisit._all[t.bus_stop_times[0]].arrival_time > BusStopVisit._all[self.bus_stop_times[0]].arrival_time]
 
+    def get_start_time(self) -> datetime:
+        """Returns the datetime object for the start of the trip."""
+        return datetime.fromtimestamp(int(self.service.start_date.timestamp()) + int(BusStopVisit._all[self.bus_stop_times[0]].arrival_time.total_seconds()))
     
     @classmethod
     def filter_by_routes(cls, route_ids: list|str) -> list[dict[str, str]]:
@@ -284,7 +313,7 @@ class Service:
         self.service_id = service_id
         self.schedule_days = [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
         self.start_date = start_date
-        self.end_date = end_date
+        self.end_date = end_date + timedelta(days=1)    # inclusive, this brings it to the end of the day
         self.extra_exceptions: list[datetime] = []
         self.cancelled_exceptions: list[datetime] = []
     
@@ -296,6 +325,10 @@ class Service:
             self.cancelled_exceptions.append(date)
         else:
             raise ValueError("Invalid exception type.")
+    
+    def check_in_range(self, date: datetime) -> bool:
+        """Checks if the given date is within the service's date range and is on the right day of week."""
+        return self.start_date <= date <= self.end_date and self.schedule_days[date.weekday()]
 
 class Agency:
     """A class to represent a bus agency and its relevant information."""

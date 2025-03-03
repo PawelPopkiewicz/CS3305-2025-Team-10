@@ -98,16 +98,31 @@ def bus(bus_id):
         trip = bus_model.Trip._all.get(bus_obj.latest_trip, None)
         if trip:
             stop_timestamps = trip.get_schedule_times()
-            today = datetime.datetime.now().strftime("%Y-%m-%d")
-            for stop_id, timestamp in stop_timestamps.get(today, {}).items():
+            day = trip.get_start_time()
+            for stop_id, timestamp in stop_timestamps.get(day.strftime("%Y-%m-%d"), {}).items():
                 stop = bus_model.Stop._all.get(stop_id, None)
                 data = {
                         "stop_id": stop.stop_id,
                         "stop_code": stop.stop_code,
                         "stop_name": stop.stop_name,
-                        "arrival": timestamp
+                        "arrival": timestamp,
+                        #"current_trip": True,
                         }
                 all_stops.append(data)
+            other_trips = trip.get_trips_in_block(day, subsequent_only=True)[:1]    # Next n trips
+            for t in other_trips:
+                stop_timestamps = t.get_schedule_times()
+                for stop_id, timestamp in stop_timestamps.get(day.strftime("%Y-%m-%d"), {}).items():
+                    stop = bus_model.Stop._all.get(stop_id, None)
+                    data = {
+                            "stop_id": stop.stop_id,
+                            "stop_code": stop.stop_code,
+                            "stop_name": stop.stop_name,
+                            "arrival": timestamp,
+                            #"current_trip": False,
+                            }
+                    all_stops.append(data) 
+
             return {"stops": all_stops}
     return abort(404)
 
