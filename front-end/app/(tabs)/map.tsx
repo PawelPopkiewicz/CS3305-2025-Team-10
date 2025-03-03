@@ -37,7 +37,7 @@ const Map = () => {
                     latitudeDelta: 0.03,
                     longitudeDelta: 0.03,
                 }}
-                rotateEnabled={false} // Prevents map rotation}
+                rotateEnabled={false} // Prevents map rotation
             >
 
                 {/* Display Stop Markers */}

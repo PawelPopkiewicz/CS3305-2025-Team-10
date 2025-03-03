@@ -26,7 +26,7 @@ class BustimesAPI:
 
     @classmethod
     def fetch_vehicles(self) -> dict:
-        """Fetches and filters all of the vehicles from the Bustimes API."""
+        """Fetches and filters all the vehicles from the Bustimes API."""
         url = self.base_url + self.limit
         try:
             data = requests.get(url)

@@ -28,7 +28,7 @@ const favoritesSlice = createSlice({
     },
 });
 
-export const rehydrateFavorites = async (dispatch: ThunkDispatch<any, any, any> & Dispatch<UnknownAction>) => {
+export const rehydrateFavorites = async (dispatch: ThunkDispatch<any, any, any> & Dispatch) => {
     try {
         const storedFavorites = await AsyncStorage.getItem('favorites');
         if (storedFavorites) {

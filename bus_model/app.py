@@ -202,7 +202,7 @@ def page_not_found(e) -> dict:
     return {"error_code": 404, "error_message": "Page not found"}, 404
 
 def generic_get_or_404(cls, id_: str) -> dict:
-    """Generic function to get info dict of any of the classes else raise a 404 error"""
+    """Generic function to get info dict of the classes else raise a 404 error"""
     if obj := cls._all.get(id_, None):
         return obj.get_info()
     else:

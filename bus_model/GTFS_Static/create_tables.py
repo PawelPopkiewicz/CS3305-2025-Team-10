@@ -113,7 +113,7 @@ class TableCreator:
 
     def create_table(self, name, table):
         """
-        Creates an sqlite table
+        Creates a sqlite table
         """
         self.cursor.execute(f"DROP TABLE IF EXISTS {name} CASCADE;")
         self.cursor.execute(table)
