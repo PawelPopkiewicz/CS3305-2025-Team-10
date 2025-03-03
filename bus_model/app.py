@@ -26,7 +26,7 @@ def teardown_request(execution=None):
 
 @app.route("/")
 def test():
-    return "Hello, World!"
+    return {"message" : "Hello, World!"}
 
 @app.route("/v1/vehicle")
 def vehicles():
@@ -51,7 +51,7 @@ def stop_arrivals(stop_id):
     """Fetches all bus arrivals for a specific stop"""
     stop = bus_model.Stop._all.get(stop_id, None)
     if stop:
-        return {"buses" : stop.get_timetables(datetime.datetime.now())}    # doesn't really work near midnight rn
+        return stop.get_timetables(datetime.datetime.now())    # doesn't really work near midnight rn
     return abort(404)
 
 @app.route("/v1/trip/<string:trip_id>")
@@ -123,7 +123,7 @@ def bus(bus_id):
                             }
                     all_stops.append(data) 
 
-            return {"stops": all_stops}
+            return all_stops
     return abort(404)
 
 

@@ -73,9 +73,8 @@ def test_bus():
     """
     try:
         response = requests.get(f"{BUS_MODEL_URI}/")
-        debug_print(response.status_code)
         if response.status_code == 200:
-            return response.text         # Standard response
+            return response.json()          # Standard response
         elif response.status_code == 404:
             return abort(404)               # Not found
         else:
