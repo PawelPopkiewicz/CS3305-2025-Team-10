@@ -128,7 +128,7 @@ class Stop:
             "stop_lon": self.stop_lon
         }
     
-    def get_timetables(self, date: datetime) -> dict:
+    def get_timetables(self, date: datetime) -> list[dict]:
         """Fetches the timestamps of all trip visits on the given date."""
         date_str = date.date().strftime("%Y-%m-%d")
         visits: list = []
@@ -159,8 +159,7 @@ class Stop:
                             "arrival": visit_time,
                             #"current_trip": False, 
                         })
-        d = sorted([v for v in visits if v["arrival"] > datetime.now().timestamp()], key=lambda x: x["arrival"])
-        return d
+        return sorted([v for v in visits if v["arrival"] > datetime.now().timestamp()], key=lambda x: x["arrival"])
 
 
 class Route:
