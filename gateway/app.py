@@ -2,7 +2,7 @@
 Gateway providing connection to frontend
 """
 from flask import Flask, abort
-import requests
+#import requests
 
 
 app = Flask(__name__)
@@ -62,7 +62,7 @@ def test_route():
 @app.route('/v1/stops', methods=['GET'])
 def get_stops():
     """Fetches the details and location of all stops."""
-
+    return stops
     try:
         response = requests.get(f"{BACKEND_API_URL}/v1/stops")
         if response.status_code == 200:
@@ -78,7 +78,7 @@ def get_stops():
 @app.route('/v1/arrivals/<string:stop_id>', methods=['GET'])
 def stop_arrivals(stop_id: str):
     """Fetches the predicted arrival times for each bus at the given stop."""
-
+    return arrivingBuses
     try:
         response = requests.get(
             f"{BACKEND_API_URL}/v1/stop/arrivals/{stop_id}")
@@ -96,7 +96,7 @@ def stop_arrivals(stop_id: str):
 @app.route('/v1/buses', methods=['GET'])
 def get_buses():
     """Fetches details for all buses, including location."""
-
+    return buses
     try:
         response = requests.get(f"{BACKEND_API_URL}/v1/bus")
         if response.status_code == 200:
@@ -112,7 +112,7 @@ def get_buses():
 @app.route('/v1/trips/<string:bus_id>', methods=['GET'])
 def get_trips(bus_id: str):
     """Fetches predicted times and stops for a bus."""
-
+    return tripInfo
     try:
         response = requests.get(f"{BACKEND_API_URL}/v1/bus/{bus_id}")
         if response.status_code == 200:
