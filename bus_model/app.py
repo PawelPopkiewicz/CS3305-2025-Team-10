@@ -33,7 +33,7 @@ def vehicles():
     """Directly fetches and returns the live vehicles data."""
     return GTFSR.fetch_vehicles()
 
-@app.route("/v1/stop", methods=["GET"])
+@app.route("/v1/stops", methods=["GET"])
 def stops():  
     """Fetches and returns information of all stops."""
     return [stop.get_info() for stop in bus_model.Stop._all.values()]
