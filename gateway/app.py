@@ -3,6 +3,7 @@ Gateway providing connection to frontend
 """
 from flask import Flask, abort
 import requests
+import os
 
 
 app = Flask(__name__)
