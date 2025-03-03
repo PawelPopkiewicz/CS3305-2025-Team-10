@@ -1,1 +1,1 @@
-export const busApiUrl = "https://5a4a-143-239-9-7.ngrok-free.app";
+export const busApiUrl = "https://abad-2a01-b340-64-be69-f906-f0a9-cafd-1af9.ngrok-free.app";

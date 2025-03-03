@@ -4,31 +4,42 @@ import {router} from 'expo-router';
 
 import colors from '@/config/Colors';
 import fonts from '@/config/Fonts';
+import {useBusData} from "@/hooks/useBusData";
+import {Bus} from "@/types/bus";
 
-const ButtonBus = ({buttonData}) => {
+const ButtonBus = () => {
 
-    const handlePress = (title) => {
-        alert(`You pressed ${title}`);
-    };
+    const { buses } = useBusData();
+
+    // dummy data
+    // const bus = [
+    //     { id: 1, code: '2232', name: 'University College, Cork', arrival: '14:32' },
+    //     { id: 2, code: '7890', name: 'City Centre, Cork', arrival: '15:45' },
+    //     { id: 3, code: '4567', name: 'Kent Station, Cork', arrival: '15:00' }
+    // ]
 
     return (
         <View>
-            {buttonData.map((item) => (
-                <View key={item.id} style={styles.buttonContainer}>
+
+            {/* create component for each bus route */}
+            {buses.map((bus: Bus) => (
+
+                <View key={bus.id} style={styles.buttonContainer}>
+
                     <TouchableOpacity
                     style={styles.buttonContainer}
-                    // {/* onPress={() => handlePress(item.title)} */}
-                    onPress={() => router.push("/screens/bus")}
+                    onPress={() => router.push({ pathname: `/screens/trip/${String(bus.id)}`, params: { bus: bus.id } })} // forward data of the selected bus to bus page
                     activeOpacity={0.1}
                     >
                         <View>
                             <Text style={styles.textPrimary}>
-                                {item.title.split(",")[0]?.trim() || ""}
+                                {`Bus ${bus.route}`}       
                             </Text>
                             <Text style={styles.textSecondary}>
-                            {item.title.split(",")[1]?.trim() || ""}
+                                {`${bus.headsign}`}
                             </Text>
                         </View>
+
                     </TouchableOpacity>
 
                 </View>
@@ -42,19 +53,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.backgroundPrimary,
         padding: 5,
         paddingHorizontal: 7,
-        // borderBottomWidth: 1,
-        // borderBottomColor: colors.border,
-        // justifyContent: 'left',
     },
-    // button: {
-    //     backgroundColor: colors.backgroundPrimary,
-    //     justifyContent: 'flex-start',
-    // },
-    // title: {
-    //     textAlign: 'left',
-    //     // padding: 7,
-    //     fontSize: fonts.subHeading,
-    // },
     textPrimary: {
         fontSize: fonts.subHeading,
         color: colors.textPrimary,

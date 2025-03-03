@@ -27,6 +27,24 @@ services:
       - pgdata:/var/lib/postgresql/data
     networks:
       - mynetwork
+        
+  gateway:
+    build: ./gateway
+    container_name: gateway
+    depends_on:
+      - bus_model
+    environment:
+      MONGO_URI: "mongodb://admin:admin@mongodb:27017/?authSource=admin"
+      POSTGRES_URI: "postgresql://admin:admin@postgres:5432/static_data"
+      BUS_MODEL_URI: "http://bus_model:5002"
+    volumes:
+      - ./gateway:/gateway
+    ports:
+      - "5004:5004"
+    networks:
+      - mynetwork
+    env_file:
+      - .env
 
   training:
     build: ./training_data_collection

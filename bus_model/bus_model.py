@@ -128,7 +128,7 @@ class Stop:
             "stop_lon": self.stop_lon
         }
     
-    def get_timetables(self, date: datetime) -> dict:
+    def get_timetables(self, date: datetime) -> list[dict]:
         """Fetches the timestamps of all trip visits on the given date."""
         date_str = date.date().strftime("%Y-%m-%d")
         visits: list = []
@@ -153,14 +153,13 @@ class Stop:
                     #[print(f"{t.trip_id} : {BusStopVisit._all[t.bus_stop_times[0]].arrival_time} | {t.service.schedule_days[date.weekday()]}") for t in prev_trips[::-1]]
                     if len(prev_trips) > 0 and prev_trips[-1].latest_bus:
                         visits.append({
-                            "bus_id": trip.latest_bus,
+                            "bus_id": prev_trips[-1].latest_bus,
                             "route": trip.route.route_short_name,
                             "headsign": trip.trip_headsign,
                             "arrival": visit_time,
                             #"current_trip": False, 
                         })
-        d = sorted([v for v in visits if v["arrival"] > datetime.now().timestamp()], key=lambda x: x["arrival"])
-        return d
+        return sorted([v for v in visits if v["arrival"] > datetime.now().timestamp()], key=lambda x: x["arrival"])
 
 
 class Route:

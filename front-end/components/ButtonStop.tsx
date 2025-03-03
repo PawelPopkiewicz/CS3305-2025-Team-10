@@ -4,24 +4,39 @@ import {router} from 'expo-router';
 
 import colors from '@/config/Colors';
 import fonts from '@/config/Fonts';
+import {useBusData} from "@/hooks/useBusData";
+import {Stop} from "@/types/stop";
 
-const ButtonList = ({buttonData}) => {
+const ButtonStop = () => {
+
+    const { stops } = useBusData();
+
+    //Dummy data
+    // const stop = [
+    //     { id: 1, route: '220', headsign: 'University College, Cork', arrival: '14:52' },
+    //     { id: 1, route: '220X', headsign: 'MTU', arrival: '14:42' },
+    //     { id: 1, route: '212', headsign: 'Patrick', arrival: '15:32' }
+    // ];
 
     return (
         <View>
-            {buttonData.map((item) => (
-                <View key={item.id} style={styles.buttonContainer}>
+
+            {/* create component for each stop */}
+            {stops.map((stop: Stop) => (
+
+                <View key={stop.id} style={styles.buttonContainer}>
+
                     <TouchableOpacity
                     style={styles.buttonContainer}
-                    onPress={() => router.push("/screens/stop")}
+                    onPress={() => router.push({ pathname: `/screens/arrivals/${String(stop.id)}`, params: { stop: stop.id } })}      // forward data of the selected stop to stop page
                     activeOpacity={0.1}
                     >
                         <View>
                             <Text style={styles.textPrimary}>
-                                {item.title.split(",")[0]?.trim() || ""}
+                                {`Stop ${stop.code}`}  
                             </Text>
                             <Text style={styles.textSecondary}>
-                            {item.title.split(",")[1]?.trim() || ""}
+                                {`${stop.name}`}  
                             </Text>
                         </View>
                     </TouchableOpacity>
@@ -48,4 +63,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default ButtonList;
+export default ButtonStop;
