@@ -23,7 +23,7 @@ ENV FLASK_RUN_HOST=0.0.0.0
 EXPOSE 5002
 
 # cronjob minutely running update_GTFS_Realtime.sh
-RUN chmod 777 /bus_model/scripts/update_GTFS_Realtime.sh
+RUN chmod +x /bus_model/scripts/update_GTFS_Realtime.sh
 
 RUN echo "* * * * * root /bus_model/scripts/update_GTFS_Realtime.sh >> /var/log/cron.log 2>&1" > /etc/cron.d/bus_update
 RUN chmod 0644 /etc/cron.d/bus_update

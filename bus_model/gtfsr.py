@@ -3,6 +3,7 @@ import os
 import bus_model
 import datetime
 import time
+import subprocess
 
 from dotenv import load_dotenv
 from GTFS_Static.db_connection import create_connection, close_connection
@@ -196,7 +197,23 @@ class StaticGTFSR:
     
     @classmethod
     def load_all_files(self):
-        t = time.time()
+        t1 = time.time()
+        postgres_db_flag_dir = os.getenv("POSTGRES_DB_MADE_DIR")
+        file_name = "flag.txt"
+        file_path = os.path.join(postgres_db_flag_dir, file_name)
+
+        try:
+            if not os.path.exists(file_path):
+                process = subprocess.run(["bash", "scripts/update_GTFS_Static.sh"], capture_output=True, text=True) # Create and populate DB
+                if process.returncode == 0:
+                    with open(file_path, "w") as f: # Only create flag on success
+                        f.write("1")
+                else:
+                    print("Error updating GTFS Static data. Error code:", process.returncode)
+        except Exception as e:
+            print("Error updating GTFS Static data:", e)
+
+        print(f"GTFS Static data updated in {(t:=time.time()) - t1}s")
         self.get_agencies()
         print(f"Agencies loaded in {(t1:=time.time()) - t}s")
         self.get_calendar()
@@ -217,7 +234,6 @@ class StaticGTFSR:
 
 if __name__ == "__main__":
     # quick debugging
-    import time
     start = time.time()
     StaticGTFSR.load_all_files()
     #print("num visits", len(bus_model.Trip._all))
