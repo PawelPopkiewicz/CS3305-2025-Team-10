@@ -21,19 +21,20 @@ def manage_read_only_connection(func):
     return wrapper
 
 class BustimesAPI:
-    base_url = "https://bustimes.org/api/vehicles"
-    limit = "limit=70000"
+    base_url = "https://bustimes.org/api/vehicles?limit="
+    limit = "70000"
 
     @classmethod
     def fetch_vehicles(self) -> dict:
         """Fetches and filters all of the vehicles from the Bustimes API."""
-        url = self.base_url + "?" + self.limit
+        url = self.base_url + self.limit
         try:
-            response = requests.get(url)
+            data = requests.get(url)
+            data = data.json()
         except Exception as e:
-            print(e)
+            print("Non-fatal Error:", e)
+            print(data.text)
             return None
-        data = response.json()
         vehicles: list[dict] = data.get("results", [])
         if vehicles:
             filtered = [vehicle for vehicle in vehicles if vehicle.get("slug", "").startswith("ie-")]
@@ -190,6 +191,8 @@ class StaticGTFSR:
             departure_delta = datetime.timedelta(hours=h, minutes=m, seconds=s)
             headsign = row[5] if row[5] != "nan" else None
             bus_model.BusStopVisit(trip_id=row[0], arrival_time=arrival_delta, departure_time=departure_delta, stop_id=row[3], stop_sequence=row[4], stop_headsign=headsign, pickup_type=row[6], drop_off_type=row[7], timepoint=row[8])
+        for trip in bus_model.Trip._all.values():
+            trip.sort_bus_stop_times()
     
     @classmethod
     def load_all_files(self):
