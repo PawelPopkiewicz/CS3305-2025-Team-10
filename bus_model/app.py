@@ -1,8 +1,12 @@
 from flask import Flask, g, abort, jsonify, request
-import time
+import time, datetime
 from gtfsr import GTFSR, StaticGTFSR, BustimesAPI
 import bus_model
 from GTFS_Static.db_funcs import get_route_id_to_name_dict
+
+import subprocess
+subprocess.Popen(["service", "cron", "start"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
 
 app = Flask(__name__)
 load_before = time.time()
@@ -42,6 +46,14 @@ def stop(stop_id):
     else:   # stop_code
         return bus_model.search_attribute(bus_model.Stop, "stop_code", stop_id)[0].get_info()
 
+@app.route("/v1/stop/arrivals/<string:stop_id>")
+def stop_arrivals(stop_id):
+    """Fetches all bus arrivals for a specific stop"""
+    stop = bus_model.Stop._all.get(stop_id, None)
+    if stop:
+        return {"buses" : stop.get_timetables(datetime.datetime.now())}    # doesn't really work near midnight rn
+    return abort(404)
+
 @app.route("/v1/trip/<string:trip_id>")
 def trips(trip_id):    
     """Fetches information for a specific trip based on trip_id."""
@@ -80,7 +92,40 @@ def shape(shape_id):
 @app.route("/v1/bus/<string:bus_id>")
 def bus(bus_id):
     """Fetches information for a specific bus based on bus_id."""
-    return generic_get_or_404(bus_model.Bus, int(bus_id))
+    all_stops: list = []
+    bus_obj = bus_model.Bus._all.get(bus_id, None)
+    if bus_obj:
+        trip = bus_model.Trip._all.get(bus_obj.latest_trip, None)
+        if trip:
+            stop_timestamps = trip.get_schedule_times()
+            day = trip.get_start_time()
+            for stop_id, timestamp in stop_timestamps.get(day.strftime("%Y-%m-%d"), {}).items():
+                stop = bus_model.Stop._all.get(stop_id, None)
+                data = {
+                        "stop_id": stop.stop_id,
+                        "stop_code": stop.stop_code,
+                        "stop_name": stop.stop_name,
+                        "arrival": timestamp,
+                        #"current_trip": True,
+                        }
+                all_stops.append(data)
+            other_trips = trip.get_trips_in_block(day, subsequent_only=True)[:1]    # Next n trips
+            for t in other_trips:
+                stop_timestamps = t.get_schedule_times()
+                for stop_id, timestamp in stop_timestamps.get(day.strftime("%Y-%m-%d"), {}).items():
+                    stop = bus_model.Stop._all.get(stop_id, None)
+                    data = {
+                            "stop_id": stop.stop_id,
+                            "stop_code": stop.stop_code,
+                            "stop_name": stop.stop_name,
+                            "arrival": timestamp,
+                            #"current_trip": False,
+                            }
+                    all_stops.append(data) 
+
+            return {"stops": all_stops}
+    return abort(404)
+
 
 @app.route("/v1/bus")
 def buses():
@@ -95,6 +140,7 @@ def route_id_to_name():
 @app.route("/v1/update_realtime", methods=["GET"])
 def update_realtime():
     """Takes the fetched data and populates the model."""
+    print("Triggering realtime update")
     data = GTFSR.fetch_vehicles()
     entities = data.get("entity", [])
     if entities:

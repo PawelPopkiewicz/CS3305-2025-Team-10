@@ -1,9 +1,8 @@
-#!/bin/bash/
+#!/bin/bash
 
-PROJECT_ROOT=$(pwd | sed 's|bus_model/.*|bus_model/|' )
 
-cd ${PROJECT_ROOT}/GTFS_Realtime/
+echo "Starting to fetch vehicles"
 
-python3 -m GTFS_Realtime.update_model
+curl http://127.0.0.1:5002/v1/update_realtime
 
 echo "Fetched and stored the vehicle updates"
