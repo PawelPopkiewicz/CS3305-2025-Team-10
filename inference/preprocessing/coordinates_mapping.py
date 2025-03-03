@@ -2,6 +2,7 @@
 Functions which handle the mapping between coordinates and distance travelled
 main function is map_coordinates_to_progress
 """
+from math import pi, sin, cos, atan2, sqrt
 
 from .db_connection import create_connection, close_connection
 
@@ -22,54 +23,6 @@ def get_route_name_from_trip(trip_id):
     cursor.execute(query, (trip_id,))
     route_name = cursor.fetchone()
     return route_name[0] if route_name else None
-
-
-# def get_route_name_from_route_id(route_id):
-#     """Returns the route name from route_id"""
-#     conn = create_connection()
-#     query = """
-#     SELECT route_short_name
-#     FROM route_id_to_name
-#     WHERE route_id = %s;
-#     """
-#     cursor = conn.cursor()
-#     cursor.execute(query, (route_id,))
-#     route_name = cursor.fetchone()
-#     return route_name[0] if route_name else None
-
-
-# def trip_among_stops(trip_id, stop_id):
-#     """Returns the trip_id from stop_id"""
-#     conn = create_connection()
-#     query = """
-#     SELECT EXISTS (
-#         SELECT 1
-#         FROM stop_times as st
-#         WHERE stop_id = %s AND trip_id = %s
-#     ) AS trip_exists;
-#     """
-#     cursor = conn.cursor()
-#     cursor.execute(query, (stop_id, trip_id))
-#     trip_exists = cursor.fetchone()
-#     return trip_exists[0] if trip_exists else None
-
-
-# def get_stops_on_trip(trip_id):
-#     """Returns all of the stops on a trip"""
-#     conn = create_connection()
-#     query = """
-#     SELECT s.stop_name
-#     FROM stops AS s
-#     WHERE s.stop_id IN (
-#         SELECT st.stop_id FROM stop_times AS st
-#         WHERE st.trip_id = %s
-#     );
-#     """
-#     cursor = conn.cursor()
-#     cursor.execute(query, (trip_id,))
-#     result = cursor.fetchall()
-#     print(f"Number of stops: {len(result)}")
-#     return result if result else None
 
 
 def check_trip_id_exists(trip_id, direction):
@@ -94,7 +47,7 @@ def map_coord_to_distance(trip_id, direction, lat, lon):
         SELECT shape_id FROM trips
         WHERE trip_id = %s AND direction = %s
         )
-    ORDER BY ABS(shape_pt_lat - %s) + ABS(shape_pt_lon - %s)
+    ORDER BY POWER(shape_pt_lat - %s, 2) + POWER(shape_pt_lon - %s, 2)
     LIMIT 1;
     """
     cursor = conn.cursor()
@@ -108,7 +61,7 @@ def get_stop_distances_for_trip(trip_id, direction):
     """Returns distance traveled for all the stops on the trip"""
     conn = create_connection()
     query = """
-    SELECT stop.stop_id,
+    SELECT s.stop_id AS stop_id,
     (
         SELECT sh.shape_dist_traveled
         FROM shapes AS sh
@@ -116,23 +69,59 @@ def get_stop_distances_for_trip(trip_id, direction):
             SELECT t.shape_id FROM trips AS t
             WHERE t.trip_id = %s AND t.direction = %s
             )
-        ORDER BY POWER(sh.shape_pt_lat - stop.stop_lat,2) + POWER(sh.shape_pt_lon - stop.stop_lon,2)
+        ORDER BY POWER(sh.shape_pt_lat - s.stop_lat,2) + POWER(sh.shape_pt_lon - s.stop_lon,2)
         LIMIT 1
-    ) AS distance
-    FROM (
-        SELECT *
-        FROM stops AS s
-        WHERE s.stop_id IN (
-            SELECT st.stop_id FROM stop_times AS st
-            WHERE st.trip_id = %s
-        )
-    ) AS stop
+    ) AS distance,
+    st.arrival_time AS scheduled_time,
+    st.departure_time AS departure_time
+    FROM stops AS s
+    JOIN stop_times AS st
+    ON s.stop_id = st.stop_id
+    AND st.trip_id = %s
     ORDER BY distance;
     """
     cursor = conn.cursor()
     cursor.execute(query, (trip_id, direction, trip_id))
     result = cursor.fetchall()
     return result if result else None
+
+
+def off_route_distance(trip_id, direction, latitude, longitude):
+    """Returns true if the bus is on route and false if it strays"""
+    conn = create_connection()
+    query = """
+        SELECT sh.shape_pt_lat, shape_pt_lon,
+        sh.shape_id
+        FROM shapes AS sh
+        WHERE sh.shape_id = (
+            SELECT t.shape_id FROM trips AS t
+            WHERE t.trip_id = %s AND t.direction = %s
+            )
+        ORDER BY POWER(sh.shape_pt_lat - %s,2) + POWER(sh.shape_pt_lon - %s,2)
+        LIMIT 1;
+    """
+    cursor = conn.cursor()
+    cursor.execute(query,
+                   (trip_id, direction, latitude, longitude))
+    result = cursor.fetchone()
+    if result is not None:
+        distance = meters_between_coords(
+                latitude, longitude, result[0], result[1])
+        return distance
+    return None
+
+
+def meters_between_coords(lat1, lon1, lat2, lon2):
+    """computes the difference in meters between coordinates"""
+    R = 6378.137
+    d_lat = lat2 * pi / 180 - lat1 * pi / 180
+    d_lon = lon2 * pi / 180 - lon1 * pi / 180
+    a = sin(d_lat/2) * sin(d_lat/2) + \
+        cos(lat1 * pi / 180) * cos(lat2 * pi / 180) * \
+        sin(d_lon/2) * sin(d_lon/2)
+    c = 2 * atan2(sqrt(a), sqrt(1-a))
+    d = R * c
+    return d * 1000
 
 
 if __name__ == "__main__":

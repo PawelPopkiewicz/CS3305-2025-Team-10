@@ -3,9 +3,7 @@ Preprocessing functions which transform json training data into a csv
 """
 
 import json
-import bisect
 import logging
-from datetime import datetime
 
 import pandas as pd
 
@@ -37,21 +35,19 @@ def create_csv(raw_json_filename, csv_filename, subset_trips=None):
         num_of_rows_to_process = subset_trips
 
     report_freq = min(50, max(num_of_rows_to_process//100, 1))
-    non_existent = 0
+    processed_trips = 0
 
     for processed, record in enumerate(data[:num_of_rows_to_process]):
         if processed % report_freq == 0:
             logging.info(f"progress = {100*processed/num_of_rows_to_process:.2f}%")
 
         trip = Trip(record)
-        row = trip.map_record_to_stop_rows()
-        # row = map_record_to_update_rows(record)
-        if row is None:
-            non_existent += 1
-        else:
-            rows += row
+        stop_times = trip.map_record_to_stop_times()
+        if stop_times is not None:
+            rows += stop_times
+            processed_trips += 1
 
-    print(f"Trips not found {non_existent} out of {num_of_rows_to_process}")
+    logging.info(f"Processed {processed_trips} out of {num_of_rows_to_process}, {num_of_rows_to_process - processed_trips} removed")
     df = pd.DataFrame(rows)
     csv_filename = csv_filename + ".csv"
     df.to_csv(training_data_dir / csv_filename, index=False)
@@ -63,4 +59,5 @@ if __name__ == "__main__":
     rows_subset = input("Number of rows to process out of the dataset: ")
     if rows_subset == "":
         create_csv(json_file, csv_name)
-    create_csv(json_file, csv_name, int(rows_subset))
+    else:
+        create_csv(json_file, csv_name, int(rows_subset))
