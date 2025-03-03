@@ -3,10 +3,12 @@ import time, datetime
 from gtfsr import GTFSR, StaticGTFSR, BustimesAPI
 import bus_model
 from GTFS_Static.db_funcs import get_route_id_to_name_dict
+from dotenv import load_dotenv
 
 import subprocess
 subprocess.Popen(["service", "cron", "start"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
+load_dotenv()
 
 app = Flask(__name__)
 load_before = time.time()
