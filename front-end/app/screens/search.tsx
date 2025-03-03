@@ -1,151 +1,111 @@
-import {Platform, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, StatusBar, FlatList} from "react-native";
-import {Icon, Input} from '@rneui/themed';
-import React, {useState, useRef, useEffect} from "react";
-import {router} from "expo-router";
+import { Platform, SafeAreaView, FlatList, StyleSheet, Text, TouchableOpacity, View, StatusBar } from "react-native";
+import { Icon, Input } from "@rneui/themed";
+import React, { useState, useRef, useEffect } from "react";
+import { router } from "expo-router";
 
-
-import ButtonStop from "@/components/ButtonStop";
-import ButtonBus from "@/components/ButtonBus";
 import SearchButtonStop from "@/components/SearchButtonStop";
+import SearchButtonBus from "@/components/SearchButtonBus";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
-import {useBusData} from "@/hooks/useBusData";
-import {Stop} from "@/types/stop";
-import {Bus} from "@/types/bus";
+import { useBusData } from "@/hooks/useBusData";
+import { Stop } from "@/types/stop";
+import { Bus } from "@/types/bus";
 
 export default function Search() {
-
-    const [selected, setSelected] = useState<"Bus" | "Stop" | null>(null);
-    const [query, setQuery] = useState<string>("");
-    const [filteredResults, setFilteredResults] = useState<(Bus | Stop)[]>([]);
+    const { stops, buses } = useBusData();
+    
+    const [selected, setSelected] = useState<"Stop" | "Bus">("Stop"); // Default to Stop
+    const [query, setQuery] = useState("");
+    const [filteredResults, setFilteredResults] = useState<(Bus | Stop)[]>(stops); // Fix here
     const inputRef = useRef(null);
 
-    // Access buses and stops from Redux
-    const { buses, stops } = useBusData();
-
-    // Type guards to check if an item is a Bus or a Stop
-    const isStop = (item: any): item is Stop => "name" in item && "code" in item;
-    const isBus = (item: any): item is Bus => "headsign" in item && "route" in item;
-
-    // Function to filter search results based on query and selected filter
-    const filterResults = (text: string, filter: "Bus" | "Stop" | null) => {
-        let results: (Bus | Stop)[] = [];
-
+    const changeFilter = (filter: "Stop" | "Bus") => {
+        setSelected(filter);
+        setQuery("");
+        setFilteredResults(filter === "Bus" ? buses : stops);
         if (filter === "Bus") {
-            results = buses;
-        } else if (filter === "Stop") {
-            results = stops;
+            console.log("Buses when Bus filter selected:", buses);
         } else {
-            results = [...buses, ...stops]; // Show both if no filter is selected
+            console.log("Stops when Stop filter selected:", stops);
         }
-
-        if (text.length > 0) {
-            results = results.filter((item) => {
-                if (isStop(item)) {
-                    return item.name.toLowerCase().includes(text.toLowerCase()) ||
-                           item.code.toLowerCase().includes(text.toLowerCase());
-                } else if (isBus(item)) {
-                    return item.headsign.toLowerCase().includes(text.toLowerCase()) ||
-                           item.route.toLowerCase().includes(text.toLowerCase());
-                }
-                return false;
-            });
-        }
-
-        setFilteredResults(results);
     };
 
-    // Handle input changes
     const handleSearch = (text: string) => {
         setQuery(text);
-        filterResults(text, selected);
-    };
+        const lowerText = text.toLowerCase().trim(); // Convert input to lowercase & remove extra spaces
 
-    // Handle filter selection
-    const changeFilter = (filter: "Bus" | "Stop") => {
-        setSelected(filter);
-        filterResults(query, filter);
+        if (text.length > 0) {
+            if (selected === "Stop") {
+                setFilteredResults(stops.filter((stop) =>
+                    stop.name.toLowerCase().includes(text.toLowerCase()) ||
+                    stop.code.toLowerCase().includes(text.toLowerCase())
+                ));
+            } else {
+                setFilteredResults(buses.filter((bus) =>
+                    bus.route.toLowerCase().trim() === lowerText || // Exact match for route
+                    bus.route.toLowerCase().includes(lowerText) || // Partial match for route
+                    bus.headsign.toLowerCase().trim() === lowerText || // Exact match for headsign
+                    bus.headsign.toLowerCase().includes(lowerText) // Partial match for headsign
+                ));
+                
+            }
+        } else {
+            setFilteredResults(selected === "Bus" ? buses : stops);
+        }
     };
 
     useEffect(() => {
         const timer = setTimeout(() => {
             if (inputRef.current) {
                 // @ts-ignore
-                inputRef.current.focus(); // Automatically focus input
+                inputRef.current.focus();
             }
         }, 100);
-
         return () => clearTimeout(timer);
     }, []);
 
-
     return (
-
         <SafeAreaView style={styles.background}>
-
-            {/* input field */}
+            {/* Input Field */}
             <Input
-            ref={inputRef}
-            inputStyle={styles.textPrimary}
-            inputContainerStyle={styles.input}
-            value={query} // Controlled input
-            onChangeText={handleSearch} // Update state on change
-            placeholder="Search bus stop or route"
-            rightIcon={<Icon iconStyle={styles.clear} onPress={() => handleSearch("")} name="plus" type="font-awesome"/>}    // clean input
-            leftIcon={<Icon iconStyle={styles.back} onPress={() => router.back()} name="chevron-left"       // go back
-                            type="font-awesome"/>}
-            >
-            </Input>
+                ref={inputRef}
+                inputStyle={styles.textPrimary}
+                inputContainerStyle={styles.input}
+                value={query}
+                onChangeText={handleSearch}
+                placeholder={`Search ${selected === "Bus" ? "bus route or headsign" : "bus stop or code"}`}
+                rightIcon={<Icon iconStyle={styles.clear} onPress={() => handleSearch("")} name="plus" type="font-awesome" />}
+                leftIcon={<Icon iconStyle={styles.back} onPress={() => router.back()} name="chevron-left" type="font-awesome" />}
+            />
 
+            {/* Filter Buttons */}
             <View style={styles.filters}>
-
-                {/* bus filter button */}
                 <TouchableOpacity
-                style={[styles.filter, {backgroundColor: selected === "Bus" ? colors.backgroundSecondary : colors.backgroundPrimary},]}
-                onPress={() => changeFilter("Bus")} 
-                activeOpacity={0.1}
+                    style={[styles.filter, { backgroundColor: selected === "Bus" ? colors.backgroundSecondary : colors.backgroundPrimary }]}
+                    onPress={() => changeFilter("Bus")}
+                    activeOpacity={0.1}
                 >
-                    <View>
-                        <Text style={[{color: selected === "Bus" ? colors.objectSelected : colors.textSecondary}]}>
-                            Bus
-                        </Text>
-                    </View>
+                    <Text style={{ color: selected === "Bus" ? colors.objectSelected : colors.textSecondary }}>Bus</Text>
                 </TouchableOpacity>
 
-                {/* stop filter button */}
                 <TouchableOpacity
-                style={[styles.filter, {backgroundColor: selected === "Stop" ? colors.backgroundSecondary : colors.backgroundPrimary},]}
-                onPress={() => changeFilter("Stop")} 
-                activeOpacity={0.1}
+                    style={[styles.filter, { backgroundColor: selected === "Stop" ? colors.backgroundSecondary : colors.backgroundPrimary }]}
+                    onPress={() => changeFilter("Stop")}
+                    activeOpacity={0.1}
                 >
-                    <View>
-                        <Text style={[{color: selected === "Stop" ? colors.objectSelected : colors.textSecondary}]}>
-                            Stop
-                        </Text>
-                    </View>
+                    <Text style={{ color: selected === "Stop" ? colors.objectSelected : colors.textSecondary }}>Stop</Text>
                 </TouchableOpacity>
             </View>
 
-            {/* List of filtered stops */}
+            {/* Filtered List */}
             <FlatList
-                data={filteredResults?.filter(item => item !== undefined) || []} // Ensure no undefined items
-                keyExtractor={(item, index) => (item?.id ? item.id.toString() : `key-${index}`)}
-                renderItem={({ item }) => item ? <SearchButtonStop item={item} /> : null}
-                ListEmptyComponent={<Text>No results found</Text>}
+                data={filteredResults}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) =>
+                    selected === "Bus" ? <SearchButtonBus item={item as Bus} /> : <SearchButtonStop item={item as Stop} />
+                }
             />
-
-            
-
-            {/* Display buses and stops based on search here */}
-            {/* <ScrollView>
-                <ButtonBus />
-                <ButtonStop />
-
-            </ScrollView> */}
-
-        </SafeAreaView >
-
-
+        </SafeAreaView>
     );
 }
 

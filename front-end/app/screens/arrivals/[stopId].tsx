@@ -74,8 +74,8 @@ export default function Stop() {
 
     // We can make a loading screen later
     if (arrivals.length === 0) return <Text>Loading...</Text>;
-    const stopData = stops.find(stop  => stop.id === +stopId); //converting to number
-    if (!stopData) return <Text>This stop isn't tracked anymore</Text>;
+    // const stopData = arrivals.find(stop => stop.busId === +stopId); //converting to number
+    // if (!stopData) return <Text>This bus isn't tracked anymore</Text>;
 
     return (
 
