@@ -1,11 +1,13 @@
 import {configureStore} from "@reduxjs/toolkit";
 import busReducer from "./busSlice";
 import favReducer from "./favSlice";
+import stopReducer from "./stopSlice";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const store = configureStore({
     reducer: {
         bus: busReducer,
+        stop: stopReducer,
         fav: favReducer,
     },
 });

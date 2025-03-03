@@ -7,7 +7,6 @@ import fonts from "@/config/Fonts";
 import {RootState} from "@/app/redux/store";
 import {addFavoriteStop, removeFavoriteStop} from "@/app/redux/favSlice";
 import {useCallback, useState} from "react";
-import {useBusData} from "@/hooks/useBusData";
 import {busApiUrl} from "@/config/constants";
 
 type BusInfo = { 'busId': number, 'route': string, 'headsign': string, 'arrival': string }
@@ -15,23 +14,21 @@ type BusInfo = { 'busId': number, 'route': string, 'headsign': string, 'arrival'
 const ArrivalsDisplay = ({arrivals}: { arrivals: BusInfo[] }) => (
 
     // Display each arriving bus of selected bus stop ordered by arrival time
-    <ScrollView>
 
+    <ScrollView>
         {arrivals.map((bus: BusInfo) => (
             //create component for each bus
-
             <View key={bus.busId} style={styles.bus}>
                 <View style={styles.first}>
-                    <Text style={styles.textSecondary}>{`${bus.route}`}</Text>      {/* Bus route */}
+                    <Text style={styles.textSecondary}>{bus.route}</Text> {/* Bus route */}
                 </View>
                 <View style={styles.second}>
-                    <Text style={styles.textSecondary}>{`${bus.headsign}`}</Text>   {/* Headsign */}
+                    <Text style={styles.textSecondary}>{bus.headsign}</Text> {/* Headsign */}
                 </View>
                 <View style={styles.third}>
-                    <Text style={styles.textSecondary}>{`${bus.arrival}`}</Text>    {/* arrival time */}
+                    <Text style={styles.textSecondary}>{bus.arrival}</Text> {/* arrival time */}
                 </View>
             </View>
-
         ))}
     </ScrollView>
 );
@@ -40,7 +37,7 @@ export default function Stop() {
 
     const {stopId} = useLocalSearchParams() as { stopId: string };
     const [arrivals, setArrivals] = useState<BusInfo[]>([]);
-    const {stops} = useBusData();
+    const stops = useSelector((state: RootState) => state.stop.stops);
     useFocusEffect(
         useCallback(() => {
             const fetchTrip = async () => {
@@ -60,7 +57,6 @@ export default function Stop() {
                 }
             };
 
-            // Fetch initially and then set up interval
             fetchTrip();
             const interval = setInterval(fetchTrip, 10000);
 
@@ -70,12 +66,19 @@ export default function Stop() {
     const favStops = useSelector((state: RootState) => state.fav.favStops);
     const isFav = favStops.includes(stopId);
     const dispatch = useDispatch();
+    const stopData = stops.find(stop => stop.id === +stopId); //converting to number
 
+    if (arrivals.length === 0) return (
+        <SafeAreaView style={styles.background}>
+            <Text style={styles.textPrimary}>Loading...</Text>
+        </SafeAreaView>
+    );
 
-    // We can make a loading screen later
-    if (arrivals.length === 0) return <Text>Loading...</Text>;
-    // const stopData = arrivals.find(stop => stop.busId === +stopId); //converting to number
-    // if (!stopData) return <Text>This bus isn't tracked anymore</Text>;
+    if (!stopData) return (
+        <SafeAreaView style={styles.background}>
+            <Text style={styles.textPrimary}>This stop isn't tracked anymore</Text>
+        </SafeAreaView>
+    );
 
     return (
 
@@ -89,22 +92,19 @@ export default function Stop() {
                     icon={<Icon iconStyle={styles.icon} name="chevron-left" type="font-awesome"/>}      //go back button
                     buttonStyle={styles.button}
                     onPress={() => router.back()}
-                    >
-                </Button>
+                />
 
                 <View style={styles.heading}>
-                    <Text style={styles.textPrimary}> {stopData.name} </Text>      {/* Name of the bus stop */}
+                    <Text style={styles.textPrimary}> {stopData?.name || 'Stop'} </Text>
                 </View>
 
-                <Button                
+                <Button
                     icon={<Icon iconStyle={styles.icon} name= {isFav ? "star" : "star-o"} type="font-awesome"/>}        // favourite button
                     buttonStyle={styles.button}
                     onPress={() => {
                         isFav ? dispatch(removeFavoriteStop(stopId)) : dispatch(addFavoriteStop(stopId))
                     }}
-                >
-                </Button>
-
+                />
             </View>
 
             {/* Description of displayed info component */}
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     },
     bus: {
         paddingTop: 20,
-        flexDirection: 'row', 
+        flexDirection: 'row',
         width: '100%',
     }
 });
