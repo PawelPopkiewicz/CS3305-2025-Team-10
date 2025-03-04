@@ -99,6 +99,8 @@ class Bus:
                             }
                     buses.append(data)
         print(f"Active buses/total buses: {len(buses)}/{len(cls._all)}")
+        if len(buses) == 0:
+            print("Likely to be missing live bus data.")
         return buses
             
 
@@ -121,11 +123,11 @@ class Stop:
     def get_info(self) -> dict[str, str]:
         """Returns the stop's information in a dictionary."""
         return {
-            "stop_id": self.stop_id,
-            "stop_code": self.stop_code,
-            "stop_name": self.stop_name,
-            "stop_lat": self.stop_lat,
-            "stop_lon": self.stop_lon
+            "id": self.stop_id,
+            "code": self.stop_code,
+            "name": self.stop_name,
+            "lat": self.stop_lat,
+            "lon": self.stop_lon
         }
     
     def get_timetables(self, date: datetime) -> list[dict]:
@@ -139,7 +141,7 @@ class Stop:
                 visit_time = timestamps.get(self.stop_id, None)
                 if visit_time and trip.latest_bus:
                     visits.append({
-                        "bus_id": trip.latest_bus,
+                        "id": trip.latest_bus,
                         "route": trip.route.route_short_name,
                         "headsign": trip.trip_headsign,
                         "arrival": visit_time,
@@ -153,7 +155,7 @@ class Stop:
                     #[print(f"{t.trip_id} : {BusStopVisit._all[t.bus_stop_times[0]].arrival_time} | {t.service.schedule_days[date.weekday()]}") for t in prev_trips[::-1]]
                     if len(prev_trips) > 0 and prev_trips[-1].latest_bus:
                         visits.append({
-                            "bus_id": prev_trips[-1].latest_bus,
+                            "id": prev_trips[-1].latest_bus,
                             "route": trip.route.route_short_name,
                             "headsign": trip.trip_headsign,
                             "arrival": visit_time,

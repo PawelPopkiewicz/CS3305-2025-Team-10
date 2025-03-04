@@ -109,9 +109,9 @@ def bus(bus_id):
             for stop_id, timestamp in stop_timestamps.get(day.strftime("%Y-%m-%d"), {}).items():
                 stop = bus_model.Stop._all.get(stop_id, None)
                 data = {
-                        "stop_id": stop.stop_id,
-                        "stop_code": stop.stop_code,
-                        "stop_name": stop.stop_name,
+                        "id": stop.stop_id,
+                        "code": stop.stop_code,
+                        "name": stop.stop_name,
                         "arrival": timestamp,
                         #"current_trip": True,
                         }
@@ -122,9 +122,9 @@ def bus(bus_id):
                 for stop_id, timestamp in stop_timestamps.get(day.strftime("%Y-%m-%d"), {}).items():
                     stop = bus_model.Stop._all.get(stop_id, None)
                     data = {
-                            "stop_id": stop.stop_id,
-                            "stop_code": stop.stop_code,
-                            "stop_name": stop.stop_name,
+                            "id": stop.stop_id,
+                            "code": stop.stop_code,
+                            "name": stop.stop_name,
                             "arrival": timestamp,
                             #"current_trip": False,
                             }

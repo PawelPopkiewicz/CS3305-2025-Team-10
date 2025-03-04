@@ -129,7 +129,7 @@ def stop_arrivals(stop_id: str):
         response = requests.get(f"{BUS_MODEL_URI}/v1/stop/arrivals/{stop_id}")
         if response.status_code == 200:
             data = [{
-                "bus_id": x["bus_id"],
+                "id": x["id"],
                 "route": x["route"],
                 "headsign": x["headsign"],
                 "arrival": datetime.datetime.fromtimestamp(x["arrival"]).strftime('%H:%M'),
@@ -172,9 +172,9 @@ def get_trips(bus_id: str):
         response = requests.get(f"{BUS_MODEL_URI}/v1/bus/{bus_id}")
         if response.status_code == 200:
             data = [{
-                "stop_id": x["stop_id"], 
-                "stop_code": x["stop_code"], 
-                "stop_name": x["stop_name"], 
+                "id": x["id"], 
+                "code": x["code"], 
+                "name": x["name"], 
                 "arrival": datetime.datetime.fromtimestamp(x["arrival"]).strftime('%H:%M'),
                 } for x in response.json()]
             return data                     # Standard response
