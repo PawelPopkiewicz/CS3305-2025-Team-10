@@ -67,18 +67,22 @@ export default function TripScreen() {
     return (
         <SafeAreaView style={styles.background}>
             <View style={styles.bus}>
-                <Button
-                    icon={<Icon iconStyle={styles.icon} name="chevron-left" type="font-awesome" />}
-                    buttonStyle={styles.button}
-                    onPress={() => router.back()}
-                />
 
-                {/* ✅ Wrap busData.route and busData.headsign in <Text> */}
-                <View style={styles.route}>
+                <View style={styles.first}>
+
+                    <Button
+                        icon={<Icon iconStyle={styles.icon} name="chevron-left" type="font-awesome" />}
+                        buttonStyle={styles.button}
+                        onPress={() => router.back()}
+                    />
+                </View>
+
+                {/* Wrap busData.route and busData.headsign in <Text> */}
+                <View style={styles.secondBus}>
                     <Text style={styles.textPrimary}>{busData.route}</Text>
                 </View>
 
-                <View style={styles.heading}>
+                <View style={styles.thirdBus}>
                     <Text style={styles.textPrimary}>{busData.headsign}</Text>
                 </View>
             </View>
@@ -115,7 +119,8 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
     },
-    route: { backgroundColor: colors.backgroundSecondary },
+    secondFramed: { backgroundColor: colors.backgroundSecondary, width: '20%'},
+    thirdBus: { width: '60%', flexShrink: 0, paddingRight: 10 },
     heading: { color: colors.textPrimary, fontSize: fonts.heading },
     button: { backgroundColor: colors.backgroundPrimary },
     icon: { color: colors.textPrimary },

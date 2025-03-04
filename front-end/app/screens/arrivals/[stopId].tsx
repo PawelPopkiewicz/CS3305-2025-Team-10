@@ -88,23 +88,30 @@ export default function Stop() {
             {/* Chosen bus stop */}
             <View style={styles.stop}>
 
-                <Button
-                    icon={<Icon iconStyle={styles.icon} name="chevron-left" type="font-awesome"/>}      //go back button
-                    buttonStyle={styles.button}
-                    onPress={() => router.back()}
-                />
+                <View style={styles.first}>
 
-                <View style={styles.heading}>
-                    <Text style={styles.textPrimary}> {stopData?.name || 'Stop'} </Text>
+                    <Button
+                        icon={<Icon iconStyle={styles.icon} name="chevron-left" type="font-awesome"/>}      //go back button
+                        buttonStyle={styles.button}
+                        onPress={() => router.back()}
+                    />
                 </View>
 
-                <Button
-                    icon={<Icon iconStyle={styles.icon} name= {isFav ? "star" : "star-o"} type="font-awesome"/>}        // favourite button
-                    buttonStyle={styles.button}
-                    onPress={() => {
-                        isFav ? dispatch(removeFavoriteStop(stopId)) : dispatch(addFavoriteStop(stopId))
-                    }}
-                />
+                <View style={styles.second}>
+                    <Text style={styles.textPrimary}> {`Stop ${stopData?.code}` || 'Stop'} </Text>
+                    <Text style={styles.textPrimary}> {`${stopData?.name}` || 'Stop'} </Text>
+                </View>
+
+                <View style={styles.third}>
+
+                    <Button
+                        icon={<Icon iconStyle={styles.icon} name= {isFav ? "star" : "star-o"} type="font-awesome"/>}        // favourite button
+                        buttonStyle={styles.button}
+                        onPress={() => {
+                            isFav ? dispatch(removeFavoriteStop(stopId)) : dispatch(addFavoriteStop(stopId))
+                        }}
+                    />
+                </View>
             </View>
 
             {/* Description of displayed info component */}
@@ -135,7 +142,8 @@ const styles = StyleSheet.create({
     second: {
         width: '60%',
         flexShrink: 0,
-        alignItems: 'center'
+        alignItems: 'center',
+        flexDirection: 'column'
     },
     third: {
         width: '20%',
