@@ -4,8 +4,6 @@ import {router} from 'expo-router';
 
 import colors from '@/config/Colors';
 import fonts from '@/config/Fonts';
-import {useBusData} from "@/hooks/useBusData";
-import {Bus} from "@/types/bus";
 
 const SearchButtonBus = ({ item }) => {
     return (

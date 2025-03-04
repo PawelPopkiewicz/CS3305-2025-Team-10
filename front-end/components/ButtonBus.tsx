@@ -4,13 +4,14 @@ import {router} from 'expo-router';
 
 import colors from '@/config/Colors';
 import fonts from '@/config/Fonts';
-import {useBusData} from "@/hooks/useBusData";
 import {Bus} from "@/types/bus";
+import {useSelector} from "react-redux";
+import {RootState} from "@/app/redux/store";
 
 const ButtonBus = () => {
 
-    const { buses } = useBusData();
 
+    const buses = useSelector((state: RootState) => state.bus.buses);
     // dummy data
     // const bus = [
     //     { id: 1, code: '2232', name: 'University College, Cork', arrival: '14:32' },

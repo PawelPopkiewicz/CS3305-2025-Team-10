@@ -7,13 +7,16 @@ import SearchButtonStop from "@/components/SearchButtonStop";
 import SearchButtonBus from "@/components/SearchButtonBus";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
-import { useBusData } from "@/hooks/useBusData";
 import { Stop } from "@/types/stop";
 import { Bus } from "@/types/bus";
+import {useSelector} from "react-redux";
+import {RootState} from "@/app/redux/store";
 
 export default function Search() {
-    const { stops, buses } = useBusData();
-    
+
+    const stops = useSelector((state: RootState) => state.stop.stops);
+    const buses = useSelector((state: RootState) => state.bus.buses);
+
     const [selected, setSelected] = useState<"Stop" | "Bus">("Stop"); // Default to Stop
     const [query, setQuery] = useState("");
     const [filteredResults, setFilteredResults] = useState<(Bus | Stop)[]>(stops); // Fix here

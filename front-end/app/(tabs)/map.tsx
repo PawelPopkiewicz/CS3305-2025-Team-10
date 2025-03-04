@@ -1,22 +1,23 @@
-import React, {useState} from "react";
-import {Text, StyleSheet, TouchableOpacity, SafeAreaView, Platform, StatusBar} from "react-native";
+import React from "react";
+import {Platform, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity} from "react-native";
 import {Icon} from '@rneui/themed';
 import MapView from "react-native-maps";
 import {router} from "expo-router";
 
 import BusMarker from "@/components/BusMarker";
 import StopMarker from "@/components/StopMarker";
-import {useBusData} from "@/hooks/useBusData";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 import {Stop} from "@/types/stop";
 import {Bus} from "@/types/bus";
+import {useSelector} from "react-redux";
+import {RootState} from "@/app/redux/store";
 
 
 const Map = () => {
-    const { stops, buses } = useBusData();
-    const [text, setText] = useState("");
-    // const [text, setText] = useState("");
+
+    const stops = useSelector((state: RootState) => state.stop.stops);
+    const buses = useSelector((state: RootState) => state.bus.buses);
 
 
     return (

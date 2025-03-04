@@ -5,7 +5,8 @@ import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 import { useCallback, useState } from "react";
 import { busApiUrl } from "@/config/constants";
-import { useBusData } from "@/hooks/useBusData";
+import {useSelector} from "react-redux";
+import {RootState} from "@/app/redux/store";
 
 type StopInfo = { stopId: number, code: string, name: string, arrival: string };
 
@@ -32,8 +33,7 @@ const TripDisplay = ({ trip }: { trip: StopInfo[] }) => (
 export default function TripScreen() {
     const { busId } = useLocalSearchParams() as { busId: string };
     const [trip, setTrip] = useState<StopInfo[]>([]);
-    const { buses } = useBusData();
-
+    const buses = useSelector((state: RootState) => state.bus.buses);
     useFocusEffect(
         useCallback(() => {
             const fetchTrip = async () => {
@@ -62,6 +62,8 @@ export default function TripScreen() {
     const busData = buses.find(bus => bus.id === +busId);
     if (!busData) return <Text>This bus isn't tracked anymore</Text>;
 
+    // @ts-ignore
+    // @ts-ignore
     return (
         <SafeAreaView style={styles.background}>
             <View style={styles.bus}>
