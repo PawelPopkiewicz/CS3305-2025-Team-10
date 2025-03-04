@@ -9,7 +9,7 @@ import {addFavoriteStop, removeFavoriteStop} from "@/app/redux/favSlice";
 import {useCallback, useState} from "react";
 import {busApiUrl} from "@/config/constants";
 
-type BusInfo = { 'busId': number, 'route': string, 'headsign': string, 'arrival': string }
+type BusInfo = { 'busId': string, 'route': string, 'headsign': string, 'arrival': string }
 
 const ArrivalsDisplay = ({arrivals}: { arrivals: BusInfo[] }) => (
 
@@ -42,7 +42,7 @@ export default function Stop() {
         useCallback(() => {
             const fetchTrip = async () => {
                 try {
-                    const response = await fetch(`${busApiUrl}/v1/arrivals/${parseInt(stopId)}`, {
+                    const response = await fetch(`${busApiUrl}/v1/arrivals/${stopId}`, {
                         method: "GET",
                         headers: {"Content-Type": "application/json"},
                     });
@@ -66,7 +66,7 @@ export default function Stop() {
     const favStops = useSelector((state: RootState) => state.fav.favStops);
     const isFav = favStops.includes(stopId);
     const dispatch = useDispatch();
-    const stopData = stops.find(stop => stop.id === +stopId); //converting to number
+    const stopData = stops.find(stop => stop.id === stopId); //converting to number
 
     if (arrivals.length === 0) return (
         <SafeAreaView style={styles.background}>

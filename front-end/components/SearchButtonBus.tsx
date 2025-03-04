@@ -10,7 +10,7 @@ const SearchButtonBus = ({ item }) => {
         <View style={styles.buttonContainer}>
             <TouchableOpacity
                 style={styles.buttonContainer}
-                onPress={() => router.push({ pathname: `/screens/trip/${String(item.id)}`, params: { bus: item.id } })}
+                onPress={() => router.push({ pathname: `/screens/trip/${item.id}`, params: { bus: item.id } })}
                 activeOpacity={0.1}
             >
                 <View>

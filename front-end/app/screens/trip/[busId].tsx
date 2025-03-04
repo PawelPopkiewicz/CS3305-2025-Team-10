@@ -8,7 +8,7 @@ import { busApiUrl } from "@/config/constants";
 import {useSelector} from "react-redux";
 import {RootState} from "@/app/redux/store";
 
-type StopInfo = { stopId: number, code: string, name: string, arrival: string };
+type StopInfo = { stopId: string, code: string, name: string, arrival: string };
 
 const TripDisplay = ({ trip }: { trip: StopInfo[] }) => (
     <ScrollView style={styles.path}>
@@ -38,7 +38,7 @@ export default function TripScreen() {
         useCallback(() => {
             const fetchTrip = async () => {
                 try {
-                    const response = await fetch(`${busApiUrl}/v1/trips/${parseInt(busId)}`, {
+                    const response = await fetch(`${busApiUrl}/v1/trips/${busId}`, {
                         method: "GET",
                         headers: { "Content-Type": "application/json" },
                     });
@@ -59,7 +59,7 @@ export default function TripScreen() {
     );
 
     if (trip.length === 0) return <Text>Loading...</Text>;
-    const busData = buses.find(bus => bus.id === +busId);
+    const busData = buses.find(bus => bus.id === busId);
     if (!busData) return <Text>This bus isn't tracked anymore</Text>;
 
     // @ts-ignore

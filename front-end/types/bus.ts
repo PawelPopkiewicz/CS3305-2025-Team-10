@@ -1,5 +1,5 @@
 export type Bus = {
-    id: number;
+    id: string;
     route: string;
     headsign: string;
     direction: number;

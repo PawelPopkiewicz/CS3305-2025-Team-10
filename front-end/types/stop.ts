@@ -1,5 +1,5 @@
 export type Stop = {
-    id: number;
+    id: string;
     name: string;
     code: string;
     lat: number;
