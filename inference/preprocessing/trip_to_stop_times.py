@@ -68,6 +68,7 @@ class Trip():
         """Creates one dict which will serve as a row in csv for all stop"""
         if stop_time is None:
             return [None]*2
+
         scheduled_arrival_time = round(map_strtime_to_timestamp(
             self.record["start_date"], stop_info[2]) - self.start_time, 1)
         scheduled_departure_time = round(map_strtime_to_timestamp(
@@ -78,12 +79,12 @@ class Trip():
                 "scheduled_arrival_time": scheduled_arrival_time,
                 "scheduled_departure_time": scheduled_departure_time
                 }
+
         time_to_stop, distance_to_stop = 0, 0
-        idle_time = 0
         if last_stop is not None:
             time_to_stop = round(scheduled_arrival_time - last_stop["scheduled_arrival_time"], 1)
             distance_to_stop = round(stop_distance - last_stop["stop_distance"], 1)
-            idle_time = round(last_stop["scheduled_departure_time"] - last_stop["scheduled_arrival_time"], 1)
+
         stop_row = {
                 "id": self.record_id,
                 "route_name": self.route_name,
@@ -92,10 +93,10 @@ class Trip():
                 "stop_id": stop_info[0],
                 "distance_to_stop": distance_to_stop,
                 "time_to_stop": time_to_stop,
-                "idle_time": idle_time,
                 "residual_stop_time": round(
                     (stop_time - self.start_time) - scheduled_arrival_time - self.current_delay, 1),
                 }
+
         return stop_row, last_stop_info
 
 
@@ -113,7 +114,6 @@ class TripGenerator():
         self.direction = bool(record["direction_id"])
         self.stop_distances = get_stop_distances_for_trip(
                 self.trip_id, self.direction)
-
         self.trips = []
 
     def check_trip_filters_after(self):
@@ -124,8 +124,7 @@ class TripGenerator():
 
     def check_trip_filters_before(self):
         """Return true if the trip is eligible for conversion"""
-        return self.on_route_filter() and check_trip_id_exists(
-                self.trip_id, self.direction)
+        return check_trip_id_exists(self.trip_id, self.direction)
 
     def on_route_filter(self):
         """Checks if any of the updates are not on route"""
@@ -160,18 +159,13 @@ class TripGenerator():
 
     def create_trips(self, update_rows):
         """Computes the arrival times for all stops based on the updates"""
-
         trip_counter = 1
         trip = Trip(self.record, trip_counter)
         stop_index = 0
 
         # skip the stops which are before the first update
         while self.stop_distances[stop_index][1] < update_rows[0][1]:
-            # stop_info = self.stop_distances[stop_index]
-            # stop_times.append(self.create_stop_row_dict(
-            #     stop_info[0], stop_info[1], None))
             stop_index += 1
-
             if stop_index >= len(self.stop_distances):
                 return self.trips
 
@@ -187,40 +181,31 @@ class TripGenerator():
                     stop_info[1])
 
             while stop_time is not None:
-
+                # Split the trips
                 if last_stop is not None and self.is_idle_stop(last_stop):
-                    # Split the trips
                     self.trips.append(trip)
                     trip_counter += 1
                     trip = Trip(self.record, trip_counter)
                     last_stop = None
-
+                # Initiate the config data for a trip
                 if not trip.configured:
-                    # Initiate the config data for a trip
                     trip.config(map_strtime_to_timestamp(
                             self.record["start_date"], stop_info[2]),
                             stop_info[1],
                             stop_time)
-
+                # Add the stop row to the trip
                 last_stop = trip.add_stop(stop_info, stop_time, last_stop)
                 stop_index += 1
-
+                # Exit if we reach the end of stops in the while loop
                 if stop_index >= len(self.stop_distances):
                     self.trips.append(trip)
                     return self.trips
-
+                # Get the next stop_time data
                 stop_info = self.stop_distances[stop_index]
                 stop_time = calc_interpolation(
                         current_update[1], current_update[0],
                         next_update[1], next_update[0],
                         stop_info[1])
-
-        # Add all stops after the last update
-        # for i in range(stop_index, len(self.stop_distances)):
-        #     stop_info = self.stop_distances[stop_index]
-        #     stop_times.append(self.create_stop_row_dict(
-        #         stop_info[0], stop_info[1], None))
-        #     stop_index += 1
 
         self.trips.append(trip)
         return self.trips
@@ -228,11 +213,11 @@ class TripGenerator():
     def create_update_row_dict(self, update):
         """Creates the row per update"""
         timestamp = int(update["timestamp"])
-        distance = map_coord_to_distance(
+        distance, off_route = map_coord_to_distance(
             self.trip_id, self.direction,
             float(update["latitude"]), float(update["longitude"])
         )
-        return (timestamp, distance)
+        return (timestamp, distance), off_route
 
     def create_update_rows(self):
         """Creates a list of timestamp and distance for updates"""
@@ -240,7 +225,9 @@ class TripGenerator():
         update_rows = []
         updates = reversed(self.record["vehicle_updates"])
         for update in updates:
-            update_row = self.create_update_row_dict(update)
+            update_row, off_route = self.create_update_row_dict(update)
+            if off_route > self.OFF_ROUTE_THRESHOLD:
+                return None
             update_rows.append(update_row)
         return list(reversed(update_rows))
 
@@ -249,6 +236,8 @@ class TripGenerator():
         if not self.check_trip_filters_before():
             return None
         update_rows = self.create_update_rows()
+        if update_rows is None:
+            return None
         self.create_trips(update_rows)
         self.check_trip_filters_after()
         return self.trips
@@ -257,7 +246,3 @@ class TripGenerator():
 if __name__ == "__main__":
     from .json_io import load_json
     data = load_json("test_record")
-    test_trip = Trip(data)
-    test_stop_times = test_trip.map_record_to_stop_times()
-    for stop in test_stop_times:
-        logging.info(stop)

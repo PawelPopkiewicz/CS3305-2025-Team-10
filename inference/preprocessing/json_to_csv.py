@@ -43,7 +43,7 @@ def create_csv(raw_json_filename, csv_filename, subset_trips=None):
 
         tg = TripGenerator(record)
         trips = tg.map_record_to_stop_times()
-        if len(trips) > 0:
+        if trips is not None and len(trips) > 0:
             for trip in trips:
                 rows += trip.stops
             processed_trips += 1

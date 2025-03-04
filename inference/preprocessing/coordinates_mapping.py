@@ -42,7 +42,8 @@ def map_coord_to_distance(trip_id, direction, lat, lon):
     """Maps a coordinate to a distance for a specific trip"""
     conn = create_connection()
     query = """
-    SELECT shape_dist_traveled FROM shapes
+    SELECT shape_dist_traveled, shape_pt_lat, shape_pt_lon
+    FROM shapes
     WHERE shape_id IN (
         SELECT shape_id FROM trips
         WHERE trip_id = %s AND direction = %s
@@ -54,7 +55,10 @@ def map_coord_to_distance(trip_id, direction, lat, lon):
     cursor.execute(query, (trip_id, bool(direction), lat, lon))
     dist_travelled = cursor.fetchone()
     close_connection(conn)
-    return dist_travelled[0] if dist_travelled else None
+    if dist_travelled is not None:
+        off_route_distance = meters_between_coords(lat, lon, dist_travelled[1], dist_travelled[2])
+        return dist_travelled[0], off_route_distance
+    return None
 
 
 def get_stop_distances_for_trip(trip_id, direction):
