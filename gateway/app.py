@@ -4,6 +4,7 @@ Gateway providing connection to frontend
 from flask import Flask, abort
 import requests
 import os
+import datetime
 
 
 app = Flask(__name__)
@@ -84,6 +85,24 @@ def test_bus():
         debug_print("Failed to fetch buses", e)
         return abort(500, "Failed to fetch buses")  # Any other status code
 
+@app.route("/v1/routes", methods=["GET"])
+def get_all_routes():
+    """
+    get all routes
+    """
+    try:
+        response = requests.get(f"{BUS_MODEL_URI}/v1/route")
+        if response.status_code == 200:
+            return response.json()          # Standard response
+        elif response.status_code == 404:
+            return abort(404)               # Not found
+        else:
+            debug_print("Failed to fetch routes", e)
+            return abort(500, "Failed to fetch routes")
+    except requests.exceptions.RequestException as e:
+        debug_print("Failed to fetch routes", e)
+        return abort(500, "Failed to fetch routes")
+
 @app.route('/v1/stops', methods=['GET'])
 def get_stops():
     """Fetches the details and location of all stops."""
@@ -109,7 +128,13 @@ def stop_arrivals(stop_id: str):
     try:
         response = requests.get(f"{BUS_MODEL_URI}/v1/stop/arrivals/{stop_id}")
         if response.status_code == 200:
-            return response.json()          # Standard response
+            data = [{
+                "bus_id": x["bus_id"],
+                "route": x["route"],
+                "headsign": x["headsign"],
+                "arrival": datetime.datetime.fromtimestamp(x["arrival"]).strftime('%H:%M'),
+                } for x in response.json()]
+            return data                     # Standard response
         elif response.status_code == 404:
             return abort(404)               # Not found
         else:
@@ -150,7 +175,13 @@ def get_trips(bus_id: str):
     try:
         response = requests.get(f"{BUS_MODEL_URI}/v1/bus/{bus_id}")
         if response.status_code == 200:
-            return response.json()          # Standard response
+            data = [{
+                "stop_id": x["stop_id"], 
+                "stop_code": x["stop_code"], 
+                "stop_name": x["stop_name"], 
+                "arrival": datetime.datetime.fromtimestamp(x["arrival"]).strftime('%H:%M'),
+                } for x in response.json()]
+            return data                     # Standard response
         elif response.status_code == 404:
             return abort(404)               # Not found
         else:
