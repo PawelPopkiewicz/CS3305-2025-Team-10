@@ -1,7 +1,7 @@
 import {Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View} from "react-native";
 
 import ButtonStop from "@/components/ButtonStop";
-import {ButtonBus} from "@/components/ButtonBus";
+import {ButtonRoute} from "@/components/ButtonRoute";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 
@@ -31,7 +31,7 @@ export default function Index() {
                     </View>
                     {/* to be made functional once we store favourites*/}
                     <ScrollView>
-                        <ButtonBus />
+                        <ButtonRoute />
                     </ScrollView>
 
                 </View>
