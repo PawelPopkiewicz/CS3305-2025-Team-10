@@ -1,14 +1,14 @@
-import {createSlice, Dispatch, ThunkDispatch, UnknownAction} from '@reduxjs/toolkit';
+import {createSlice, Dispatch, ThunkDispatch} from '@reduxjs/toolkit';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-interface BusState {
-    favStops: string[];
-    //favRoutes: string[];
+interface FavState {
+    stops: string[];
+    routes: string[];
 }
 
-const initialState: BusState = {
-    favStops: [],
-    //favRoutes: [],
+const initialState: FavState = {
+    stops: [],
+    routes: [],
 };
 
 const favoritesSlice = createSlice({
@@ -16,15 +16,23 @@ const favoritesSlice = createSlice({
     initialState,
     reducers: {
         addFavoriteStop: (state, action) => {
-            // @ts-ignore
-            state.favStops.push(action.payload);
+            state.stops.push(action.payload);
         },
         removeFavoriteStop: (state, action) => {
-            state.favStops = state.favStops.filter((item) => item !== action.payload);
+            state.stops = state.stops.filter((item) => item !== action.payload);
         },
         setFavoriteStops: (state, action) => {
             return action.payload;
         },
+        addFavoriteRoute: (state, action) => {
+            state.routes.push(action.payload);
+        },
+        removeFavoriteRoute: (state, action) => {
+            state.routes = state.routes.filter((item) => item !== action.payload);
+        },
+        setFavoriteRoutes: (state, action) => {
+            state.routes = action.payload;
+        }
     },
 });
 
@@ -42,6 +50,12 @@ export const rehydrateFavorites = async (dispatch: ThunkDispatch<any, any, any> 
 };
 
 
-
-export const { addFavoriteStop, setFavoriteStops, removeFavoriteStop} = favoritesSlice.actions;
+export const {
+    addFavoriteStop,
+    setFavoriteStops,
+    removeFavoriteStop,
+    removeFavoriteRoute,
+    setFavoriteRoutes,
+    addFavoriteRoute
+} = favoritesSlice.actions;
 export default favoritesSlice.reducer;

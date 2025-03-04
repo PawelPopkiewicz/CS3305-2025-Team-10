@@ -1,19 +1,16 @@
-import React, { useCallback, useState } from "react";
-import { Platform, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity } from "react-native";
-import { Icon } from '@rneui/themed';
-import MapView, { Region } from "react-native-maps";
-import { router } from "expo-router";
-import { useSelector, shallowEqual } from "react-redux";
+import React, {useCallback, useState} from "react";
+import {Platform, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity} from "react-native";
+import {Icon} from '@rneui/themed';
+import MapView, {Region} from "react-native-maps";
+import {router} from "expo-router";
+import {shallowEqual, useSelector} from "react-redux";
 // import ClusteredMapView from "react-native-maps-super-cluster";
-
 import BusMarker from "@/components/BusMarker";
 import StopMarker from "@/components/StopMarker";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
-import { Stop } from "@/types/stop";
-import { Bus } from "@/types/bus";
-import { RootState } from "@/app/redux/store";
-import { DEFAULT_REGION } from "@/config/constants";
+import {RootState} from "@/app/redux/store";
+import {DEFAULT_REGION} from "@/config/constants";
 
 const Map = () => {
     const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);

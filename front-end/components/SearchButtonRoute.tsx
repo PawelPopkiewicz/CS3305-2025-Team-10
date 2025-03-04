@@ -4,8 +4,9 @@ import {router} from 'expo-router';
 
 import colors from '@/config/Colors';
 import fonts from '@/config/Fonts';
+import {Route} from "@/types/route";
 
-const SearchButtonRoute = ({ item }) => {
+const SearchButtonRoute = ({ item }: { item: Route }) => {
     return (
         <View style={styles.buttonContainer}>
             <TouchableOpacity

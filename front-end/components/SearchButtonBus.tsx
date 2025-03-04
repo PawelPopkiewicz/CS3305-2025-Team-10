@@ -1,11 +1,11 @@
 import React from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {router} from 'expo-router';
-
 import colors from '@/config/Colors';
 import fonts from '@/config/Fonts';
+import {Bus} from "@/types/bus";
 
-const SearchButtonBus = ({ item }) => {
+const SearchButtonBus = ({ item } : {item : Bus}) => {
     return (
         <View style={styles.buttonContainer}>
             <TouchableOpacity

@@ -63,7 +63,7 @@ export default function Stop() {
             return () => clearInterval(interval); // Cleanup interval on unmount
         }, [stopId])
     );
-    const favStops = useSelector((state: RootState) => state.fav.favStops, shallowEqual);
+    const favStops = useSelector((state: RootState) => state.fav.stops, shallowEqual);
     const isFav = favStops.includes(stopId);
     const dispatch = useDispatch();
     const stopData = stops.find(stop => stop.id === stopId); //converting to number

@@ -1,16 +1,14 @@
-import { Platform, SafeAreaView, FlatList, StyleSheet, Text, TouchableOpacity, View, StatusBar } from "react-native";
-import { Icon, Input } from "@rneui/themed";
-import React, { useState, useRef, useEffect } from "react";
-import { router } from "expo-router";
+import {FlatList, Platform, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {Icon, Input} from "@rneui/themed";
+import React, {useEffect, useRef, useState} from "react";
+import {router} from "expo-router";
 
 import SearchButtonStop from "@/components/SearchButtonStop";
-import SearchButtonBus from "@/components/SearchButtonBus";
 import SearchButtonRoute from "@/components/SearchButtonRoute";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
-import { Stop } from "@/types/stop";
-import { Bus } from "@/types/bus";
-import { Route } from "@/types/route";
+import {Stop} from "@/types/stop";
+import {Route} from "@/types/route";
 import {shallowEqual, useSelector} from "react-redux";
 import {RootState} from "@/app/redux/store";
 

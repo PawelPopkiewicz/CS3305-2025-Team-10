@@ -1,17 +1,11 @@
-import {SafeAreaView, StyleSheet, Text, View, ScrollView, Platform, StatusBar} from "react-native";
+import {Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View} from "react-native";
 
 import ButtonStop from "@/components/ButtonStop";
-import ButtonBus from "@/components/ButtonBus";
+import {ButtonRoute} from "@/components/ButtonRoute";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 
 export default function Index() {
-
-    // const bus = [
-    //     { id: 1, code: '2232', name: 'University College, Cork', arrival: '14:32' },
-    //     { id: 2, code: '7890', name: 'City Centre, Cork', arrival: '15:45' },
-    //     { id: 3, code: '4567', name: 'Kent Station, Cork', arrival: '15:00' }
-    // ]
 
     return (
 
@@ -35,7 +29,7 @@ export default function Index() {
                 </View>
                 {/* to be made functional once we store favourites*/}
                 <ScrollView>
-                    <ButtonBus />
+                    <ButtonRoute/>
                 </ScrollView>
 
             </View>
