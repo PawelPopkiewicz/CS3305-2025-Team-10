@@ -121,6 +121,10 @@ def stop_arrivals(stop_id: str):
         return abort(500, "Failed to fetch buses for the given stop")
 
 
+@app.route('/v1/routes', methods=['GET'])
+def get_routes():
+    return [{"name": "220"}, {"name": "220x"}, {"name": "208"}]
+
 @app.route('/v1/buses', methods=['GET'])
 def get_buses():
     """Fetches details for all buses, including location."""
