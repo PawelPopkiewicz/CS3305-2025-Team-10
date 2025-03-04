@@ -19,13 +19,13 @@ const ArrivalsDisplay = ({arrivals}: { arrivals: BusInfo[] }) => (
         {arrivals.map((bus: BusInfo) => (
             //create component for each bus
             <View key={bus.busId} style={styles.bus}>
-                <View style={styles.first}>
+                <View style={styles.firstRow}>
                     <Text style={styles.textSecondary}>{bus.route}</Text> {/* Bus route */}
                 </View>
-                <View style={styles.second}>
+                <View style={styles.secondRow}>
                     <Text style={styles.textSecondary}>{bus.headsign}</Text> {/* Headsign */}
                 </View>
-                <View style={styles.third}>
+                <View style={styles.thirdRow}>
                     <Text style={styles.textSecondary}>{bus.arrival}</Text> {/* arrival time */}
                 </View>
             </View>
@@ -88,7 +88,7 @@ export default function Stop() {
             {/* Chosen bus stop */}
             <View style={styles.stop}>
 
-                <View style={styles.first}>
+                <View style={styles.firstRow}>
 
                     <Button
                         icon={<Icon iconStyle={styles.icon} name="chevron-left" type="font-awesome"/>}      //go back button
@@ -97,12 +97,12 @@ export default function Stop() {
                     />
                 </View>
 
-                <View style={styles.second}>
+                <View style={[styles.secondRow, {backgroundColor: colors.backgroundSecondary, paddingVertical: 3, borderRadius:10}]}>
                     <Text style={styles.textPrimary}> {`Stop ${stopData?.code}` || 'Stop'} </Text>
                     <Text style={styles.textPrimary}> {`${stopData?.name}` || 'Stop'} </Text>
                 </View>
 
-                <View style={styles.third}>
+                <View style={styles.thirdRow}>
 
                     <Button
                         icon={<Icon iconStyle={styles.icon} name= {isFav ? "star" : "star-o"} type="font-awesome"/>}        // favourite button
@@ -116,13 +116,13 @@ export default function Stop() {
 
             {/* Description of displayed info component */}
             <View style={styles.description}>
-                    <View style={styles.first}>
+                    <View style={styles.firstRow}>
                         <Text style={styles.textDescription}>Route</Text>
                     </View>
-                    <View style={styles.second}>
+                    <View style={styles.secondRow}>
                         <Text style={styles.textDescription}>Direction</Text>
                     </View>
-                    <View style={styles.third}>
+                    <View style={styles.thirdRow}>
                         <Text style={styles.textDescription}>Departs</Text>
                     </View>
 
@@ -135,17 +135,24 @@ export default function Stop() {
 }
 
 const styles = StyleSheet.create({
-    first: {
+    firstRow: {
         width: '20%',
         alignItems: 'center'
     },
-    second: {
+    secondRow: {
         width: '60%',
         flexShrink: 0,
         alignItems: 'center',
         flexDirection: 'column'
     },
-    third: {
+    secondRowCode: {
+        
+        width: '60%',
+        flexShrink: 0,
+        alignItems: 'center',
+        flexDirection: 'column'
+    },
+    thirdRow: {
         width: '20%',
         alignItems: 'center',
         paddingRight: 10,
