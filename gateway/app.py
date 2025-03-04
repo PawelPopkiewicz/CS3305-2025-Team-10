@@ -6,6 +6,7 @@ import requests
 import os
 import datetime
 
+import json
 
 app = Flask(__name__)
 
@@ -110,7 +111,20 @@ def get_stops():
     try:
         response = requests.get(f"{BUS_MODEL_URI}/v1/stops")
         if response.status_code == 200:
-            return response.json()          # Standard response
+            stops = [
+                {
+                    "id": stop["stop_id"],  # Keep original stop_id
+                    "name": stop["stop_name"],
+                    "code": stop["stop_code"],
+                    "lat": stop["stop_lat"],
+                    "lon": stop["stop_lon"]
+                }
+                for stop in response
+            ]
+
+            # Print formatted result
+            
+            return stops.json()          # Standard response
         elif response.status_code == 404:
             return abort(404)               # Not found
         else:
