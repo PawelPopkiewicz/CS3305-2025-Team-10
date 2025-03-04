@@ -8,9 +8,10 @@ import SearchButtonRoute from "@/components/SearchButtonRoute";
 export const ButtonRoute = () => {
 
 
-    const buses = useSelector((state: RootState) => state.route.routes, shallowEqual);
-    const favs = useSelector((state: RootState) => state.fav.routes, shallowEqual);
-    const favRoutes = buses.filter((route: Route) => favs.includes(route.name));
+    const routes = useSelector((state: RootState) => state.route.routes, shallowEqual);
+    const favs = useSelector((state: RootState) => state.fav.routes ?? [], shallowEqual);
+    const favRoutes = routes.filter((route: Route) => favs?.includes?.(route.name));
+
     return (
         <View>
             {/* create component for each bus route */}
