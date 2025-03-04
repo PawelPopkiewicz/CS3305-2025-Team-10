@@ -33,7 +33,7 @@ const TripDisplay = ({ trip }: { trip: StopInfo[] }) => (
 export default function TripScreen() {
     const { busId } = useLocalSearchParams() as { busId: string };
     const [trip, setTrip] = useState<StopInfo[]>([]);
-    const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
+    const buses = useSelector((state: RootState) => state.bus.buses, shallowEqual);
     useFocusEffect(
         useCallback(() => {
             const fetchTrip = async () => {
