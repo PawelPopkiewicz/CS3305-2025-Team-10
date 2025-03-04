@@ -35,6 +35,11 @@ export default function TripScreen() {
     const { busId } = useLocalSearchParams() as { busId: string };
     const [trip, setTrip] = useState<StopInfo[]>([]);
     const buses = useSelector((state: RootState) => state.bus.buses, shallowEqual);
+    const favRoutes = useSelector((state: RootState) => state.fav.routes, shallowEqual);
+    const busData = buses.find(bus => bus.id === busId);
+    const dispatch = useDispatch();
+
+
     useFocusEffect(
         useCallback(() => {
             const fetchTrip = async () => {
@@ -59,12 +64,9 @@ export default function TripScreen() {
         }, [busId])
     );
 
-    if (trip.length === 0) return <Text>Loading...</Text>;
-    const busData = buses.find(bus => bus.id === busId);
     if (!busData) return <Text>This bus isn't tracked anymore</Text>;
-    const favRoutes = useSelector((state: RootState) => state.fav.routes, shallowEqual);
     const isFav = favRoutes.includes(busData.route);
-    const dispatch = useDispatch();
+    if (trip.length === 0) return <Text>Loading...</Text>;
 
 
     // @ts-ignore
