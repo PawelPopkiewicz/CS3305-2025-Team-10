@@ -10,8 +10,9 @@ import {RootState} from "@/app/redux/store";
 
 const ButtonStop = () => {
     const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
-    const favs = useSelector((state: RootState) => state.fav.stops, shallowEqual);
-    const favStops = stops.filter((stop: Stop) => favs.includes(stop.id));
+    const favs = useSelector((state: RootState) => state.fav.stops ?? [], shallowEqual);
+    const favStops = stops.filter((stop: Stop) => favs?.includes?.(stop.id));
+
     return (
         <View>
 
