@@ -3,6 +3,7 @@ import { Platform, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity }
 import { Icon } from '@rneui/themed';
 import MapView, { Region } from "react-native-maps";
 import { router } from "expo-router";
+import { useSelector, shallowEqual } from "react-redux";
 // import ClusteredMapView from "react-native-maps-super-cluster";
 
 import BusMarker from "@/components/BusMarker";
@@ -11,19 +12,14 @@ import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 import { Stop } from "@/types/stop";
 import { Bus } from "@/types/bus";
-import { useSelector, shallowEqual } from "react-redux";
 import { RootState } from "@/app/redux/store";
+import { DEFAULT_REGION } from "@/config/constants";
 
 const Map = () => {
     const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
     const buses = useSelector((state: RootState) => state.bus.buses, shallowEqual);
     
-    const [region, setRegion] = useState<Region>({
-        latitude: 51.8940,
-        longitude: -8.4900,
-        latitudeDelta: 0.03,
-        longitudeDelta: 0.03,
-    });
+    const [region, setRegion] = useState<Region>(DEFAULT_REGION);
 
     // Filter only visible markers
     const getVisibleMarkers = useCallback(() => {
