@@ -38,8 +38,8 @@ export default React.memo(StopMarker);
 
 const styles = {
     stopIcon: {
-        width: 25,
-        height: 25,
+        width: 15,
+        height: 15,
         resizeMode: "contain",
     },
 };
