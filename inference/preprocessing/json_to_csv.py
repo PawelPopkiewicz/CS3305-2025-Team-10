@@ -42,7 +42,7 @@ def create_csv(raw_json_filename, csv_filename, subset_trips=None):
             logging.info(f"progress = {100*processed/num_of_rows_to_process:.2f}%")
 
         tg = TripGenerator(record)
-        trips = tg.map_record_to_stop_times()
+        trips = tg.map_record_to_training_stop_times()
         if trips is not None and len(trips) > 0:
             for trip in trips:
                 rows += trip.stops

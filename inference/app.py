@@ -6,7 +6,10 @@ import uuid
 from functools import wraps
 from flask import jsonify, Flask, request
 
+from inference.bus_time_inference import BusTimesInference
+
 app = Flask(__name__)
+bus_time_inference = BusTimesInference("bus_time_prediction_model.pth")
 
 
 def general_exception(func):
@@ -28,10 +31,9 @@ def predict_times():
     Input: Inference input for the model
     Returns: The prediction for the bus route
     """
-    response = {
-            'message': "Work in progress"
-            }
-    return jsonify(response), 200
+    trip_data = request.get_json()
+    prediction = bus_time_inference.predict_trip(trip_data)
+    return jsonify(prediction), 200
 
 
 @app.route("/predictions/<model_id>", methods=["POST"])
