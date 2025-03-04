@@ -4,6 +4,7 @@ Gateway providing connection to frontend
 from flask import Flask, abort
 import requests
 import os
+import datetime
 
 
 app = Flask(__name__)
@@ -109,7 +110,13 @@ def stop_arrivals(stop_id: str):
     try:
         response = requests.get(f"{BUS_MODEL_URI}/v1/stop/arrivals/{stop_id}")
         if response.status_code == 200:
-            return response.json()          # Standard response
+            data = [{
+                "bus_id": x["bus_id"],
+                "route": x["route"],
+                "headsign": x["headsign"],
+                "arrival": datetime.datetime.fromtimestamp(x["arrival"]).strftime('%H:%M'),
+                } for x in response.json()]
+            return data                     # Standard response
         elif response.status_code == 404:
             return abort(404)               # Not found
         else:
@@ -146,7 +153,13 @@ def get_trips(bus_id: str):
     try:
         response = requests.get(f"{BUS_MODEL_URI}/v1/bus/{bus_id}")
         if response.status_code == 200:
-            return response.json()          # Standard response
+            data = [{
+                "stop_id": x["stop_id"], 
+                "stop_code": x["stop_code"], 
+                "stop_name": x["stop_name"], 
+                "arrival": datetime.datetime.fromtimestamp(x["arrival"]).strftime('%H:%M'),
+                } for x in response.json()]
+            return data                     # Standard response
         elif response.status_code == 404:
             return abort(404)               # Not found
         else:
