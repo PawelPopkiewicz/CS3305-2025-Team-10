@@ -5,29 +5,31 @@ import { router } from "expo-router";
 
 import SearchButtonStop from "@/components/SearchButtonStop";
 import SearchButtonBus from "@/components/SearchButtonBus";
+import SearchButtonRoute from "@/components/SearchButtonRoute";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 import { Stop } from "@/types/stop";
 import { Bus } from "@/types/bus";
+import { Route } from "@/types/route";
 import {shallowEqual, useSelector} from "react-redux";
 import {RootState} from "@/app/redux/store";
 
 export default function Search() {
 
     const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
-    const buses = useSelector((state: RootState) => state.bus.buses, shallowEqual);
+    const routes = useSelector((state: RootState) => state.route.routes, shallowEqual);
 
-    const [selected, setSelected] = useState<"Stop" | "Bus">("Stop"); // Default to Stop
+    const [selected, setSelected] = useState<"Stop" | "Route">("Stop"); // Default to Stop
     const [query, setQuery] = useState("");
-    const [filteredResults, setFilteredResults] = useState<(Bus | Stop)[]>(stops); // Fix here
+    const [filteredResults, setFilteredResults] = useState<(Route | Stop)[]>(stops); // Fix here
     const inputRef = useRef(null);
 
-    const changeFilter = (filter: "Stop" | "Bus") => {
+    const changeFilter = (filter: "Stop" | "Route") => {
         setSelected(filter);
         setQuery("");
-        setFilteredResults(filter === "Bus" ? buses : stops);
-        if (filter === "Bus") {
-            console.log("Buses when Bus filter selected:", buses);
+        setFilteredResults(filter === "Route" ? routes : stops);
+        if (filter === "Route") {
+            console.log("Buses when Bus filter selected:", routes);
         } else {
             console.log("Stops when Stop filter selected:", stops);
         }
@@ -44,16 +46,14 @@ export default function Search() {
                     stop.code.toLowerCase().includes(text.toLowerCase())
                 ));
             } else {
-                setFilteredResults(buses.filter((bus) =>
-                    bus.route.toLowerCase().trim() === lowerText || // Exact match for route
-                    bus.route.toLowerCase().includes(lowerText) || // Partial match for route
-                    bus.headsign.toLowerCase().trim() === lowerText || // Exact match for headsign
-                    bus.headsign.toLowerCase().includes(lowerText) // Partial match for headsign
+                setFilteredResults(routes.filter((route) =>
+                    route.name.toLowerCase().trim() === lowerText || // Exact match for route
+                    route.name.toLowerCase().includes(lowerText) // Partial match for route
                 ));
                 
             }
         } else {
-            setFilteredResults(selected === "Bus" ? buses : stops);
+            setFilteredResults(selected === "Route" ? routes : stops);
         }
     };
 
@@ -76,7 +76,7 @@ export default function Search() {
                 inputContainerStyle={styles.input}
                 value={query}
                 onChangeText={handleSearch}
-                placeholder={`Search ${selected === "Bus" ? "bus route or headsign" : "bus stop or code"}`}
+                placeholder={`Search ${selected === "Route" ? "bus route" : "stop name or code"}`}
                 rightIcon={<Icon iconStyle={styles.clear} onPress={() => handleSearch("")} name="plus" type="font-awesome" />}
                 leftIcon={<Icon iconStyle={styles.back} onPress={() => router.back()} name="chevron-left" type="font-awesome" />}
             />
@@ -84,11 +84,11 @@ export default function Search() {
             {/* Filter Buttons */}
             <View style={styles.filters}>
                 <TouchableOpacity
-                    style={[styles.filter, { backgroundColor: selected === "Bus" ? colors.backgroundSecondary : colors.backgroundPrimary }]}
-                    onPress={() => changeFilter("Bus")}
+                    style={[styles.filter, { backgroundColor: selected === "Route" ? colors.backgroundSecondary : colors.backgroundPrimary }]}
+                    onPress={() => changeFilter("Route")}
                     activeOpacity={0.1}
                 >
-                    <Text style={{ color: selected === "Bus" ? colors.objectSelected : colors.textSecondary }}>Bus</Text>
+                    <Text style={{ color: selected === "Route" ? colors.objectSelected : colors.textSecondary }}>Route</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -103,9 +103,11 @@ export default function Search() {
             {/* Filtered List */}
             <FlatList
                 data={filteredResults}
-                keyExtractor={(item) => item.id.toString()}
+                keyExtractor={(item) =>
+                    selected === "Route" ? item.name : item.id.toString()
+                }
                 renderItem={({ item }) =>
-                    selected === "Bus" ? <SearchButtonBus item={item as Bus} /> : <SearchButtonStop item={item as Stop} />
+                    selected === "Route" ? <SearchButtonRoute item={item as Route} /> : <SearchButtonStop item={item as Stop} />
                 }
             />
         </SafeAreaView>
