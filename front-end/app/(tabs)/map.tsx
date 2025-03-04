@@ -1,72 +1,103 @@
-import React from "react";
-import {Platform, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity} from "react-native";
-import {Icon} from '@rneui/themed';
-import MapView from "react-native-maps";
-import {router} from "expo-router";
+import React, { useCallback, useState } from "react";
+import { Platform, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { Icon } from '@rneui/themed';
+import MapView, { Region } from "react-native-maps";
+import { router } from "expo-router";
+// import ClusteredMapView from "react-native-maps-super-cluster";
+
 import BusMarker from "@/components/BusMarker";
 import StopMarker from "@/components/StopMarker";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
-import {Stop} from "@/types/stop";
-import {Bus} from "@/types/bus";
-import {shallowEqual, useSelector} from "react-redux";
-import {RootState} from "@/app/redux/store";
+import { Stop } from "@/types/stop";
+import { Bus } from "@/types/bus";
+import { useSelector, shallowEqual } from "react-redux";
+import { RootState } from "@/app/redux/store";
 
 const Map = () => {
-
     const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
     const buses = useSelector((state: RootState) => state.bus.buses, shallowEqual);
+    
+    const [region, setRegion] = useState<Region>({
+        latitude: 51.8940,
+        longitude: -8.4900,
+        latitudeDelta: 0.03,
+        longitudeDelta: 0.03,
+    });
+
+    // Filter only visible markers
+    const getVisibleMarkers = useCallback(() => {
+        return {
+            visibleStops: stops.filter(stop => 
+                stop.lat > region.latitude - region.latitudeDelta / 2 &&
+                stop.lat < region.latitude + region.latitudeDelta / 2 &&
+                stop.lon > region.longitude - region.longitudeDelta / 2 &&
+                stop.lon < region.longitude + region.longitudeDelta / 2
+            ),
+            visibleBuses: buses.filter(bus => 
+                bus.lat > region.latitude - region.latitudeDelta / 2 &&
+                bus.lat < region.latitude + region.latitudeDelta / 2 &&
+                bus.lon > region.longitude - region.longitudeDelta / 2 &&
+                bus.lon < region.longitude + region.longitudeDelta / 2
+            )
+        };
+    }, [stops, buses, region]);
+
+    const { visibleStops, visibleBuses } = getVisibleMarkers();
 
     return (
-        
         <SafeAreaView style={styles.background}>
-
-            {/*  */}
             <TouchableOpacity style={styles.input} onPress={() => router.push("/screens/search")}>
-                <Icon iconStyle={styles.back} onPress={() => router.back()} name="chevron-left" type="font-awesome"/>
+                <Icon iconStyle={styles.back} onPress={() => router.back()} name="chevron-left" type="font-awesome" />
                 <Text style={styles.textSecondary}>Search bus stop or route</Text>
             </TouchableOpacity>
 
             <MapView
                 style={{ flex: 1 }}
-                initialRegion={{
-                    latitude: 51.8940,
-                    longitude: -8.4900,
-                    latitudeDelta: 0.03,
-                    longitudeDelta: 0.03,
-                }}
-                rotateEnabled={false} // Prevents map rotation
+                initialRegion={region}
+                rotateEnabled={false}
+                onRegionChangeComplete={setRegion} // Updates visible markers
+                // clusteringEnabled
+                // clusterColor={colors.objectSelected}
+                // clusterTextColor="#fff"
             >
-
                 {/* Display Stop Markers */}
-                {stops?.length > 0 && stops.map((stop: Stop) => (
-                    stop.lat && stop.lon ? (
-                        <StopMarker />
-                ): null
-
+                {/* Stop Markers */}
+                {visibleStops.map((stop) => (
+                    <StopMarker 
+                        key={stop.id} 
+                        id={stop.id} 
+                        lat={stop.lat} 
+                        lon={stop.lon} 
+                        name={stop.name} 
+                        code={stop.code}
+                    />
                 ))}
 
-                {/* Display Bus Markers */}
-
-                {buses?.length > 0 && buses.map((bus: Bus) => (
-                    bus.lat && bus.lon ? (
-                        <BusMarker />
-                    ) : null
+                {/* Bus Markers */}
+                {visibleBuses.map((bus) => (
+                    <BusMarker key={bus.id} lat={bus.lat} lon={bus.lon} id={bus.id} route={bus.route} direction={bus.direction} />
                 ))}
-
-
             </MapView>
-            
         </SafeAreaView>
     );
 };
 
+// Memoized Marker Components
+// const MemoizedStopMarker = React.memo(({ lat, lon }: { lat: number, lon: number }) => (
+//     <StopMarker lat={lat} lon={lon} />
+// ));
+
+// const MemoizedBusMarker = React.memo(({ lat, lon }: { lat: number, lon: number }) => (
+//     <BusMarker lat={lat} lon={lon} />
+// ));
+
 const styles = StyleSheet.create({
     background: {
-            flex: 1,
-            backgroundColor: colors.backgroundPrimary,
-            overflow: 'hidden',
-        },
+        flex: 1,
+        backgroundColor: colors.backgroundPrimary,
+        overflow: 'hidden',
+    },
     input: {
         marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
         overflow: 'hidden',
@@ -76,27 +107,15 @@ const styles = StyleSheet.create({
         paddingVertical: 15,
         paddingHorizontal: 15,
         borderColor: colors.border,
-
-    },
-    clear: {
-        color: colors.textPrimary,
-        transform: [{rotate: "45deg"}],
     },
     back: {
         color: colors.textPrimary,
         paddingRight: 10,
-    },
-    textSelected: {
-            color: colors.objectSelected,
-            fontSize: fonts.subHeading
-    },
-    textPrimary:{
-        color: colors.textPrimary,
-        fontSize: fonts.subHeading,
     },
     textSecondary: {
         color: colors.textSecondary,
         fontSize: fonts.subHeading,
     }
 });
+
 export default Map;

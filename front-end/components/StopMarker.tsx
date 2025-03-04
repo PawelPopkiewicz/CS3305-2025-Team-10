@@ -1,33 +1,45 @@
-import {Marker} from "react-native-maps";
-import {Image, View} from "react-native";
-import {router} from "expo-router";
-import {Stop} from "@/types/stop";
-import {shallowEqual, useSelector} from "react-redux";
-import {RootState} from "@/app/redux/store";
+import React, { useMemo } from "react";
+import { Marker } from "react-native-maps";
+import { Image, View } from "react-native";
+import { router } from "expo-router";
 
-const StopMarker = () => {
+interface StopProps {
+    id: string;
+    lat: number;
+    lon: number;
+    name: string;
+    code: string;
+}
 
-    const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
-    const customBusStop = Image.resolveAssetSource(require('@/assets/images/BusStop.png')).uri
+const StopMarker: React.FC<StopProps> = ({ id, lat, lon, name, code }) => {
+    // Cache bus stop icon
+    const customBusStop = useMemo(
+        () => Image.resolveAssetSource(require('@/assets/images/BusStop.png')).uri,
+        []
+    );
 
     return (
-        stops.map((stop: Stop) => (
-            <Marker
-            key={stop.id}
-            coordinate={{ latitude: stop.lat, longitude: stop.lon }}
-            title={stop.name}
+        <Marker
+            key={id}
+            coordinate={{ latitude: lat, longitude: lon }}
+            title={name}
             description="Bus Stop"
-            onPress={() => router.push({ pathname: `/screens/arrivals/${stop.id}`, params: { stop: stop.id } })}
-            >
-                <View> 
-                    <Image
-                        source={{uri:customBusStop}}
-                        style={{ width: 25, height: 25, resizeMode: 'contain' }}
-                    />
-                </View>
-            </Marker>
-        ))
+            onPress={() => router.push({ pathname: `/screens/arrivals/${id}`, params: { stop: id } })}
+        >
+            <View>
+                <Image source={{ uri: customBusStop }} style={styles.stopIcon} />
+            </View>
+        </Marker>
     );
 };
 
-export default StopMarker;
+// Optimize re-renders
+export default React.memo(StopMarker);
+
+const styles = {
+    stopIcon: {
+        width: 25,
+        height: 25,
+        resizeMode: "contain",
+    },
+};

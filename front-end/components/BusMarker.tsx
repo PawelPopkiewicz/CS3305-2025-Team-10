@@ -1,41 +1,58 @@
-import {Marker} from "react-native-maps";
-import {View, Text, Image} from "react-native";
-import {router} from "expo-router";
-import {Bus} from "@/types/bus";
-import {shallowEqual, useSelector} from "react-redux";
-import {RootState} from "@/app/redux/store";
+import React, { useMemo } from "react";
+import { Marker } from "react-native-maps";
+import { View, Text, Image } from "react-native";
+import { router } from "expo-router";
 
-const BusMarker = () => {
+interface BusProps {
+    id: string;
+    lat: number;
+    lon: number;
+    route: string;
+    direction: number;
+}
 
-    const buses = useSelector((state: RootState) => state.bus.buses, shallowEqual);
-    const customBus = Image.resolveAssetSource(require('@/assets/images/bus.png')).uri
+const BusMarker: React.FC<BusProps> = ({ id, lat, lon, route, direction }) => {
+    // Cache bus icon
+    const customBus = useMemo(() => Image.resolveAssetSource(require('@/assets/images/bus.png')).uri, []);
 
     return (
-        buses.map((bus: Bus) => (
-                <Marker
-                    key={bus.id}
-                    coordinate={{ latitude: bus.lat, longitude: bus.lon }}
-                    pinColor="blue"
-                    title="Bus"
-                    description="Live Bus Location"
-                    onPress={() => router.push({ pathname: `/screens/trip/${bus.id}`, params: { bus: bus.id } })}
-                >
-                    <View style={{ alignItems: 'center' }}>
-                        {/* Bus route label */}
-                        <Text style={{ backgroundColor: 'black', padding: 4, borderRadius: 5, fontWeight: 'bold', color:'white' }}>
-                        {bus.route}
-                        </Text>
+        <Marker
+            key={id}
+            coordinate={{ latitude: lat, longitude: lon }}
+            title={`Bus ${route}`}
+            description="Live Bus Location"
+            onPress={() => router.push({ pathname: `/screens/trip/${id}`, params: { bus: id } })}
+        >
+            <View style={{ alignItems: 'center' }}>
+                {/* Bus route label */}
+                <Text style={styles.routeText}>{route}</Text>
 
-                        <View style={{ transform: [{ rotate: `${bus.direction}deg` }] }}> 
-                        <Image
-                            source={{uri:customBus}}
-                            style={{ width: 25, height: 25, resizeMode: 'contain' }}
-                        />
-                        </View>
-                    </View>
-                </Marker>
-        ))
+                {/* Rotated bus image */}
+                <View style={{ transform: [{ rotate: `${direction}deg` }] }}> 
+                    <Image
+                        source={{ uri: customBus }}
+                        style={styles.busIcon}
+                    />
+                </View>
+            </View>
+        </Marker>
     );
 };
 
-export default BusMarker;
+// Optimize re-renders
+export default React.memo(BusMarker);
+
+const styles = {
+    routeText: {
+        backgroundColor: 'black',
+        padding: 4,
+        borderRadius: 5,
+        fontWeight: 'bold',
+        color: 'white',
+    },
+    busIcon: {
+        width: 25,
+        height: 25,
+        resizeMode: 'contain',
+    },
+};
