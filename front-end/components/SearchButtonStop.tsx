@@ -1,12 +1,11 @@
 import React from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import {router, useLocalSearchParams} from 'expo-router';
+import {router} from 'expo-router';
 
 import colors from '@/config/Colors';
 import fonts from '@/config/Fonts';
 
 const SearchButtonStop = ({ item }) => {
-
     return (
         <View>
                 <View key={item.id} style={styles.buttonContainer}>

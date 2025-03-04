@@ -3,7 +3,6 @@ import {Platform, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity} f
 import {Icon} from '@rneui/themed';
 import MapView from "react-native-maps";
 import {router} from "expo-router";
-
 import BusMarker from "@/components/BusMarker";
 import StopMarker from "@/components/StopMarker";
 import colors from "@/config/Colors";
@@ -13,12 +12,10 @@ import {Bus} from "@/types/bus";
 import {shallowEqual, useSelector} from "react-redux";
 import {RootState} from "@/app/redux/store";
 
-
 const Map = () => {
 
     const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
     const buses = useSelector((state: RootState) => state.bus.buses, shallowEqual);
-
 
     return (
         

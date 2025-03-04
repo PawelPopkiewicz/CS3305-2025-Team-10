@@ -5,6 +5,7 @@ import {setStops} from "@/app/redux/stopSlice";
 import {setRoutes} from '@/app/redux/routeSlice';
 import {RootState} from "@/app/redux/store";
 import {busApiUrl} from "@/config/constants";
+
 let isInitialized = false;
 
 export const useBusData = () => {
@@ -34,27 +35,24 @@ export const useBusData = () => {
             }
         };
 
-        useEffect(() => {
-    const fetchRoutesData = async () => {
-      try {
-        const routesResponse = await fetch(`${busApiUrl}/v1/routes`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
 
-        if (!routesResponse.ok) {
-          throw new Error('Failed to fetch routes data');
-        }
+        const fetchRoutesData = async () => {
+            try {
+                const routesResponse = await fetch(`${busApiUrl}/v1/routes`, {
+                    method: 'GET',
+                    headers: {'Content-Type': 'application/json'},
+                });
 
-        const routesData = await routesResponse.json();
-        dispatch(setRoutes(routesData));
-      } catch (error) {
-        console.error('Error fetching routes data:', error);
-      }
-    };
+                if (!routesResponse.ok) {
+                    throw new Error('Failed to fetch routes data');
+                }
 
-    fetchRoutesData();
-  }, [dispatch]);
+                const routesData = await routesResponse.json();
+                dispatch(setRoutes(routesData));
+            } catch (error) {
+                console.error('Error fetching routes data:', error);
+            }
+        };
 
         const fetchBusPositions = async () => {
             try {
@@ -77,6 +75,7 @@ export const useBusData = () => {
         // Only fetch stops data once across the entire app
         if (!isInitialized) {
             fetchStopsData();
+            fetchRoutesData();
             isInitialized = true;
         }
 

@@ -7,7 +7,6 @@ import {RootState} from "@/app/redux/store";
 
 const StopMarker = () => {
 
-
     const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
     const customBusStop = Image.resolveAssetSource(require('@/assets/images/BusStop.png')).uri
 

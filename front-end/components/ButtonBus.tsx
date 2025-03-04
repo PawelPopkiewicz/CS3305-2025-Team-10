@@ -12,12 +12,6 @@ const ButtonBus = () => {
 
 
     const buses = useSelector((state: RootState) => state.bus.buses, shallowEqual);
-    // dummy data
-    // const bus = [
-    //     { id: 1, code: '2232', name: 'University College, Cork', arrival: '14:32' },
-    //     { id: 2, code: '7890', name: 'City Centre, Cork', arrival: '15:45' },
-    //     { id: 3, code: '4567', name: 'Kent Station, Cork', arrival: '15:00' }
-    // ]
 
     return (
         <View>
