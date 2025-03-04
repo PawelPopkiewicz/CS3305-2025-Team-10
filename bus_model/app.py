@@ -76,6 +76,11 @@ def agency(agency_id):
     """Fetches information for a specific agency based on agency_id."""
     return generic_get_or_404(bus_model.Agency, agency_id)
 
+@app.route("/v1/route", methods=["GET"])
+def routes():
+    """Fetches a list of all routes."""
+    return [{"name": route.route_short_name} for route in bus_model.Route._all.values()]
+
 @app.route("/v1/route/<string:route_id>")
 def route(route_id):
     """Fetches information for a specific route based on route_id."""

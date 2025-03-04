@@ -85,6 +85,24 @@ def test_bus():
         debug_print("Failed to fetch buses", e)
         return abort(500, "Failed to fetch buses")  # Any other status code
 
+@app.route("/v1/routes", methods=["GET"])
+def get_all_routes():
+    """
+    get all routes
+    """
+    try:
+        response = requests.get(f"{BUS_MODEL_URI}/v1/route")
+        if response.status_code == 200:
+            return response.json()          # Standard response
+        elif response.status_code == 404:
+            return abort(404)               # Not found
+        else:
+            debug_print("Failed to fetch routes", e)
+            return abort(500, "Failed to fetch routes")
+    except requests.exceptions.RequestException as e:
+        debug_print("Failed to fetch routes", e)
+        return abort(500, "Failed to fetch routes")
+
 @app.route('/v1/stops', methods=['GET'])
 def get_stops():
     """Fetches the details and location of all stops."""
