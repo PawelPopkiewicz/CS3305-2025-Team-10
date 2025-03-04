@@ -2,6 +2,7 @@ import {useEffect, useRef} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {setBuses} from "@/app/redux/busSlice";
 import {setStops} from "@/app/redux/stopSlice";
+import {setRoutes} from '@/app/redux/routeSlice';
 import {RootState} from "@/app/redux/store";
 import {busApiUrl} from "@/config/constants";
 let isInitialized = false;
@@ -12,6 +13,7 @@ export const useBusData = () => {
     // Select Redux state
     const stops = useSelector((state: RootState) => state.stop.stops);
     const buses = useSelector((state: RootState) => state.bus.buses);
+    const routes = useSelector((state: RootState) => state.route.routes)
 
     useEffect(() => {
         const fetchStopsData = async () => {
@@ -31,6 +33,28 @@ export const useBusData = () => {
                 console.error("Error fetching stops data:", error);
             }
         };
+
+        useEffect(() => {
+    const fetchRoutesData = async () => {
+      try {
+        const routesResponse = await fetch(`${busApiUrl}/v1/routes`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (!routesResponse.ok) {
+          throw new Error('Failed to fetch routes data');
+        }
+
+        const routesData = await routesResponse.json();
+        dispatch(setRoutes(routesData));
+      } catch (error) {
+        console.error('Error fetching routes data:', error);
+      }
+    };
+
+    fetchRoutesData();
+  }, [dispatch]);
 
         const fetchBusPositions = async () => {
             try {
@@ -73,5 +97,5 @@ export const useBusData = () => {
         };
     }, [dispatch]);
 
-    return { stops, buses };
+    return { stops, buses, routes };
 };
