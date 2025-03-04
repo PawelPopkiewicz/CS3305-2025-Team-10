@@ -1,12 +1,13 @@
-import { Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View } from "react-native";
-import { Button, Icon } from 'react-native-elements';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import {Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View} from "react-native";
+import {Button, Icon} from 'react-native-elements';
+import {router, useFocusEffect, useLocalSearchParams} from 'expo-router';
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
-import { useCallback, useState } from "react";
-import { busApiUrl } from "@/config/constants";
-import {shallowEqual, useSelector} from "react-redux";
+import {useCallback, useState} from "react";
+import {busApiUrl} from "@/config/constants";
+import {shallowEqual, useDispatch, useSelector} from "react-redux";
 import {RootState} from "@/app/redux/store";
+import {addFavoriteRoute, removeFavoriteRoute} from "@/app/redux/favSlice";
 
 type StopInfo = { stopId: string, code: string, name: string, arrival: string };
 
@@ -61,6 +62,10 @@ export default function TripScreen() {
     if (trip.length === 0) return <Text>Loading...</Text>;
     const busData = buses.find(bus => bus.id === busId);
     if (!busData) return <Text>This bus isn't tracked anymore</Text>;
+    const favRoutes = useSelector((state: RootState) => state.fav.routes, shallowEqual);
+    const isFav = favRoutes.includes(busData.route);
+    const dispatch = useDispatch();
+
 
     // @ts-ignore
     // @ts-ignore
@@ -84,6 +89,17 @@ export default function TripScreen() {
 
                 <View style={styles.thirdRowBus}>
                     <Text style={styles.textPrimary}>{busData.headsign}</Text>
+                </View>
+                <View style={styles.thirdRow}>
+
+                    <Button
+                        icon={<Icon iconStyle={styles.icon} name={isFav ? "star" : "star-o"}
+                                    type="font-awesome"/>}        // favourite button
+                        buttonStyle={styles.button}
+                        onPress={() => {
+                            isFav ? dispatch(removeFavoriteRoute(busData.route)) : dispatch(addFavoriteRoute(busData.route))
+                        }}
+                    />
                 </View>
             </View>
 

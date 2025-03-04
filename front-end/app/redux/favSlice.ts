@@ -40,7 +40,9 @@ export const rehydrateFavorites = async (dispatch: ThunkDispatch<any, any, any> 
     try {
         const storedFavorites = await AsyncStorage.getItem('favorites');
         if (storedFavorites) {
+            console.log(storedFavorites);
             dispatch(setFavoriteStops(JSON.parse(storedFavorites)));
+            dispatch(setFavoriteRoutes(JSON.parse(storedFavorites)));
         }
         return Promise.resolve();
     } catch (error) {
