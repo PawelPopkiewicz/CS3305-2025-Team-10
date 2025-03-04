@@ -9,13 +9,13 @@ import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 import { Stop } from "@/types/stop";
 import { Bus } from "@/types/bus";
-import {useSelector} from "react-redux";
+import {shallowEqual, useSelector} from "react-redux";
 import {RootState} from "@/app/redux/store";
 
 export default function Search() {
 
-    const stops = useSelector((state: RootState) => state.stop.stops);
-    const buses = useSelector((state: RootState) => state.bus.buses);
+    const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
+    const buses = useSelector((state: RootState) => state.bus.buses, shallowEqual);
 
     const [selected, setSelected] = useState<"Stop" | "Bus">("Stop"); // Default to Stop
     const [query, setQuery] = useState("");

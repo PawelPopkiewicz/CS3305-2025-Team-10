@@ -2,13 +2,13 @@ import {Marker} from "react-native-maps";
 import {Image, View} from "react-native";
 import {router} from "expo-router";
 import {Stop} from "@/types/stop";
-import {useSelector} from "react-redux";
+import {shallowEqual, useSelector} from "react-redux";
 import {RootState} from "@/app/redux/store";
 
 const StopMarker = () => {
 
 
-    const stops = useSelector((state: RootState) => state.stop.stops);
+    const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
     const customBusStop = Image.resolveAssetSource(require('@/assets/images/BusStop.png')).uri
 
     return (

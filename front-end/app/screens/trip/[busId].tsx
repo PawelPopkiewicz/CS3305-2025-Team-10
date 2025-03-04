@@ -5,7 +5,7 @@ import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 import { useCallback, useState } from "react";
 import { busApiUrl } from "@/config/constants";
-import {useSelector} from "react-redux";
+import {shallowEqual, useSelector} from "react-redux";
 import {RootState} from "@/app/redux/store";
 
 type StopInfo = { stopId: string, code: string, name: string, arrival: string };
@@ -33,7 +33,7 @@ const TripDisplay = ({ trip }: { trip: StopInfo[] }) => (
 export default function TripScreen() {
     const { busId } = useLocalSearchParams() as { busId: string };
     const [trip, setTrip] = useState<StopInfo[]>([]);
-    const buses = useSelector((state: RootState) => state.bus.buses);
+    const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
     useFocusEffect(
         useCallback(() => {
             const fetchTrip = async () => {

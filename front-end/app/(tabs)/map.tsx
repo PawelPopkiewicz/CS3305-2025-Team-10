@@ -10,14 +10,14 @@ import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 import {Stop} from "@/types/stop";
 import {Bus} from "@/types/bus";
-import {useSelector} from "react-redux";
+import {shallowEqual, useSelector} from "react-redux";
 import {RootState} from "@/app/redux/store";
 
 
 const Map = () => {
 
-    const stops = useSelector((state: RootState) => state.stop.stops);
-    const buses = useSelector((state: RootState) => state.bus.buses);
+    const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
+    const buses = useSelector((state: RootState) => state.bus.buses, shallowEqual);
 
 
     return (

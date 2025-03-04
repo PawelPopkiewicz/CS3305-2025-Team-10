@@ -5,19 +5,13 @@ import {router} from 'expo-router';
 import colors from '@/config/Colors';
 import fonts from '@/config/Fonts';
 import {Stop} from "@/types/stop";
-import {useSelector} from "react-redux";
+import {shallowEqual, useSelector} from "react-redux";
 import {RootState} from "@/app/redux/store";
 
 const ButtonStop = () => {
 
 
-    const stops = useSelector((state: RootState) => state.stop.stops);
-    //Dummy data
-    // const stop = [
-    //     { id: 1, route: '220', headsign: 'University College, Cork', arrival: '14:52' },
-    //     { id: 1, route: '220X', headsign: 'MTU', arrival: '14:42' },
-    //     { id: 1, route: '212', headsign: 'Patrick', arrival: '15:32' }
-    // ];
+    const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
 
     return (
         <View>

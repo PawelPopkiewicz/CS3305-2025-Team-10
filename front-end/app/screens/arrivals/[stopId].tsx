@@ -1,7 +1,7 @@
 import {Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View} from "react-native";
 import {Button, Icon} from 'react-native-elements';
 import {router, useFocusEffect, useLocalSearchParams} from 'expo-router';
-import {useDispatch, useSelector} from "react-redux";
+import {shallowEqual, useDispatch, useSelector} from "react-redux";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 import {RootState} from "@/app/redux/store";
@@ -37,7 +37,7 @@ export default function Stop() {
 
     const {stopId} = useLocalSearchParams() as { stopId: string };
     const [arrivals, setArrivals] = useState<BusInfo[]>([]);
-    const stops = useSelector((state: RootState) => state.stop.stops);
+    const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
     useFocusEffect(
         useCallback(() => {
             const fetchTrip = async () => {
@@ -63,7 +63,7 @@ export default function Stop() {
             return () => clearInterval(interval); // Cleanup interval on unmount
         }, [stopId])
     );
-    const favStops = useSelector((state: RootState) => state.fav.favStops);
+    const favStops = useSelector((state: RootState) => state.fav.favStops, shallowEqual);
     const isFav = favStops.includes(stopId);
     const dispatch = useDispatch();
     const stopData = stops.find(stop => stop.id === stopId); //converting to number

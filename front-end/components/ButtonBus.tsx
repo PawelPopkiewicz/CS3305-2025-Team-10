@@ -5,13 +5,13 @@ import {router} from 'expo-router';
 import colors from '@/config/Colors';
 import fonts from '@/config/Fonts';
 import {Bus} from "@/types/bus";
-import {useSelector} from "react-redux";
+import {shallowEqual, useSelector} from "react-redux";
 import {RootState} from "@/app/redux/store";
 
 const ButtonBus = () => {
 
 
-    const buses = useSelector((state: RootState) => state.bus.buses);
+    const buses = useSelector((state: RootState) => state.bus.buses, shallowEqual);
     // dummy data
     // const bus = [
     //     { id: 1, code: '2232', name: 'University College, Cork', arrival: '14:32' },

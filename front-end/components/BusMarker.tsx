@@ -2,12 +2,12 @@ import {Marker} from "react-native-maps";
 import {View, Text, Image} from "react-native";
 import {router} from "expo-router";
 import {Bus} from "@/types/bus";
-import {useSelector} from "react-redux";
+import {shallowEqual, useSelector} from "react-redux";
 import {RootState} from "@/app/redux/store";
 
 const BusMarker = () => {
 
-    const buses = useSelector((state: RootState) => state.bus.buses);
+    const buses = useSelector((state: RootState) => state.bus.buses, shallowEqual);
     const customBus = Image.resolveAssetSource(require('@/assets/images/bus.png')).uri
 
     return (

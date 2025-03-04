@@ -1,5 +1,5 @@
 import {useEffect, useRef} from "react";
-import {useDispatch, useSelector} from "react-redux";
+import {shallowEqual, useDispatch, useSelector} from "react-redux";
 import {setBuses} from "@/app/redux/busSlice";
 import {setStops} from "@/app/redux/stopSlice";
 import {setRoutes} from '@/app/redux/routeSlice';
@@ -11,9 +11,9 @@ export const useBusData = () => {
     const dispatch = useDispatch();
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     // Select Redux state
-    const stops = useSelector((state: RootState) => state.stop.stops);
-    const buses = useSelector((state: RootState) => state.bus.buses);
-    const routes = useSelector((state: RootState) => state.route.routes)
+    const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
+    const buses = useSelector((state: RootState) => state.bus.buses, shallowEqual);
+    const routes = useSelector((state: RootState) => state.route.routes, shallowEqual)
 
     useEffect(() => {
         const fetchStopsData = async () => {
