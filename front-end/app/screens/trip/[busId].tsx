@@ -65,7 +65,7 @@ export default function TripScreen() {
     );
 
     if (!busData) return <Text>This bus isn't tracked anymore</Text>;
-    const isFav = favRoutes.includes(busData.route);
+    const isFav = favRoutes?.includes(busData.route) ?? false;
     if (trip.length === 0) return <Text>Loading...</Text>;
 
 
