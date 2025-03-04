@@ -1,7 +1,7 @@
 import {Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View} from "react-native";
 
 import ButtonStop from "@/components/ButtonStop";
-import {ButtonRoute} from "@/components/ButtonRoute";
+import {ButtonBus} from "@/components/ButtonBus";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 
@@ -12,26 +12,29 @@ export default function Index() {
         <SafeAreaView
             style={styles.background}
         >
-            <View style={styles.favourite}>
-                <View style={styles.heading}>
-                    <Text style={styles.textPrimary}>Favourite stops</Text>
+            <View style={styles.favouriteSections}>
+
+                <View style={styles.favourite}>
+                    <View style={styles.heading}>
+                        <Text style={styles.textPrimary}>Favourite stops</Text>
+                    </View>
+                    {/* to be made functional once we store favourites*/}
+                    <ScrollView>
+                        <ButtonStop />
+                    </ScrollView>
+
                 </View>
-                {/* to be made functional once we store favourites*/}
-                <ScrollView>
-                    <ButtonStop />
-                </ScrollView>
-
-            </View>
 
             <View style={styles.favourite}>
-                <View style={styles.heading}>
-                    <Text style={styles.textPrimary}>Favourite buses</Text>
-                </View>
-                {/* to be made functional once we store favourites*/}
-                <ScrollView>
-                    <ButtonRoute/>
-                </ScrollView>
+                    <View style={styles.heading}>
+                        <Text style={styles.textPrimary}>Favourite Routes</Text>
+                    </View>
+                    {/* to be made functional once we store favourites*/}
+                    <ScrollView>
+                        <ButtonBus />
+                    </ScrollView>
 
+                </View>
             </View>
         </SafeAreaView>
     );
@@ -48,8 +51,12 @@ const styles = StyleSheet.create({
         justifyContent: "flex-end",
     },
     favourite: {
-        height: 200,
+        height: '50%',
         backgroundColor: colors.backgroundPrimary,
+    },
+    favouriteSections: {
+        flexDirection: 'column',
+        height: '100%',
     },
     heading: {
         borderTopLeftRadius: 17,
