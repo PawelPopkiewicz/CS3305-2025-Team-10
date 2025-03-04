@@ -14,7 +14,10 @@
   },
   {
     "id": 2,
-    "...."
+    "code": "2232",
+    "name": "Patrick Street",
+    "lat": -51.1242,
+    "lon": 43.1242
   },
   "..."
 ]
@@ -32,6 +35,7 @@
 - returns
 
 ```json
+
 [
   {
     "id": 1,
@@ -42,7 +46,8 @@
   {
     "id": 2,
     "route": "220X",
-    "...."
+    "headsign": "MTU",
+    "arrival": "14:44"
   },
   "..."
 ]
@@ -64,7 +69,7 @@ contains:
 - returns
 
 ```json
-    [
+[
   {
     "id": 1,
     "route": "220",
@@ -75,7 +80,11 @@ contains:
   },
   {
     "id": 2,
-    "...."
+    "route": "220",
+    "headsign": "MTU",
+    "direction": "25deg",
+    "lat": -51.1242,
+    "bus.lon": 43.1242
   },
   "..."
 ]
@@ -95,7 +104,7 @@ contains:
 - returns
 
 ```json
-    [
+[
   {
     "id": 1,
     "code": "2232",
@@ -104,7 +113,9 @@ contains:
   },
   {
     "id": 2,
-    "..."
+    "code": "2232",
+    "name": "Patrick Street",
+    "arrival": "14:44"
   },
   "..."
 ]
