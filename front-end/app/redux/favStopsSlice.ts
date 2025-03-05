@@ -20,7 +20,7 @@ const favStopsSlice = createSlice({
             state.stops = state.stops.filter((item) => item !== action.payload);
         },
         setFavoriteStops: (state, action) => {
-            return action.payload;
+            state.stops = action.payload;
         }
     },
 });
