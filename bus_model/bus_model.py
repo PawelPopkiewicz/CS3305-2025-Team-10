@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from time import time
 from collections import defaultdict
 import os
+import requests
 
 class Bus:
     """A class to represent a bus and its relevant information."""
