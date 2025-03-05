@@ -9,6 +9,7 @@ import {shallowEqual, useDispatch, useSelector} from "react-redux";
 import {RootState} from "@/app/redux/store";
 import {addFavoriteRoute, removeFavoriteRoute} from "@/app/redux/favRoutesSlice";
 import Loading from "@/components/Loading";
+import ErrorData from "@/components/ErrorData";
 
 type StopInfo = { stopId: string, code: string, name: string, arrival: string };
 
@@ -65,7 +66,7 @@ export default function TripScreen() {
         }, [busId])
     );
 
-    if (!busData) return <Text>This bus isn't tracked anymore</Text>;
+    if (!busData) return <ErrorData text="This bus isn't tracked anymore" />;
     const isFav = favRoutes?.includes(busData.route) ?? false;
     if (trip.length === 0) return <Loading text="Fetching bus data" />;
 
@@ -107,12 +108,17 @@ export default function TripScreen() {
             </View>
 
             <View style={styles.map}>
-                <Text style={styles.heading}>See on the map</Text>
-                <Button
-                    icon={<Icon iconStyle={styles.icon} name="arrow-right" type="font-awesome" />}
-                    buttonStyle={styles.button}
-                    onPress={() => router.push('/map')}
-                />
+                <View style={styles.firstRowMap}>
+                    <Text style={styles.heading}>See on the map</Text>
+                </View>
+
+                <View style={styles.secondRowMap}>
+                    <Button
+                        icon={<Icon iconStyle={styles.icon} name="arrow-right" type="font-awesome" />}
+                        buttonStyle={styles.button}
+                        onPress={() => router.push({ pathname: `/screens/filtered_map/${busData.route}`, params: { route: busData.route } })}
+                    />
+                </View>
             </View>
 
             <TripDisplay trip={trip} />
@@ -179,6 +185,12 @@ const styles = StyleSheet.create({
         width: '100%',
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
+    },
+    firstRowMap: {
+        width: '85%',
+    },
+    secondRowMap: {
+        width: '15%',
     },
     path: {
         height: '70%'
