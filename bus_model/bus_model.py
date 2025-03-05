@@ -53,12 +53,13 @@ class Bus:
             self.latest_route = route_id
             self.start_time = start_time
             self.start_date = start_date
-        self.time_lat_lon.append((timestamp, latitude, longitude))
-        self.latest_timestamp = self.time_lat_lon[-1][0]   # Unix timestamp
-        self.lat = self.time_lat_lon[-1][1]
-        self.lon = self.time_lat_lon[-1][2]
-        self.schedule_relationship = schedule_relationship
-        self.direction = direction_id
+        if (tup := (timestamp, latitude, longitude)) not in self.time_lat_lon:
+            self.time_lat_lon.append(tup)
+            self.latest_timestamp = self.time_lat_lon[-1][0]   # Unix timestamp
+            self.lat = self.time_lat_lon[-1][1]
+            self.lon = self.time_lat_lon[-1][2]
+            self.schedule_relationship = schedule_relationship
+            self.direction = direction_id
         trip = Trip._all.get(trip_id, None)
         if trip:
             trip.latest_bus = self.slug
@@ -213,10 +214,10 @@ class Route:
     
     def enumerate_stops(self):
         for trip_id in self.all_trips:
-            for bus_stop_visit in Trip._all[trip_id].bus_stop_times:
-                self.add_stop(bus_stop_visit.stop.stop_id)
+            for bus_stop_visit_id in Trip._all[trip_id].bus_stop_times:
+                self.add_stop(BusStopVisit._all[bus_stop_visit_id].stop.stop_id)
         for stop_id in self.all_stops:
-            self._all[stop_id].routes.add(self.route_id)
+            Stop._all[stop_id].routes.add(self.route_id)
     
 class Trip:
     """A class to represent a trip and its relevant information."""
