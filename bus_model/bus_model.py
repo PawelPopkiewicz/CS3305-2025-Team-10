@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from time import time
 from collections import defaultdict
+import os
 
 class Bus:
     """A class to represent a bus and its relevant information."""
@@ -60,6 +61,14 @@ class Bus:
             self.lon = self.time_lat_lon[-1][2]
             self.schedule_relationship = schedule_relationship
             self.direction = direction_id
+            # Get inference update
+            try:
+                uri = os.environ["INFERENCE_URI"]
+                response = requests.post(uri, json=self.inference_data_supply())
+                ... # Do something with response data, ie, populate fields
+            except requests.exceptions.RequestException as e:
+                print(f"Failed to fetch inference data: {e}")
+
         trip = Trip._all.get(trip_id, None)
         if trip:
             trip.latest_bus = self.slug
@@ -72,7 +81,10 @@ class Bus:
             "start_date": self.start_date,
             "schedule_relationship": self.schedule_relationship,
             "route_id": self.latest_route,
-            "direction_id": self.direction
+            "direction_id": self.direction,
+            "vehicle_updates": [
+                {"latitude": tll.lat, "longitude": tll.lon, "timestamp": tll.timestamp} for tll in self.time_lat_lon
+            ]
             }
     
     def get_info(self) -> dict[str, str]:
