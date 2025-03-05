@@ -4,6 +4,7 @@ import bus_model
 import datetime
 import time
 import subprocess
+import math
 
 from dotenv import load_dotenv
 from GTFS_Static.db_connection import create_connection, close_connection
@@ -159,7 +160,8 @@ class StaticGTFSR:
     @classmethod
     @manage_read_only_connection
     def get_shapes(cursor, _):
-        query = """SELECT * FROM SHAPES"""
+        query = """SELECT * FROM SHAPES
+                   ORDER BY shape_pt_sequence"""
         cursor.execute(query)
         res = cursor.fetchall()
         for row in res:
@@ -192,10 +194,68 @@ class StaticGTFSR:
             departure_delta = datetime.timedelta(hours=h, minutes=m, seconds=s)
             headsign = row[5] if row[5] != "nan" else None
             bus_model.BusStopVisit(trip_id=row[0], arrival_time=arrival_delta, departure_time=departure_delta, stop_id=row[3], stop_sequence=row[4], stop_headsign=headsign, pickup_type=row[6], drop_off_type=row[7], timepoint=row[8])
+    
+    @classmethod
+    def calculate_bearing(cls, lat1: float, lon1: float, lat2: float, lon2: float) -> int:
+        """
+        Calculates the bearing/angle between two lat/lon points relative to North.
+        """
+        lat1, lon1, lat2, lon2 = map(math.radians, [float(lat1), float(lon1), float(lat2), float(lon2)])
+        
+        delta_lon = lon2 - lon1
+        
+        x = math.sin(delta_lon) * math.cos(lat2)
+        y = math.cos(lat1) * math.sin(lat2) - (math.sin(lat1) * math.cos(lat2) * math.cos(delta_lon))
+        
+        initial_bearing = math.atan2(x, y)
+        initial_bearing = math.degrees(initial_bearing)
+        compass_bearing = int((initial_bearing + 360) % 360)
+        return compass_bearing
+
+    @classmethod
+    @manage_read_only_connection
+    def post_loading_calculations(cursor, cls):
+        # These are basically "joins" of SQL tables
         for trip in bus_model.Trip._all.values():
             trip.sort_bus_stop_times()
         for route in bus_model.Route._all.values():
             route.enumerate_stops()
+        # Get direction
+        for stop in bus_model.Stop._all.values():
+            stop_lat, stop_lon = stop.stop_lat, stop.stop_lon
+            shape_id = bus_model.Trip._all[list(stop.trips)[0]].shape.shape_id
+            query = """
+                    WITH sh1 AS (
+                        SELECT shape_pt_sequence AS stop_seq, shape_pt_lat AS lat, shape_pt_lon AS lon, shape_dist_traveled, shape_id
+                        FROM shapes AS sh1
+                        WHERE shape_id = %s
+                        ORDER BY POWER(shape_pt_lat - %s, 2) + POWER(shape_pt_lon - %s, 2)
+                        LIMIT 1
+                        ),
+                    sh2 AS (
+                        SELECT shape_pt_sequence AS stop_seq, shape_pt_lat AS lat, shape_pt_lon AS lon
+                        FROM shapes AS sh2
+                        JOIN sh1 AS sh1 ON sh2.shape_id = sh1.shape_id
+                        WHERE sh2.shape_id = %s
+                            AND sh2.shape_dist_traveled <= (sh1.shape_dist_traveled - 5) OR sh2.shape_dist_traveled >= (sh1.shape_dist_traveled + 5)
+                        ORDER BY sh2.shape_pt_sequence DESC
+                        LIMIT 1
+                    )
+                    SELECT stop_seq, lat, lon FROM sh1
+                    UNION ALL
+                    SELECT stop_seq, lat, lon FROM sh2;
+                   """ 
+            cursor.execute(query, (shape_id, stop_lat, stop_lon, shape_id))
+            if res := cursor.fetchall():
+                points = [(seq, lat, lon) for seq, lat, lon in res]
+                assert len(points) == 2, f"Only {len(points)} points returned."
+                point1, point2 = points
+                s1, lat1, lon1, s2, lat2, lon2 = point1[0], point1[1], point1[2], point2[0], point2[1], point2[2]
+                print(type(lat1), type(lon1), type(lat2), type(lon2), type(s1), type(s2))
+                angle = cls.calculate_bearing(lat1, lon1, lat2, lon2)
+                stop.rotation = angle                  
+    
+        
     
     @classmethod
     def load_all_files(self):
@@ -232,9 +292,11 @@ class StaticGTFSR:
         print(f"Trips loaded in {(t1:=time.time()) - t}s")
         self.get_stop_times()
         print(f"Stop times loaded in {(t:=time.time()) - t1}s")
+        self.post_loading_calculations()
+        print(f"Post loading calculations completed in {(t1:=time.time()) - t}s")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": 
     # quick debugging
     start = time.time()
     StaticGTFSR.load_all_files()

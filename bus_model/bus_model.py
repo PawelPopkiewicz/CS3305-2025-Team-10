@@ -64,7 +64,7 @@ class Bus:
             self.direction = direction_id
             # Get inference update
             try:
-                uri = os.environ["INFERENCE_URI"]
+                uri = os.getenv("INFERENCE_URI")
                 response = requests.post(uri, json=self.inference_data_supply())
                 ... # Do something with response data, ie, populate fields
             except requests.exceptions.RequestException as e:
@@ -84,7 +84,7 @@ class Bus:
             "route_id": self.latest_route,
             "direction_id": self.direction,
             "vehicle_updates": [
-                {"latitude": tll.lat, "longitude": tll.lon, "timestamp": tll.timestamp} for tll in self.time_lat_lon
+                {"latitude": tll[1], "longitude": tll[2], "timestamp": tll[0]} for tll in self.time_lat_lon
             ]
             }
     
@@ -152,6 +152,7 @@ class Stop:
         self.bus_visits: list[str] = [] # List of BusStopVisit ids at this stop
         self.routes: set[str] = set()
         self.trips: set[str] = set()
+        self.rotation = 0
     
     def get_info(self) -> dict[str, str]:
         """Returns the stop's information in a dictionary."""
@@ -160,7 +161,8 @@ class Stop:
             "code": self.stop_code,
             "name": self.stop_name,
             "lat": self.stop_lat,
-            "lon": self.stop_lon
+            "lon": self.stop_lon,
+            "direction": self.rotation,
         }
     
     def get_timetables(self, date: datetime) -> list[dict]:
