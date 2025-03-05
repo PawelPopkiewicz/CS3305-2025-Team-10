@@ -92,11 +92,11 @@ export default function TripScreen() {
                 <View style={styles.thirdRowBus}>
                     <Text style={styles.textPrimary}>{busData.headsign}</Text>
                 </View>
-                <View style={styles.thirdRow}>
+                <View style={styles.fourthRowBus}>
 
                     <Button
                         icon={<Icon iconStyle={styles.icon} name={isFav ? "star" : "star-o"}
-                                    type="font-awesome"/>}        // favourite button
+                                    type="font-awesome"/>}
                         buttonStyle={styles.button}
                         onPress={() => {
                             isFav ? dispatch(removeFavoriteRoute(busData.route)) : dispatch(addFavoriteRoute(busData.route))
@@ -150,12 +150,15 @@ const styles = StyleSheet.create({
     },
     secondRowBus: {
         backgroundColor: colors.backgroundSecondary,
-        width: '15%',
+        width: '10%',
         borderRadius: 10
     },
     thirdRowBus: {
         width: '65%',
         flexShrink: 0
+    },
+    fourthRowBus: {
+        width: '210%'
     },
     heading: {
         color: colors.textPrimary,
