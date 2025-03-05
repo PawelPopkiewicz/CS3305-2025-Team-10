@@ -34,6 +34,7 @@ export const rehydrateStopsFavorites = async (dispatch: ThunkDispatch<any, any, 
                 ? parsedFavorites.stops
                 : [];
             dispatch(setFavoriteStops(stops));
+            console.log(stops);
         }
         return Promise.resolve();
     } catch (error) {
