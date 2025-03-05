@@ -13,27 +13,24 @@ import ErrorData from "@/components/ErrorData";
 
 type BusInfo = { 'busId': string, 'route': string, 'headsign': string, 'arrival': string }
 
-const ArrivalsDisplay = ({arrivals}: { arrivals: BusInfo[] }) => (
-
-    // Display each arriving bus of selected bus stop ordered by arrival time
-
+const ArrivalsDisplay = ({ arrivals }: { arrivals: BusInfo[] }) => (
     <ScrollView>
         {arrivals.map((bus: BusInfo) => (
-            //create component for each bus
             <View key={bus.busId} style={styles.bus}>
                 <View style={styles.firstRow}>
-                    <Text style={styles.textSecondary}>{bus.route}</Text> {/* Bus route */}
+                    <Text style={styles.textSecondary}>{bus.route}</Text>
                 </View>
                 <View style={styles.secondRow}>
-                    <Text style={styles.textSecondary}>{bus.headsign}</Text> {/* Headsign */}
+                    <Text style={styles.textSecondary}>{bus.headsign}</Text>
                 </View>
                 <View style={styles.thirdRow}>
-                    <Text style={styles.textSecondary}>{bus.arrival}</Text> {/* arrival time */}
+                    <Text style={styles.textSecondary}>{bus.arrival}</Text>
                 </View>
             </View>
         ))}
     </ScrollView>
 );
+
 
 export default function Stop() {
 
@@ -96,8 +93,12 @@ export default function Stop() {
                 </View>
 
                 <View style={[styles.secondRow, {backgroundColor: colors.backgroundSecondary, paddingVertical: 3, borderRadius:10}]}>
-                    <Text style={styles.textPrimary}> {`Stop ${stopData?.code}` || 'Stop'} </Text>
-                    <Text style={styles.textPrimary}> {`${stopData?.name}` || 'Stop'} </Text>
+                    <Text style={styles.textPrimary}>
+                        {`Stop ${stopData?.code}` || 'Stop'}
+                    </Text>
+                    <Text style={styles.textPrimary}>
+                        {`${stopData?.name}` || 'Stop'}
+                    </Text>
                 </View>
 
                 <View style={styles.thirdRow}>
@@ -126,7 +127,8 @@ export default function Stop() {
 
             </View>
 
-            <ArrivalsDisplay arrivals={arrivals}/>
+            <ArrivalsDisplay arrivals={arrivals || []} />
+
 
         </SafeAreaView>
     );
