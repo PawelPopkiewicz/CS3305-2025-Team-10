@@ -38,6 +38,9 @@ export default function Stop() {
     const {stopId} = useLocalSearchParams() as { stopId: string };
     const [arrivals, setArrivals] = useState<BusInfo[]>([]);
     const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
+    const favStops = useSelector((state: RootState) => state.favStop.stops, shallowEqual);
+    const stopData = stops.find(stop => stop.id === stopId);
+    const dispatch = useDispatch();
     useFocusEffect(
         useCallback(() => {
             const fetchTrip = async () => {
@@ -63,20 +66,16 @@ export default function Stop() {
             return () => clearInterval(interval); // Cleanup interval on unmount
         }, [stopId])
     );
-    const favStops = useSelector((state: RootState) => state.favStop.stops, shallowEqual);
-    const isFav = favStops.includes(stopId);
-    const dispatch = useDispatch();
-    const stopData = stops.find(stop => stop.id === stopId); //converting to number
-
-    if (arrivals.length === 0) return (
-        <SafeAreaView style={styles.background}>
-            <Text style={styles.textPrimary}>Loading...</Text>
-        </SafeAreaView>
-    );
 
     if (!stopData) return (
         <SafeAreaView style={styles.background}>
             <Text style={styles.textPrimary}>This stop isn't tracked anymore</Text>
+        </SafeAreaView>
+    );
+    const isFav = favStops?.includes(stopId);
+    if (arrivals.length === 0) return (
+        <SafeAreaView style={styles.background}>
+            <Text style={styles.textPrimary}>Loading...</Text>
         </SafeAreaView>
     );
 
