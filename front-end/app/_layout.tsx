@@ -12,7 +12,7 @@ export default function Layout() {
             await rehydrateStopsFavorites(store.dispatch);
         };
 
-        // Return the promise from `loadFavorites` to handle it explicitly
+    //     // Return the promise from `loadFavorites` to handle it explicitly
         loadFavorites().catch(error => console.error('Favourite rehydration error:', error));
     }, []);
 

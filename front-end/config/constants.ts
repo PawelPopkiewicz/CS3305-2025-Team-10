@@ -1,4 +1,4 @@
-export const busApiUrl = "https://06dd-143-239-9-7.ngrok-free.app";
+export const busApiUrl = "https://83cb-143-239-9-3.ngrok-free.app";
 
 // Default region of rendering a map
 export const DEFAULT_REGION = {

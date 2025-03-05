@@ -11,7 +11,7 @@ const SearchButtonRoute = ({ item }: { item: Route }) => {
         <View style={styles.buttonContainer}>
             <TouchableOpacity
                 style={styles.buttonContainer}
-                onPress={() => router.push({ pathname: `/screens/map/${item.name}`, params: { route: item.name } })}
+                onPress={() => router.push({ pathname: `/screens/filtered_map/${item.name}`, params: { route: item.name } })}
                 activeOpacity={0.1}
             >
                 <View>
