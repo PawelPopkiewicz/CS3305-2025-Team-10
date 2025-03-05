@@ -55,7 +55,6 @@ const Map = () => {
                 // clusterTextColor="#fff"
             >
                 {/* Display Stop Markers */}
-                {/* Stop Markers */}
                 {visibleStops.map((stop) => (
                     <StopMarker 
                         key={stop.id} 
@@ -76,14 +75,6 @@ const Map = () => {
     );
 };
 
-// Memoized Marker Components
-// const MemoizedStopMarker = React.memo(({ lat, lon }: { lat: number, lon: number }) => (
-//     <StopMarker lat={lat} lon={lon} />
-// ));
-
-// const MemoizedBusMarker = React.memo(({ lat, lon }: { lat: number, lon: number }) => (
-//     <BusMarker lat={lat} lon={lon} />
-// ));
 
 const styles = StyleSheet.create({
     background: {

@@ -2,7 +2,7 @@ import {Stack} from 'expo-router';
 import {Provider} from "react-redux";
 import {store} from "./redux/store";
 import {rehydrateStopsFavorites} from "@/app/redux/favStopsSlice";
-import { rehydrateRoutesFavorites} from "@/app/redux/favRoutesSlice";
+import {rehydrateRoutesFavorites} from "@/app/redux/favRoutesSlice";
 import {useEffect} from "react";
 
 export default function Layout() {
@@ -14,7 +14,7 @@ export default function Layout() {
             ]);
         };
 
-    //     // Return the promise from `loadFavorites` to handle it explicitly
+    //  Return the promise from `loadFavorites` to handle it explicitly
         loadFavorites().catch(error => console.error('Favourite rehydration error:', error));
     }, []);
 

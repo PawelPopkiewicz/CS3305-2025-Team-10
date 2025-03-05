@@ -18,14 +18,9 @@ export const store = configureStore({
 
 store.subscribe(async () => {
     const state = store.getState();
-    console.log("Saving to AsyncStorage:", JSON.stringify(state.favStop), JSON.stringify(state.favRoute));
-
     try {
         await AsyncStorage.setItem('favStops', JSON.stringify(state.favStop));
         await AsyncStorage.setItem('favRoutes', JSON.stringify(state.favRoute));
-        const storedFavoriteStops = await AsyncStorage.getItem('favStops');
-        const storedFavRoutes = await AsyncStorage.getItem('favRoutes');
-        console.log("Reading from AsyncStorage:", JSON.stringify(storedFavoriteStops), JSON.stringify(storedFavRoutes));
     } catch (error) {
         console.error('Error saving favorites:', error);
     }
