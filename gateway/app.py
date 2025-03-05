@@ -1,7 +1,7 @@
 """
 Gateway providing connection to frontend
 """
-from flask import Flask, abort
+from flask import Flask, abort, jsonify
 import requests
 import os
 import datetime
@@ -119,12 +119,11 @@ def get_stops():
                     "lat": stop["stop_lat"],
                     "lon": stop["stop_lon"]
                 }
-                for stop in response
+                for stop in response.json()
             ]
 
             # Print formatted result
-            
-            return stops.json()          # Standard response
+            return jsonify(stops)          # Standard response
         elif response.status_code == 404:
             return abort(404)               # Not found
         else:
