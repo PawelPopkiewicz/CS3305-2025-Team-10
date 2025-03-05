@@ -10,7 +10,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: admin
     volumes:
       - mongo_data:/data/db
-    command: ["mongod", "--quiet", "--auth"]
+    command: ["mongod", "--quiet", "--auth", "--logpath", "/dev/null"]
     networks:
       - mynetwork
 
@@ -77,6 +77,7 @@ services:
       MONGO_URI: "mongodb://admin:admin@mongodb:27017/?authSource=admin"
       POSTGRES_URI: "postgresql://admin:admin@postgres:5432/static_data"
       POSTGRES_DB_MADE_DIR: "/var/lib/bus_model/flags"
+      INFERENCE_URI: "http://inference:5001"
     volumes:
       - ./bus_model:/bus_model
       - flags:/var/lib/bus_model/flags

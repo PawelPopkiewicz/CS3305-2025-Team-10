@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta
 from time import time
 from collections import defaultdict
+import gtfsr
+import os
+import requests
 
 class Bus:
     """A class to represent a bus and its relevant information."""
@@ -24,11 +27,13 @@ class Bus:
     def __init__(self, slug: str):
         self._all[slug] = self
         self.slug = slug
+        self.time_lat_lon = []
         self.latest_timestamp = 0
         self.latest_trip = None
         self.latest_route = None
         self.lat = None
         self.lon = None
+        self.rotation = 0
     
     def set_details(self, reg: str, fleet_code: str, name: str, style: int, fuel: int, double_decker: bool, coach: bool, electric: bool, livery: dict, withdrawn: bool, special_features: str):
         """Sets the details of the bus."""
@@ -44,16 +49,53 @@ class Bus:
         self.withdrawn = withdrawn
         self.special_features = special_features
     
-    def add_live_update(self, trip_id: str, route_id: str, timestamp: int, latitude: float, longitude: float):
+    def add_live_update(self, trip_id: str, route_id: str, timestamp: int, latitude: float, longitude: float, start_time: str, start_date: str, schedule_relationship: str, direction_id: bool):
         """Populates the object with the latest live bus data."""
-        self.latest_trip = trip_id
-        self.latest_route = route_id
-        self.latest_timestamp = timestamp   # Unix timestamp
-        self.lat = latitude
-        self.lon = longitude
+        if self.latest_trip != trip_id:
+            self.time_lat_lon = []
+            self.latest_trip = trip_id
+            self.latest_route = route_id
+            self.start_time = start_time
+            self.start_date = start_date
+        if (tup := (timestamp, latitude, longitude)) not in self.time_lat_lon:
+            self.time_lat_lon.append(tup)
+            self.latest_timestamp = self.time_lat_lon[-1][0]   # Unix timestamp
+            self.lat = self.time_lat_lon[-1][1]
+            self.lon = self.time_lat_lon[-1][2]
+            self.schedule_relationship = schedule_relationship
+            self.direction = direction_id
+            shape_id = Trip._all[trip_id].shape.shape_id
+            points = gtfsr.StaticGTFSR.nearest_points(self.lat, self.lon, shape_id)
+            if points:
+                p1, p2 = points
+                lat1, lon1, lat2, lon2 = p1[1], p1[2], p2[1], p2[2]
+                angle = gtfsr.StaticGTFSR.calculate_bearing(lat1, lon1, lat2, lon2)
+                self.rotation = angle
+            # Get inference update
+            # try:
+            #     uri = os.getenv("INFERENCE_URI")
+            #     response = requests.post(uri, json=self.inference_data_supply())
+            #     ... # Do something with response data, ie, populate fields
+            # except requests.exceptions.RequestException as e:
+            #     print(f"Failed to fetch inference data: {e}")
+
         trip = Trip._all.get(trip_id, None)
         if trip:
             trip.latest_bus = self.slug
+    
+    def inference_data_supply(self) -> dict:
+        """Returns JSON data in the correct format for the model."""
+        return {
+            "trip_id": self.latest_trip,
+            "start_time": self.start_time,
+            "start_date": self.start_date,
+            "schedule_relationship": self.schedule_relationship,
+            "route_id": self.latest_route,
+            "direction_id": self.direction,
+            "vehicle_updates": [
+                {"latitude": tll[1], "longitude": tll[2], "timestamp": tll[0]} for tll in self.time_lat_lon
+            ]
+            }
     
     def get_info(self) -> dict[str, str]:
         """Returns the bus's information in a dictionary."""
@@ -92,13 +134,15 @@ class Bus:
                     data = {"id" : bus.slug,
                             "route" : route.route_short_name,
                             "headsign" : trip.trip_headsign,
-                            "direction" : trip.direction,
+                            "direction" : bus.rotation,
                             "lat" : bus.lat,
                             "lon" : bus.lon,
                             "timestamp" : bus.latest_timestamp
                             }
                     buses.append(data)
         print(f"Active buses/total buses: {len(buses)}/{len(cls._all)}")
+        if len(buses) == 0:
+            print("Likely to be missing live bus data.")
         return buses
             
 
@@ -117,15 +161,17 @@ class Stop:
         self.bus_visits: list[str] = [] # List of BusStopVisit ids at this stop
         self.routes: set[str] = set()
         self.trips: set[str] = set()
+        self.rotation = 0
     
     def get_info(self) -> dict[str, str]:
         """Returns the stop's information in a dictionary."""
         return {
-            "stop_id": self.stop_id,
-            "stop_code": self.stop_code,
-            "stop_name": self.stop_name,
-            "stop_lat": self.stop_lat,
-            "stop_lon": self.stop_lon
+            "id": self.stop_id,
+            "code": self.stop_code,
+            "name": self.stop_name,
+            "lat": self.stop_lat,
+            "lon": self.stop_lon,
+            "direction": self.rotation,
         }
     
     def get_timetables(self, date: datetime) -> list[dict]:
@@ -139,7 +185,7 @@ class Stop:
                 visit_time = timestamps.get(self.stop_id, None)
                 if visit_time and trip.latest_bus:
                     visits.append({
-                        "bus_id": trip.latest_bus,
+                        "id": trip.latest_bus,
                         "route": trip.route.route_short_name,
                         "headsign": trip.trip_headsign,
                         "arrival": visit_time,
@@ -153,7 +199,7 @@ class Stop:
                     #[print(f"{t.trip_id} : {BusStopVisit._all[t.bus_stop_times[0]].arrival_time} | {t.service.schedule_days[date.weekday()]}") for t in prev_trips[::-1]]
                     if len(prev_trips) > 0 and prev_trips[-1].latest_bus:
                         visits.append({
-                            "bus_id": prev_trips[-1].latest_bus,
+                            "id": prev_trips[-1].latest_bus,
                             "route": trip.route.route_short_name,
                             "headsign": trip.trip_headsign,
                             "arrival": visit_time,
@@ -192,10 +238,10 @@ class Route:
     
     def enumerate_stops(self):
         for trip_id in self.all_trips:
-            for bus_stop_visit in Trip._all[trip_id].bus_stop_times:
-                self.add_stop(bus_stop_visit.stop.stop_id)
+            for bus_stop_visit_id in Trip._all[trip_id].bus_stop_times:
+                self.add_stop(BusStopVisit._all[bus_stop_visit_id].stop.stop_id)
         for stop_id in self.all_stops:
-            self._all[stop_id].routes.add(self.route_id)
+            Stop._all[stop_id].routes.add(self.route_id)
     
 class Trip:
     """A class to represent a trip and its relevant information."""

@@ -26,7 +26,7 @@ def teardown_request(execution=None):
     diff = time.time() - g.start_time
     print(f"Request took {diff} seconds")
 
-@app.route("/")
+@app.route("/", methods=["GET"])
 def test():
     return {"message" : "Hello, World!"}
 
@@ -40,64 +40,54 @@ def stops():
     """Fetches and returns information of all stops."""
     return [stop.get_info() for stop in bus_model.Stop._all.values()]
 
-@app.route("/v1/stop/<string:stop_id>")
-def stop(stop_id):
+@app.route("/v1/stop/<string:stop_id>", methods=["GET"])
+def stop(stop_id: str):
     """Fetches information for a specific stop based on stop_id or stop_code."""
     if len(stop_id) > 8:    # stop_id
         return generic_get_or_404(bus_model.Stop, stop_id)
     else:   # stop_code
         return bus_model.search_attribute(bus_model.Stop, "stop_code", stop_id)[0].get_info()
 
-@app.route("/v1/stop/arrivals/<string:stop_id>")
-def stop_arrivals(stop_id):
+@app.route("/v1/stop/arrivals/<string:stop_id>", methods=["GET"])
+def stop_arrivals(stop_id: str):
     """Fetches all bus arrivals for a specific stop"""
     stop = bus_model.Stop._all.get(stop_id, None)
     if stop:
         return stop.get_timetables(datetime.datetime.now())    # doesn't really work near midnight rn
     return abort(404)
 
-@app.route("/v1/trip/<string:trip_id>")
-def trips(trip_id):    
+@app.route("/v1/trip/<string:trip_id>", methods=["GET"])
+def trips(trip_id: str):    
     """Fetches information for a specific trip based on trip_id."""
     return generic_get_or_404(bus_model.Trip, trip_id)
 
-@app.route("/v1/trip/cork")
-def cork_stops():
-    """Fetches all trips that are in Cork."""
-    cork_routes = ["201", "202", "203", "205", "206", "207", "208", "209", "212", "213",
-                    "214", "215", "216", "219", "220", "223", "225", "226", "209A", "215A",
-                    "207A", "226X", "202A", "225L", "220X", "223X"]
-    cork_agency_id = bus_model.search_attribute(bus_model.Agency, "agency_name", "Bus Éireann")[0].agency_id
-    cork_route_ids = [route.route_id for route in bus_model.Route._all.values() if route.agency.agency_id == cork_agency_id and route.route_short_name in cork_routes]
-    return bus_model.Trip.filter_by_routes(cork_route_ids)
-
-@app.route("/v1/agency/<string:agency_id>")
-def agency(agency_id):
+@app.route("/v1/agency/<string:agency_id>", methods=["GET"])
+def agency(agency_id: str):
     """Fetches information for a specific agency based on agency_id."""
     return generic_get_or_404(bus_model.Agency, agency_id)
 
 @app.route("/v1/route", methods=["GET"])
 def routes():
     """Fetches a list of all routes."""
-    return [{"name": route.route_short_name} for route in bus_model.Route._all.values()]
+    return [{"name": route.route_short_name, "stop_ids" : list(route.all_stops)} for route in bus_model.Route._all.values()]
 
-@app.route("/v1/route/<string:route_id>")
-def route(route_id):
+@app.route("/v1/route/<string:route_id>", methods=["GET"])
+def route(route_id: str):
     """Fetches information for a specific route based on route_id."""
     return generic_get_or_404(bus_model.Route, route_id)
 
-@app.route("/v1/route/search/<string:route_name>")
-def route_search(route_name):
+@app.route("/v1/route/search/<string:route_name>", methods=["GET"])
+def route_search(route_name: str):
     """Fetches all routes that match the route_name keyword."""
     return [route.get_info() for route in bus_model.Route._all.values() if route_name in route.route_short_name]
 
-@app.route("/v1/shape/<string:shape_id>")
-def shape(shape_id):
+@app.route("/v1/shape/<string:shape_id>", methods=["GET"])
+def shape(shape_id: str):
     """Fetches information for a specific shape based on shape_id."""
     return generic_get_or_404(bus_model.Shape, shape_id)
 
-@app.route("/v1/bus/<string:bus_id>")
-def bus(bus_id):
+@app.route("/v1/bus/<string:bus_id>", methods=["GET"])
+def bus(bus_id: str):
     """Fetches information for a specific bus based on bus_id."""
     all_stops: list = []
     bus_obj = bus_model.Bus._all.get(bus_id, None)
@@ -109,9 +99,9 @@ def bus(bus_id):
             for stop_id, timestamp in stop_timestamps.get(day.strftime("%Y-%m-%d"), {}).items():
                 stop = bus_model.Stop._all.get(stop_id, None)
                 data = {
-                        "stop_id": stop.stop_id,
-                        "stop_code": stop.stop_code,
-                        "stop_name": stop.stop_name,
+                        "id": stop.stop_id,
+                        "code": stop.stop_code,
+                        "name": stop.stop_name,
                         "arrival": timestamp,
                         #"current_trip": True,
                         }
@@ -122,9 +112,9 @@ def bus(bus_id):
                 for stop_id, timestamp in stop_timestamps.get(day.strftime("%Y-%m-%d"), {}).items():
                     stop = bus_model.Stop._all.get(stop_id, None)
                     data = {
-                            "stop_id": stop.stop_id,
-                            "stop_code": stop.stop_code,
-                            "stop_name": stop.stop_name,
+                            "id": stop.stop_id,
+                            "code": stop.stop_code,
+                            "name": stop.stop_name,
                             "arrival": timestamp,
                             #"current_trip": False,
                             }
@@ -134,12 +124,12 @@ def bus(bus_id):
     return abort(404)
 
 
-@app.route("/v1/bus")
+@app.route("/v1/bus", methods=["GET"])
 def buses():
     """Fetches information for all buses."""
     return bus_model.Bus.get_all_buses()
 
-@app.route("/v1/route_id_to_name")
+@app.route("/v1/route_id_to_name", methods=["GET"])
 def route_id_to_name():
     """Fetches a mapping between route_id to route names"""
     return jsonify(get_route_id_to_name_dict())
@@ -154,14 +144,19 @@ def update_realtime():
         for entity in entities:
             try:
                 trip_id = entity["vehicle"]["trip"]["trip_id"]
-                route_id = entity["vehicle"]["trip"]["route_id"]
-                vehicle_id = entity["vehicle"]["vehicle"]["id"]
-                timestamp = int(entity["vehicle"]["timestamp"])
-                latitude = float(entity["vehicle"]["position"]["latitude"])
-                longitude = float(entity["vehicle"]["position"]["longitude"])
-                bus = bus_model.Bus._all.get(vehicle_id, None)
-                if bus:
-                    bus.add_live_update(trip_id=trip_id, route_id=route_id, timestamp=timestamp, latitude=latitude, longitude=longitude)
+                if trip_id in bus_model.Trip._all:
+                    route_id = entity["vehicle"]["trip"]["route_id"]
+                    vehicle_id = entity["vehicle"]["vehicle"]["id"]
+                    timestamp = int(entity["vehicle"]["timestamp"])
+                    latitude = float(entity["vehicle"]["position"]["latitude"])
+                    longitude = float(entity["vehicle"]["position"]["longitude"])
+                    start_time = entity["vehicle"]["trip"]["start_time"]
+                    start_date = entity["vehicle"]["trip"]["start_date"]
+                    schedule_relationship = entity["vehicle"]["trip"]["schedule_relationship"]
+                    direction_id = entity["vehicle"]["trip"]["direction_id"]
+                    bus = bus_model.Bus._all.get(vehicle_id, None)
+                    if bus:
+                        bus.add_live_update(trip_id=trip_id, route_id=route_id, timestamp=timestamp, latitude=latitude, longitude=longitude, start_time=start_time, start_date=start_date, schedule_relationship=schedule_relationship, direction_id=direction_id)
             except KeyError as e:
                 print(f"KeyError: {e}")
                 continue
@@ -215,7 +210,7 @@ def generic_get_or_404(cls, id_: str) -> dict:
     else:
         abort(404)
 
-update_bus()    # Update the bus data on startup
-update_realtime()    # Update the realtime data on startup
+update_bus()                    # Update the bus data on startup
+update_realtime()               # Update the realtime data on startup
 print(f"Loaded in {time.time() - load_before} seconds")
 print("Loaded")
