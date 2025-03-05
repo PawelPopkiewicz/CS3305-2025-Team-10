@@ -7,11 +7,10 @@ import colors from '@/config/Colors';
 import fonts from '@/config/Fonts';
 
 
-const Loading = ({ text }: { text: String }) => {
+const ErrorData = ({ text }: { text: String }) => {
     return (
-        <SafeAreaView style={styles.loading}>
+        <SafeAreaView style={styles.backGround}>
                 <Text style={styles.textData}>{text}</Text>
-                <ActivityIndicator size="large" color={colors.objectSelected} />
         </SafeAreaView>
     );
 };
@@ -22,7 +21,7 @@ const styles = StyleSheet.create({
         textAlign: "center",
         fontSize: 24,
     },
-    loading: {
+    backGround: {
         backgroundColor: colors.backgroundPrimary,
         textAlign: "center",
         justifyContent: 'center',
@@ -33,4 +32,4 @@ const styles = StyleSheet.create({
     
 });
 
-export default Loading;
+export default ErrorData;
