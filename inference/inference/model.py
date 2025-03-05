@@ -12,8 +12,6 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.model_selection import train_test_split
-import random
-import math
 from tqdm import tqdm
 
 

@@ -19,7 +19,7 @@ class BusTimesInference():
     def __init__(self, model_filename):
         # Load the model and preprocessing objects
         model_path = get_root() / "models" / model_filename
-        checkpoint = torch.load(model_path)
+        checkpoint = torch.load(model_path, weights_only=False)
 
         # Create model
         self.trip_feature_dim = len(checkpoint['route_encoder'].categories_[0]) + len(checkpoint['day_encoder'].categories_[0])  # routes + days

@@ -3,7 +3,7 @@ Pre-process the json data
 Returns a csv-format data ready to be fed into the model
 """
 
-from ..preprocessing.trip_to_stop_times import TripGenerator
+from preprocessing.trip_to_stop_times import TripGenerator
 
 
 def process_json(json_data):
