@@ -5,7 +5,7 @@ import {shallowEqual, useDispatch, useSelector} from "react-redux";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 import {RootState} from "@/app/redux/store";
-import {addFavoriteStop, removeFavoriteStop} from "@/app/redux/favSlice";
+import {addFavoriteStop, removeFavoriteStop} from "@/app/redux/favStopsSlice";
 import {useCallback, useState} from "react";
 import {busApiUrl} from "@/config/constants";
 
@@ -63,7 +63,7 @@ export default function Stop() {
             return () => clearInterval(interval); // Cleanup interval on unmount
         }, [stopId])
     );
-    const favStops = useSelector((state: RootState) => state.fav.stops, shallowEqual);
+    const favStops = useSelector((state: RootState) => state.favStop.stops, shallowEqual);
     const isFav = favStops.includes(stopId);
     const dispatch = useDispatch();
     const stopData = stops.find(stop => stop.id === stopId); //converting to number

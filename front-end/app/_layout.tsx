@@ -1,13 +1,15 @@
 import {Stack} from 'expo-router';
 import {Provider} from "react-redux";
 import {store} from "./redux/store";
-import {rehydrateFavorites} from "@/app/redux/favSlice";
+import {rehydrateStopsFavorites} from "@/app/redux/favStopsSlice";
+import { rehydrateRoutesFavorites} from "@/app/redux/favRoutesSlice";
 import {useEffect} from "react";
 
 export default function Layout() {
     useEffect(() => {
         const loadFavorites = async () => {
-            await rehydrateFavorites(store.dispatch); // Rehydrate the favorites
+            await rehydrateRoutesFavorites(store.dispatch); // Rehydrate the favorites
+            await rehydrateStopsFavorites(store.dispatch);
         };
 
         // Return the promise from `loadFavorites` to handle it explicitly

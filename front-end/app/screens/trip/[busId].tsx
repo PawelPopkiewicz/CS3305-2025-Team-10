@@ -7,7 +7,7 @@ import {useCallback, useState} from "react";
 import {busApiUrl} from "@/config/constants";
 import {shallowEqual, useDispatch, useSelector} from "react-redux";
 import {RootState} from "@/app/redux/store";
-import {addFavoriteRoute, removeFavoriteRoute} from "@/app/redux/favSlice";
+import {addFavoriteRoute, removeFavoriteRoute} from "@/app/redux/favRoutesSlice";
 
 type StopInfo = { stopId: string, code: string, name: string, arrival: string };
 
@@ -35,7 +35,7 @@ export default function TripScreen() {
     const { busId } = useLocalSearchParams() as { busId: string };
     const [trip, setTrip] = useState<StopInfo[]>([]);
     const buses = useSelector((state: RootState) => state.bus.buses, shallowEqual);
-    const favRoutes = useSelector((state: RootState) => state.fav.routes, shallowEqual);
+    const favRoutes = useSelector((state: RootState) => state.favRoute.routes, shallowEqual);
     const busData = buses.find(bus => bus.id === busId);
     const dispatch = useDispatch();
 
