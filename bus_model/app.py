@@ -159,9 +159,12 @@ def update_realtime():
                 timestamp = int(entity["vehicle"]["timestamp"])
                 latitude = float(entity["vehicle"]["position"]["latitude"])
                 longitude = float(entity["vehicle"]["position"]["longitude"])
+                start_time = entity["vehicle"]["trip"]["start_time"]
+                start_date = entity["vehicle"]["trip"]["start_date"]
+                schedule_relationship = entity["vehicle"]["trip"]["schedule_relationship"]
                 bus = bus_model.Bus._all.get(vehicle_id, None)
                 if bus:
-                    bus.add_live_update(trip_id=trip_id, route_id=route_id, timestamp=timestamp, latitude=latitude, longitude=longitude)
+                    bus.add_live_update(trip_id=trip_id, route_id=route_id, timestamp=timestamp, latitude=latitude, longitude=longitude, start_time=start_time, start_date=start_date, schedule_relationship=schedule_relationship)
             except KeyError as e:
                 print(f"KeyError: {e}")
                 continue

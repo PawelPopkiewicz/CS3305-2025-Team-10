@@ -44,13 +44,16 @@ class Bus:
         self.withdrawn = withdrawn
         self.special_features = special_features
     
-    def add_live_update(self, trip_id: str, route_id: str, timestamp: int, latitude: float, longitude: float):
+    def add_live_update(self, trip_id: str, route_id: str, timestamp: int, latitude: float, longitude: float, start_time: str, start_date: str, schedule_relationship: int):
         """Populates the object with the latest live bus data."""
         self.latest_trip = trip_id
         self.latest_route = route_id
         self.latest_timestamp = timestamp   # Unix timestamp
         self.lat = latitude
         self.lon = longitude
+        self.start_time = start_time
+        self.start_date = start_date
+        self.schedule_relationship = schedule_relationship
         trip = Trip._all.get(trip_id, None)
         if trip:
             trip.latest_bus = self.slug
