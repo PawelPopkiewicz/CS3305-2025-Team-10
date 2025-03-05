@@ -17,9 +17,10 @@ def manage_read_only_connection(func):
         conn = create_connection()
         cursor = conn.cursor()
         try:
-            func(cursor, *args, **kwargs)
+            data = func(cursor, *args, **kwargs)
         finally:
             close_connection(conn)
+            return data or None
     return wrapper
 
 class BustimesAPI:
@@ -212,19 +213,11 @@ class StaticGTFSR:
         compass_bearing = int((initial_bearing + 360) % 360)
         return compass_bearing
 
+
     @classmethod
     @manage_read_only_connection
-    def post_loading_calculations(cursor, cls):
-        # These are basically "joins" of SQL tables
-        for trip in bus_model.Trip._all.values():
-            trip.sort_bus_stop_times()
-        for route in bus_model.Route._all.values():
-            route.enumerate_stops()
-        # Get direction
-        for stop in bus_model.Stop._all.values():
-            stop_lat, stop_lon = stop.stop_lat, stop.stop_lon
-            shape_id = bus_model.Trip._all[list(stop.trips)[0]].shape.shape_id
-            query = """
+    def nearest_points(cursor, cls, lat: float, lon: float, shape_id: str) -> list[tuple]:
+        query = """
                     WITH sh1 AS (
                         SELECT shape_pt_sequence AS stop_seq, shape_pt_lat AS lat, shape_pt_lon AS lon, shape_dist_traveled, shape_id
                         FROM shapes AS sh1
@@ -237,23 +230,42 @@ class StaticGTFSR:
                         FROM shapes AS sh2
                         JOIN sh1 AS sh1 ON sh2.shape_id = sh1.shape_id
                         WHERE sh2.shape_id = %s
-                            AND sh2.shape_dist_traveled <= (sh1.shape_dist_traveled - 5) OR sh2.shape_dist_traveled >= (sh1.shape_dist_traveled + 5)
-                        ORDER BY sh2.shape_pt_sequence DESC
+                            AND (sh2.shape_dist_traveled <= (sh1.shape_dist_traveled - 5) OR sh2.shape_dist_traveled >= (sh1.shape_dist_traveled + 5))
+                        ORDER BY abs(sh2.shape_dist_traveled - sh1.shape_dist_traveled) ASC
                         LIMIT 1
                     )
-                    SELECT stop_seq, lat, lon FROM sh1
-                    UNION ALL
-                    SELECT stop_seq, lat, lon FROM sh2;
-                   """ 
-            cursor.execute(query, (shape_id, stop_lat, stop_lon, shape_id))
-            if res := cursor.fetchall():
-                points = [(seq, lat, lon) for seq, lat, lon in res]
+                    SELECT * FROM (
+                        SELECT stop_seq, lat, lon FROM sh1
+                        UNION ALL
+                        SELECT stop_seq, lat, lon FROM sh2
+                   ) as combined_results
+                   ORDER BY stop_seq ASC;
+                   """
+        cursor.execute(query, (shape_id, lat, lon, shape_id))
+        if res := cursor.fetchall():
+            return [(seq, lat, lon) for seq, lat, lon in res]
+        print("No res", lat, lon)
+        return None
+
+    @classmethod
+    @manage_read_only_connection
+    def post_loading_calculations(cursor, cls):
+        # These are basically "joins" of SQL tables
+        for trip in bus_model.Trip._all.values():
+            trip.sort_bus_stop_times()
+        for route in bus_model.Route._all.values():
+            route.enumerate_stops()
+        # Get direction
+        for stop in bus_model.Stop._all.values():
+            stop_lat, stop_lon = stop.stop_lat, stop.stop_lon
+            shape_id = bus_model.Trip._all[list(stop.trips)[0]].shape.shape_id
+            points = StaticGTFSR.nearest_points(stop_lat, stop_lon, shape_id)
+            if points:
                 assert len(points) == 2, f"Only {len(points)} points returned."
-                point1, point2 = points
-                s1, lat1, lon1, s2, lat2, lon2 = point1[0], point1[1], point1[2], point2[0], point2[1], point2[2]
-                print(type(lat1), type(lon1), type(lat2), type(lon2), type(s1), type(s2))
+                p1, p2 = points
+                lat1, lon1, lat2, lon2 = p1[1], p1[2], p2[1], p2[2]
                 angle = cls.calculate_bearing(lat1, lon1, lat2, lon2)
-                stop.rotation = angle                  
+                stop.rotation = angle              
     
         
     

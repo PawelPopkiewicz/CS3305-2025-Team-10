@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from time import time
 from collections import defaultdict
+import gtfsr
 import os
 import requests
 
@@ -32,6 +33,7 @@ class Bus:
         self.latest_route = None
         self.lat = None
         self.lon = None
+        self.rotation = 0
     
     def set_details(self, reg: str, fleet_code: str, name: str, style: int, fuel: int, double_decker: bool, coach: bool, electric: bool, livery: dict, withdrawn: bool, special_features: str):
         """Sets the details of the bus."""
@@ -62,13 +64,20 @@ class Bus:
             self.lon = self.time_lat_lon[-1][2]
             self.schedule_relationship = schedule_relationship
             self.direction = direction_id
+            shape_id = Trip._all[trip_id].shape.shape_id
+            points = gtfsr.StaticGTFSR.nearest_points(self.lat, self.lon, shape_id)
+            if points:
+                p1, p2 = points
+                lat1, lon1, lat2, lon2 = p1[1], p1[2], p2[1], p2[2]
+                angle = gtfsr.StaticGTFSR.calculate_bearing(lat1, lon1, lat2, lon2)
+                self.rotation = angle
             # Get inference update
-            try:
-                uri = os.getenv("INFERENCE_URI")
-                response = requests.post(uri, json=self.inference_data_supply())
-                ... # Do something with response data, ie, populate fields
-            except requests.exceptions.RequestException as e:
-                print(f"Failed to fetch inference data: {e}")
+            # try:
+            #     uri = os.getenv("INFERENCE_URI")
+            #     response = requests.post(uri, json=self.inference_data_supply())
+            #     ... # Do something with response data, ie, populate fields
+            # except requests.exceptions.RequestException as e:
+            #     print(f"Failed to fetch inference data: {e}")
 
         trip = Trip._all.get(trip_id, None)
         if trip:
@@ -125,7 +134,7 @@ class Bus:
                     data = {"id" : bus.slug,
                             "route" : route.route_short_name,
                             "headsign" : trip.trip_headsign,
-                            "direction" : trip.direction,
+                            "direction" : bus.rotation,
                             "lat" : bus.lat,
                             "lon" : bus.lon,
                             "timestamp" : bus.latest_timestamp
