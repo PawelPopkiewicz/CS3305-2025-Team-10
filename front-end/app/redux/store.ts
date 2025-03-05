@@ -18,13 +18,16 @@ export const store = configureStore({
 
 store.subscribe(async () => {
     const state = store.getState();
+    console.log("Saving to AsyncStorage:", JSON.stringify(state.favStop), JSON.stringify(state.favRoute));
+
     try {
-        await AsyncStorage.setItem('favStops', JSON.stringify(state.favStop))
-        await AsyncStorage.setItem('favRoutes', JSON.stringify(state.favRoute))
+        await AsyncStorage.setItem('favStops', JSON.stringify(state.favStop));
+        await AsyncStorage.setItem('favRoutes', JSON.stringify(state.favRoute));
     } catch (error) {
         console.error('Error saving favorites:', error);
     }
 });
+
 
 export type RootState = ReturnType<typeof store.getState>;
 export default store;
