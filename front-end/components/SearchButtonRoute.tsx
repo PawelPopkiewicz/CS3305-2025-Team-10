@@ -14,7 +14,7 @@ const SearchButtonRoute = ({ item }: { item: Route }) => {
                 onPress={() => router.push({ pathname: `/screens/filtered_map/${item.name}`, params: { route: item.name } })}
                 activeOpacity={0.1}
             >
-                <View>
+                <View style={styles.routeContainer}>
                     <Text style={styles.textPrimary}>
                         {`${item.name}`}  
                     </Text>
@@ -33,11 +33,19 @@ const styles = StyleSheet.create({
     textPrimary: {
         fontSize: fonts.subHeading,
         color: colors.textPrimary,
+        paddingVertical: 5,
+        textAlign: 'center',
     },
     textSecondary: {
         fontSize: fonts.body,
         color: colors.textSecondary,
+        
     },
+    routeContainer: {
+        backgroundColor: colors.backgroundSecondary,
+        width: '15%',
+        borderRadius: 10,
+    }
 });
 
 export default SearchButtonRoute;
