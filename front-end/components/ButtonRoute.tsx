@@ -9,7 +9,7 @@ export const ButtonRoute = () => {
 
 
     const routes = useSelector((state: RootState) => state.route.routes, shallowEqual);
-    const favs = useSelector((state: RootState) => state.fav.routes ?? [], shallowEqual);
+    const favs = useSelector((state: RootState) => state.favRoute.routes ?? [], shallowEqual);
     const favRoutes = routes.filter((route: Route) => favs?.includes?.(route.name));
 
     return (
