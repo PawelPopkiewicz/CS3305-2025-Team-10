@@ -194,6 +194,8 @@ class StaticGTFSR:
             bus_model.BusStopVisit(trip_id=row[0], arrival_time=arrival_delta, departure_time=departure_delta, stop_id=row[3], stop_sequence=row[4], stop_headsign=headsign, pickup_type=row[6], drop_off_type=row[7], timepoint=row[8])
         for trip in bus_model.Trip._all.values():
             trip.sort_bus_stop_times()
+        for route in bus_model.Route._all.values():
+            route.enumerate_stops()
     
     @classmethod
     def load_all_files(self):
