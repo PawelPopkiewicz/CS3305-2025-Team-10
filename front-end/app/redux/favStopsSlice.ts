@@ -27,7 +27,6 @@ const favStopsSlice = createSlice({
 
 export const rehydrateStopsFavorites = async (dispatch: ThunkDispatch<any, any, any> & Dispatch) => {
     try {
-        AsyncStorage.getItem('favStops').then(console.log);
         const storedFavorites = await AsyncStorage.getItem('favStops');
         if (storedFavorites) {
             const parsedFavorites = JSON.parse(storedFavorites);
