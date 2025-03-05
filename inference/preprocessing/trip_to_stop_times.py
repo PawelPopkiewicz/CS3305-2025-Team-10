@@ -5,6 +5,7 @@ per stop
 """
 
 import logging
+import numpy as np
 
 from .coordinates_mapping import (map_coord_to_distance,
                                   check_trip_id_exists,
@@ -23,14 +24,17 @@ logging.basicConfig(level=logging.INFO)
 class Trip():
     """Manages the trip and provides methods to create stop times csv"""
 
-    STOP_THRESHOLD = 10
+    TRAINING_STOP_THRESHOLD = 10
+    INFERENCE_STOP_THRESHOLD = 3
+    MAX_TARGET_STOPS = 15
 
     def __init__(self, record, counter):
-        self.stops = []
+        self.observed_stops = []
+        self.target_stops = []
+        self.remaining_stops = []
         self.record = record
         self.trip_id = record["trip_id"]
-        self.route_name = get_route_name_from_trip(self.trip_id)
-        self.day = map_date_to_day(record["start_date"])
+        self.route_name = get_route_name_from_trip(self.trip_id) self.day = map_date_to_day(record["start_date"])
         self.record_id = self.create_id(counter)
         self.start_time = None
         self.start_distance = None
@@ -49,20 +53,30 @@ class Trip():
         self.current_delay = stop_time - start_time
         self.configured = True
 
-    def enough_stops_filter(self):
+    def enough_training_stops_filter(self):
         """Return true if there are enough stops with arrival times"""
-        if self.stops:
-            if len(self.stops) > self.STOP_THRESHOLD:
-                return True
+        if self.observed_stops and len(self.observed_stops) > self.TRAINING_STOP_THRESHOLD:
+            return True
         return False
 
-    def add_stop(self, stop_info, stop_time=None, last_stop_metadata=None):
+    def enough_inference_stops_filter(self):
+        """Returns true if there are enough stops for inference"""
+        if self.observed_stops and len(self.observed_stops) > self.INFERENCE_STOP_THRESHOLD:
+            return True
+        return False
+
+    def add_stop(self, stop_info, stop_time=None, last_stop_metadata=None, reached_idle=False):
         """Add a stop row to the array"""
         stop_metadata = self.create_stop_metadata(stop_info)
         stop_row = self.create_stop_row_dict(
                 stop_info, stop_time, stop_metadata, last_stop_metadata)
         if stop_row is not None:
-            self.stops.append(stop_row)
+            if stop_time is not None:
+                self.observed_stops.append(stop_row)
+            elif len(self.target_stops) < self.MAX_TARGET_STOPS and not reached_idle:
+                self.target_stops.append(stop_row)
+            else:
+                self.remaining_stops.append(stop_row)
             return stop_metadata
         return None
 
@@ -79,36 +93,63 @@ class Trip():
                 "scheduled_departure_time": scheduled_departure_time
                 }
 
+    def get_observed_df(self):
+        """Returns the training dataframe"""
+        return pd.DataFrame(self.observed_stops)
+
+    def get_target_df(self):
+        """Return the target dataframe"""
+        return pd.DataFrame(self.target_stops)
+
+    def get_remaining_df(self):
+        """Return the remaining dataframe"""
+        return pd.DataFrame(self.remaining_stops)
+
+    observed_df = property(get_observed_df)
+    target_df = property(get_target_df)
+    remaining_df = property(get_remaining_df)
+
+    def display_df(self):
+        """Return all of the stops with proper flags"""
+        # stop_id, scheduled_arrival_time, predicted_time (None for remaining), flag (Observed, Predicted, Scheduled)
+        observed_df = self.observed_stops
+        observed_df["arrival_time"] = observed_df["scheduled_arrival_time"] + observed_df["residual_stop_time"]
+        observed_df["arrival_time"] += self.current_delay
+        target_df = self.target_df
+        target_df["arrival_time"] = target_df["scheduled_arrival_time"] + observed_df["residual_stop_time"]
+        target_df["arrival_time"] += self.current_delay
+        remaining_df = self.remaining_df
+        remaining_df["arrival_time"] = np.nan
+        dispaly_df = pd.concat([self.observed_df, self.target_df, self.remaining_df], ignore_index=True)
+        return display_df
+
+    def add_predictions(self, predictions):
+        """Add the predictions(vector) to the target_stops"""
+        target_df = self.target_df
+        target_df["residual_stop_time"] = predictions
+        self.target_stops = target_df.to_dict("record")
+
     def create_stop_row_dict(self, stop_info, stop_time, stop_metadata, last_stop_metadata=None):
         """Creates one dict which will serve as a row in csv for all stop"""
         residual_stop_time = None
         if stop_time is not None:
             residual_stop_time = round(
                     (stop_time - self.start_time) - stop_metadata["scheduled_arrival_time"] - self.current_delay, 1)
-        # stop_metadata = self.create_last_stop_info(stop_info)
-
-        # scheduled_arrival_time = round(map_strtime_to_timestamp(
-        #     self.record["start_date"], stop_info[2]) - self.start_time, 1)
-        # scheduled_departure_time = round(map_strtime_to_timestamp(
-        #     self.record["start_date"], stop_info[3]) - self.start_time, 1)
-        # stop_distance = round(stop_info[1] - self.start_distance, 1)
-        # last_stop_info = {
-        #         "stop_distance": stop_distance,
-        #         "scheduled_arrival_time": scheduled_arrival_time,
-        #         "scheduled_departure_time": scheduled_departure_time
-        #         }
 
         time_to_stop, distance_to_stop = 0, 0
         if last_stop_metadata is not None:
             time_to_stop = round(stop_metadata["scheduled_arrival_time"] - last_stop_metadata["scheduled_arrival_time"], 1)
             distance_to_stop = round(stop_metadata["stop_distance"] - last_stop_metadata["stop_distance"], 1)
-
+        time = map_timestamp_to_minutes(
+                stop_metadata["scheduled_arrival_time"] + self.start_time + self.current_delay)
         return {
                 "id": self.record_id,
                 "route_name": self.route_name,
                 "day": self.day,
-                "time": map_timestamp_to_minutes(stop_time),
+                "time": time,
                 "stop_id": stop_info[0],
+                "scheduled_arrival_time": stop_metadata["scheduled_arrival_time"],
+                "scheduled_departure_time": stop_metadata["scheduled_departure_time"],
                 "distance_to_stop": distance_to_stop,
                 "time_to_stop": time_to_stop,
                 "residual_stop_time": residual_stop_time,
@@ -118,7 +159,6 @@ class Trip():
 class TripGenerator():
     """Manages the trip and provides methods to create stop times csv"""
 
-    STOP_THRESHOLD = 10
     OFF_ROUTE_THRESHOLD = 200
 
     def __init__(self, record):
@@ -134,7 +174,7 @@ class TripGenerator():
     def check_trip_filters_after(self):
         """Filter all of the trips which are not suitable for training"""
         for i in range(len(self.trips)-1, -1, -1):
-            if not self.trips[i].enough_stops_filter():
+            if not self.trips[i].enough_training_stops_filter():
                 self.trips.pop(i)
 
     def check_trip_filters_before(self):
@@ -189,10 +229,9 @@ class TripGenerator():
                 return None
         return stop_index
 
-    def add_remaining_stops(self, stop_index):
+    def add_unobserved_stops(self, stop_index):
         """
         Adds the remaining stops for which we have no updates
-        Adds only to the last trip, does not create new ones after idle stops
         """
         if len(self.trips) == 0:
             return
@@ -200,14 +239,14 @@ class TripGenerator():
         if not last_trip.configured:
             return
         last_stop = None
+        reached_idle = False
         for i in range(stop_index, len(self.stop_distances)):
             stop_info = self.stop_distances[i]
             if last_stop is not None and self.is_idle_stop(last_stop):
-                # Reached an idle stop
-                return
+                reached_idle = True
             # Initiate the config data for a trip
             last_stop = last_trip.add_stop(
-                    stop_info=stop_info, last_stop=last_stop)
+                    stop_info=stop_info, last_stop_metadata=last_stop, reached_idle=reached_idle)
 
     def add_update_stops(self, update_rows, stop_index):
         """Adds the trips and their stops for which we have updates"""
@@ -220,11 +259,6 @@ class TripGenerator():
             stop_info = self.stop_distances[stop_index]
             stop_time = self.get_stop_time(
                     stop_info, current_update, next_update)
-            # stop_info = self.stop_distances[stop_index]
-            # stop_time = calc_interpolation(
-            #         current_update[1], current_update[0],
-            #         next_update[1], next_update[0],
-            #         stop_info[1])
 
             while stop_time is not None:
                 # Split the trips
@@ -250,11 +284,7 @@ class TripGenerator():
                 stop_info = self.stop_distances[stop_index]
                 stop_time = self.get_stop_time(
                         stop_info, current_update, next_update)
-                # stop_info = self.stop_distances[stop_index]
-                # stop_time = calc_interpolation(
-                #         current_update[1], current_update[0],
-                #         next_update[1], next_update[0],
-                #         stop_info[1])
+
         self.trips.append(trip)
         return stop_index
 
@@ -270,63 +300,11 @@ class TripGenerator():
 
     def create_training_trips(self, update_rows):
         """Computes the arrival times for all stops based on the updates"""
-        # trip_counter = 1  # no need for it, just add it to self.trips and check len
-        # trip = Trip(self.record, trip_counter)
-
         stop_index = self.skip_invalid_stop(update_rows)
         if stop_index is None:
             return
 
         stop_index = self.add_update_stops(update_rows, stop_index)
-
-        # self.add_remaining_stops(stop_index)
-
-        # last_stop = None
-        # # Add all the stops which are between updates
-        # for current_update, next_update in zip(
-        #         update_rows[:-1], update_rows[1:]):
-
-        #     stop_info, stop_time = self.get_stop_info_by_index(
-        #             stop_index, current_update, next_update)
-        #     # stop_info = self.stop_distances[stop_index]
-        #     # stop_time = calc_interpolation(
-        #     #         current_update[1], current_update[0],
-        #     #         next_update[1], next_update[0],
-        #     #         stop_info[1])
-
-        #     while stop_time is not None:
-        #         # Split the trips
-        #         if last_stop is not None and self.is_idle_stop(last_stop):
-        #             self.trips.append(trip)
-        #             trip_counter += 1
-        #             trip = Trip(self.record, trip_counter)
-        #             last_stop = None
-        #         # Initiate the config data for a trip
-        #         if not trip.configured:
-        #             trip.config(map_strtime_to_timestamp(
-        #                     self.record["start_date"], stop_info[2]),
-        #                     stop_info[1],
-        #                     stop_time)
-        #         # Add the stop row to the trip
-        #         last_stop = trip.add_stop(stop_info, stop_time, last_stop)
-        #         stop_index += 1
-        #         # Exit if we reach the end of stops in the while loop
-        #         if stop_index >= len(self.stop_distances):
-        #             self.trips.append(trip)
-        #             return self.trips
-        #         # Get the next stop_time data
-        #         stop_info, stop_time = self.get_stop_info_by_index(
-        #             stop_index, current_update, next_update)
-        #         # stop_info = self.stop_distances[stop_index]
-        #         # stop_time = calc_interpolation(
-        #         #         current_update[1], current_update[0],
-        #         #         next_update[1], next_update[0],
-        #         #         stop_info[1])
-
-        # self.trips.append(trip)
-        # return self.trips
-
-        # add the remaining stops
 
     def create_update_row_dict(self, update):
         """Creates the row per update"""

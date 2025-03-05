@@ -7,6 +7,7 @@ from functools import wraps
 from flask import jsonify, Flask, request
 
 from inference.bus_time_inference import BusTimesInference
+from inference.process_json import process_json
 
 app = Flask(__name__)
 bus_time_inference = BusTimesInference("bus_time_prediction_model.pth")
@@ -32,8 +33,18 @@ def predict_times():
     Returns: The prediction for the bus route
     """
     trip_data = request.get_json()
-    prediction = bus_time_inference.predict_trip(trip_data)
-    return jsonify(prediction), 200
+    trip = process_json(trip_data)
+    if trip is None:
+        raise ValueError("Invalid trip data")
+    predicted = bus_time_inference.predict_trip(trip)
+    if not predicted:
+        raise ValueError("Unable to infer prediction")
+    json_prediction = {
+            "stops": trip.display_df().to_dict("records"),
+            "delay": trip.current_delay,
+            "trip_id": trip.trip_id
+            }
+    return jsonify(json_prediction), 200
 
 
 @app.route("/predictions/<model_id>", methods=["POST"])
@@ -87,3 +98,9 @@ def get_training_job_info(model_id):
             "model_id": model_id
             }
     return jsonify(model_report), 200
+
+
+@app.route("/training_jobs", methods=["GET"])
+@general_exception
+def get_training_jobs_info():
+    """returns the information about training jobs and models"""

@@ -12,7 +12,6 @@ from .coordinates_mapping import (map_coord_to_distance,
                                   get_route_name_from_trip,
                                   get_stop_distances_for_trip)
 from .get_root import get_root
-# from .trip_to_update_times import map_record_to_update_rows
 from .trip_to_stop_times import TripGenerator
 
 logging.basicConfig(level=logging.INFO)
@@ -20,7 +19,7 @@ logging.basicConfig(level=logging.INFO)
 
 def create_csv(raw_json_filename, csv_filename, subset_trips=None):
     """Creates a csv training_data"""
-    rows = []
+    df_list = []
     json_filename = raw_json_filename + ".json"
     training_data_dir = get_root() / "training_data"
     with open(training_data_dir / json_filename,
@@ -45,11 +44,11 @@ def create_csv(raw_json_filename, csv_filename, subset_trips=None):
         trips = tg.map_record_to_training_stop_times()
         if trips is not None and len(trips) > 0:
             for trip in trips:
-                rows += trip.stops
+                df_list += trip.stops
             processed_trips += 1
 
     logging.info(f"Processed {processed_trips} out of {num_of_rows_to_process}, {num_of_rows_to_process - processed_trips} removed")
-    df = pd.DataFrame(rows)
+    df = pd.concat(df_list, ignore_index=True)
     csv_filename = csv_filename + ".csv"
     df.to_csv(training_data_dir / csv_filename, index=False)
 

@@ -6,15 +6,19 @@ import torch
 import pandas as pd
 import numpy as np
 
-from .json_to_csv import process_json
+from .process_json import process_json
 from .model import BusTimeEncoderDecoder
 from .get_root import get_root
+from preprocessing.trip_to_stop_times import TripGenerator
 
 class BusTimesInference():
     """
     Class holding the bus time prediction model
     Offering prediction method
     """
+
+    HIDDEN_DIM = 100
+    OVERLAP = 2
 
     def __init__(self, model_filename):
         # Load the model and preprocessing objects
@@ -24,7 +28,7 @@ class BusTimesInference():
         # Create model
         self.trip_feature_dim = len(checkpoint['route_encoder'].categories_[0]) + len(checkpoint['day_encoder'].categories_[0])  # routes + days
         self.hidden_dim = 100
-        self.model = BusTimeEncoderDecoder(self.trip_feature_dim, self.hidden_dim)
+        self.model = BusTimeEncoderDecoder(self.trip_feature_dim, self.HIDDEN_DIM)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.model.eval()
 
@@ -127,22 +131,34 @@ class BusTimesInference():
         ])
         return all_stops_df
 
-    def predict_trip(self, json_data):
+    def process_json(self, json_data):
+        """Convert json to df"""
+        tg = TripGenerator(json_data)
+        trips = tg.map_record_to_inference_stop_times()
+        if trips is not None and len(trips) > 0:
+            # Return the latest trip after the potential split
+            return trips[-1]
+        # return pd.DataFrame(trips[-1])
+        return None
+
+    def predict_trip(self, trip):
         """
         Predict the bus trip for the next target stops
         """
-        trip_data = process_json(json_data)
-        observed_df, remaining_df = self.split_dataframes(trip_data)
+        observed_df, remaining_df = trip.observed_df, trip.target_df
         if observed_df is None or remaining_df is None:
-            return None
+            return False
+            # return None
         trip_features = self.get_trip_features(trip_data)
         observed_times, observed_distances, observed_scheduled_times, observed_residual_times = self.get_observed_data(observed_df)
         target_times, target_distances, target_scheduled_times = self.get_target_data(remaining_df)
-
         with torch.no_grad():
             predicted_time_residuals = self.model(trip_features,
                                              observed_times, observed_distances, observed_scheduled_times, observed_residual_times,
                                              target_times, target_distances, target_scheduled_times)
-        remaining_df = self.add_predicted_residuals_to_df(remaining_df, predicted_time_residuals)
-        all_stops_df = self.combine_dfs(observed_df, remaining_df)
-        return all_stops_df.to_dict(orient="records")
+        trip.add_predicted_residuals_to_df(predicted_time_residuals)
+        return True
+        # remaining_df = self.add_predicted_residuals_to_df(remaining_df, predicted_time_residuals)
+        # all_stops_df = self.combine_dfs(observed_df, remaining_df)
+        # return trip.display_df().to_dict(orient="records")
+        # return all_stops_df.to_dict(orient="records")
