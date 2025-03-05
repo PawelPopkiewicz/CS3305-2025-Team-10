@@ -8,8 +8,10 @@ import {useEffect} from "react";
 export default function Layout() {
     useEffect(() => {
         const loadFavorites = async () => {
-            await rehydrateRoutesFavorites(store.dispatch); // Rehydrate the favorites
-            await rehydrateStopsFavorites(store.dispatch);
+            await Promise.all([
+                rehydrateRoutesFavorites(store.dispatch), // Rehydrate the favorites
+                rehydrateStopsFavorites(store.dispatch)
+            ]);
         };
 
     //     // Return the promise from `loadFavorites` to handle it explicitly
