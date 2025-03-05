@@ -26,7 +26,7 @@ def teardown_request(execution=None):
     diff = time.time() - g.start_time
     print(f"Request took {diff} seconds")
 
-@app.route("/")
+@app.route("/", methods=["GET"])
 def test():
     return {"message" : "Hello, World!"}
 
@@ -40,7 +40,7 @@ def stops():
     """Fetches and returns information of all stops."""
     return [stop.get_info() for stop in bus_model.Stop._all.values()]
 
-@app.route("/v1/stop/<string:stop_id>")
+@app.route("/v1/stop/<string:stop_id>", methods=["GET"])
 def stop(stop_id):
     """Fetches information for a specific stop based on stop_id or stop_code."""
     if len(stop_id) > 8:    # stop_id
@@ -48,7 +48,7 @@ def stop(stop_id):
     else:   # stop_code
         return bus_model.search_attribute(bus_model.Stop, "stop_code", stop_id)[0].get_info()
 
-@app.route("/v1/stop/arrivals/<string:stop_id>")
+@app.route("/v1/stop/arrivals/<string:stop_id>", methods=["GET"])
 def stop_arrivals(stop_id):
     """Fetches all bus arrivals for a specific stop"""
     stop = bus_model.Stop._all.get(stop_id, None)
@@ -56,22 +56,12 @@ def stop_arrivals(stop_id):
         return stop.get_timetables(datetime.datetime.now())    # doesn't really work near midnight rn
     return abort(404)
 
-@app.route("/v1/trip/<string:trip_id>")
+@app.route("/v1/trip/<string:trip_id>", methods=["GET"])
 def trips(trip_id):    
     """Fetches information for a specific trip based on trip_id."""
     return generic_get_or_404(bus_model.Trip, trip_id)
 
-@app.route("/v1/trip/cork")
-def cork_stops():
-    """Fetches all trips that are in Cork."""
-    cork_routes = ["201", "202", "203", "205", "206", "207", "208", "209", "212", "213",
-                    "214", "215", "216", "219", "220", "223", "225", "226", "209A", "215A",
-                    "207A", "226X", "202A", "225L", "220X", "223X"]
-    cork_agency_id = bus_model.search_attribute(bus_model.Agency, "agency_name", "Bus Éireann")[0].agency_id
-    cork_route_ids = [route.route_id for route in bus_model.Route._all.values() if route.agency.agency_id == cork_agency_id and route.route_short_name in cork_routes]
-    return bus_model.Trip.filter_by_routes(cork_route_ids)
-
-@app.route("/v1/agency/<string:agency_id>")
+@app.route("/v1/agency/<string:agency_id>", methods=["GET"])
 def agency(agency_id):
     """Fetches information for a specific agency based on agency_id."""
     return generic_get_or_404(bus_model.Agency, agency_id)
@@ -81,22 +71,22 @@ def routes():
     """Fetches a list of all routes."""
     return [{"name": route.route_short_name, "stop_ids" : list(route.all_stops)} for route in bus_model.Route._all.values()]
 
-@app.route("/v1/route/<string:route_id>")
+@app.route("/v1/route/<string:route_id>", methods=["GET"])
 def route(route_id):
     """Fetches information for a specific route based on route_id."""
     return generic_get_or_404(bus_model.Route, route_id)
 
-@app.route("/v1/route/search/<string:route_name>")
+@app.route("/v1/route/search/<string:route_name>", methods=["GET"])
 def route_search(route_name):
     """Fetches all routes that match the route_name keyword."""
     return [route.get_info() for route in bus_model.Route._all.values() if route_name in route.route_short_name]
 
-@app.route("/v1/shape/<string:shape_id>")
+@app.route("/v1/shape/<string:shape_id>", methods=["GET"])
 def shape(shape_id):
     """Fetches information for a specific shape based on shape_id."""
     return generic_get_or_404(bus_model.Shape, shape_id)
 
-@app.route("/v1/bus/<string:bus_id>")
+@app.route("/v1/bus/<string:bus_id>", methods=["GET"])
 def bus(bus_id):
     """Fetches information for a specific bus based on bus_id."""
     all_stops: list = []
@@ -134,12 +124,12 @@ def bus(bus_id):
     return abort(404)
 
 
-@app.route("/v1/bus")
+@app.route("/v1/bus", methods=["GET"])
 def buses():
     """Fetches information for all buses."""
     return bus_model.Bus.get_all_buses()
 
-@app.route("/v1/route_id_to_name")
+@app.route("/v1/route_id_to_name", methods=["GET"])
 def route_id_to_name():
     """Fetches a mapping between route_id to route names"""
     return jsonify(get_route_id_to_name_dict())
