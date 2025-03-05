@@ -79,7 +79,7 @@ def agency(agency_id):
 @app.route("/v1/route", methods=["GET"])
 def routes():
     """Fetches a list of all routes."""
-    return [{"name": route.route_short_name} for route in bus_model.Route._all.values()]
+    return [{"name": route.route_short_name, "stop_ids" : list(route.all_stops)} for route in bus_model.Route._all.values()]
 
 @app.route("/v1/route/<string:route_id>")
 def route(route_id):
