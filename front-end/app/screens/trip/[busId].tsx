@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
         borderBottomColor: colors.border,
     },
     firstRowBus: {
-        width: '10%'
+        width: '15%'
     },
     secondRowBus: {
         backgroundColor: colors.backgroundSecondary,
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
         borderRadius: 10
     },
     thirdRowBus: {
-        width: '60%',
+        width: '55%',
         flexShrink: 0
     },
     fourthRowBus: {
