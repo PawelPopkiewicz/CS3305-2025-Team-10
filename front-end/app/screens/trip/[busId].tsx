@@ -8,6 +8,7 @@ import {busApiUrl} from "@/config/constants";
 import {shallowEqual, useDispatch, useSelector} from "react-redux";
 import {RootState} from "@/app/redux/store";
 import {addFavoriteRoute, removeFavoriteRoute} from "@/app/redux/favRoutesSlice";
+import Loading from "@/components/Loading";
 
 type StopInfo = { stopId: string, code: string, name: string, arrival: string };
 
@@ -66,7 +67,7 @@ export default function TripScreen() {
 
     if (!busData) return <Text>This bus isn't tracked anymore</Text>;
     const isFav = favRoutes?.includes(busData.route) ?? false;
-    if (trip.length === 0) return <Text>Loading...</Text>;
+    if (trip.length === 0) return <Loading text="Fetching bus data" />;
 
 
     // @ts-ignore
