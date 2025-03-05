@@ -154,18 +154,19 @@ def update_realtime():
         for entity in entities:
             try:
                 trip_id = entity["vehicle"]["trip"]["trip_id"]
-                route_id = entity["vehicle"]["trip"]["route_id"]
-                vehicle_id = entity["vehicle"]["vehicle"]["id"]
-                timestamp = int(entity["vehicle"]["timestamp"])
-                latitude = float(entity["vehicle"]["position"]["latitude"])
-                longitude = float(entity["vehicle"]["position"]["longitude"])
-                start_time = entity["vehicle"]["trip"]["start_time"]
-                start_date = entity["vehicle"]["trip"]["start_date"]
-                schedule_relationship = entity["vehicle"]["trip"]["schedule_relationship"]
-                direction_id = entity["vehicle"]["trip"]["direction_id"]
-                bus = bus_model.Bus._all.get(vehicle_id, None)
-                if bus:
-                    bus.add_live_update(trip_id=trip_id, route_id=route_id, timestamp=timestamp, latitude=latitude, longitude=longitude, start_time=start_time, start_date=start_date, schedule_relationship=schedule_relationship, direction_id=direction_id)
+                if trip_id in bus_model.Trip._all:
+                    route_id = entity["vehicle"]["trip"]["route_id"]
+                    vehicle_id = entity["vehicle"]["vehicle"]["id"]
+                    timestamp = int(entity["vehicle"]["timestamp"])
+                    latitude = float(entity["vehicle"]["position"]["latitude"])
+                    longitude = float(entity["vehicle"]["position"]["longitude"])
+                    start_time = entity["vehicle"]["trip"]["start_time"]
+                    start_date = entity["vehicle"]["trip"]["start_date"]
+                    schedule_relationship = entity["vehicle"]["trip"]["schedule_relationship"]
+                    direction_id = entity["vehicle"]["trip"]["direction_id"]
+                    bus = bus_model.Bus._all.get(vehicle_id, None)
+                    if bus:
+                        bus.add_live_update(trip_id=trip_id, route_id=route_id, timestamp=timestamp, latitude=latitude, longitude=longitude, start_time=start_time, start_date=start_date, schedule_relationship=schedule_relationship, direction_id=direction_id)
             except KeyError as e:
                 print(f"KeyError: {e}")
                 continue
