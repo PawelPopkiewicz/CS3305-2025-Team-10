@@ -24,6 +24,7 @@ class Bus:
     def __init__(self, slug: str):
         self._all[slug] = self
         self.slug = slug
+        self.time_lat_lon = []
         self.latest_timestamp = 0
         self.latest_trip = None
         self.latest_route = None
@@ -44,19 +45,34 @@ class Bus:
         self.withdrawn = withdrawn
         self.special_features = special_features
     
-    def add_live_update(self, trip_id: str, route_id: str, timestamp: int, latitude: float, longitude: float, start_time: str, start_date: str, schedule_relationship: int):
+    def add_live_update(self, trip_id: str, route_id: str, timestamp: int, latitude: float, longitude: float, start_time: str, start_date: str, schedule_relationship: str, direction_id: bool):
         """Populates the object with the latest live bus data."""
-        self.latest_trip = trip_id
-        self.latest_route = route_id
-        self.latest_timestamp = timestamp   # Unix timestamp
-        self.lat = latitude
-        self.lon = longitude
-        self.start_time = start_time
-        self.start_date = start_date
+        if self.latest_trip != trip_id:
+            self.time_lat_lon = []
+            self.latest_trip = trip_id
+            self.latest_route = route_id
+            self.start_time = start_time
+            self.start_date = start_date
+        self.time_lat_lon.append((timestamp, latitude, longitude))
+        self.latest_timestamp = self.time_lat_lon[-1][0]   # Unix timestamp
+        self.lat = self.time_lat_lon[-1][1]
+        self.lon = self.time_lat_lon[-1][2]
         self.schedule_relationship = schedule_relationship
+        self.direction = direction_id
         trip = Trip._all.get(trip_id, None)
         if trip:
             trip.latest_bus = self.slug
+    
+    def inference_data_supply(self) -> dict:
+        """Returns JSON data in the correct format for the model."""
+        return {
+            "trip_id": self.latest_trip,
+            "start_time": self.start_time,
+            "start_date": self.start_date,
+            "schedule_relationship": self.schedule_relationship,
+            "route_id": self.latest_route,
+            "direction_id": self.direction
+            }
     
     def get_info(self) -> dict[str, str]:
         """Returns the bus's information in a dictionary."""
