@@ -8,6 +8,8 @@ import {RootState} from "@/app/redux/store";
 import {addFavoriteStop, removeFavoriteStop} from "@/app/redux/favStopsSlice";
 import {useCallback, useState} from "react";
 import {busApiUrl} from "@/config/constants";
+import Loading from "@/components/Loading";
+import ErrorData from "@/components/ErrorData";
 
 type BusInfo = { 'busId': string, 'route': string, 'headsign': string, 'arrival': string }
 
@@ -68,15 +70,12 @@ export default function Stop() {
     );
 
     if (!stopData) return (
-        <SafeAreaView style={styles.background}>
-            <Text style={styles.textPrimary}>This stop isn't tracked anymore</Text>
-        </SafeAreaView>
+            <ErrorData text="This stop isn't tracked anymore" />
     );
     const isFav = favStops?.includes(stopId);
-    if (arrivals.length === 0) return (
-        <SafeAreaView style={styles.background}>
-            <Text style={styles.textPrimary}>Loading...</Text>
-        </SafeAreaView>
+    if (arrivals.length === 0) 
+        return (
+            <Loading text="Fetching stop data" />
     );
 
     return (
