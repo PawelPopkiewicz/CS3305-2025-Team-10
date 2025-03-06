@@ -25,7 +25,7 @@ export default function Index() {
 
                 </View>
 
-            <View style={styles.favourite}>
+                <View style={styles.favourite}>
                     <View style={styles.heading}>
                         <Text style={styles.textPrimary}>Favourite Routes</Text>
                     </View>

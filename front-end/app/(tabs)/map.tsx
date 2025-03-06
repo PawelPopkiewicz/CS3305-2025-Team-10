@@ -1,5 +1,5 @@
 import React, {useCallback, useState} from "react";
-import {Platform, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, Image} from "react-native";
+import {Platform, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, Image, View} from "react-native";
 import {Icon} from '@rneui/themed';
 import MapView, {Region} from "react-native-maps";
 import {router, useLocalSearchParams} from "expo-router";
@@ -14,7 +14,8 @@ import {DEFAULT_REGION} from "@/config/constants";
 
 const Map = () => {
 
-    const searchIcon = () => Image.resolveAssetSource(require('@/assets/images/search.png')).uri;
+    const searchIcon = Image.resolveAssetSource(require('@/assets/images/search.png')).uri;
+
     const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
     const buses = useSelector((state: RootState) => state.bus.buses, shallowEqual);
     
@@ -43,14 +44,24 @@ const Map = () => {
 
     return (
         <SafeAreaView style={styles.background}>
-            <TouchableOpacity style={styles.input} onPress={() => router.push("/screens/search")}>
-                <Icon iconStyle={styles.back} onPress={() => router.back()} name="chevron-left" type="font-awesome" />
-                <Text style={styles.textSecondary}>Search bus stop or route</Text>
-                <Image 
-                    style={styles.back}
-                    source={{ uri: searchIcon() }} 
-                />
-            </TouchableOpacity>
+
+            <View style={styles.input}>
+
+                {/* <TouchableOpacity style={styles.firstRow}>
+                    <Icon iconStyle={styles.back} onPress={() => router.back()} name="chevron-left" type="font-awesome" />
+                </TouchableOpacity> */}
+                
+                <TouchableOpacity  style={styles.secondRow} onPress={() => router.push("/screens/search")}>
+                    <View style={styles.secondRowText}>
+                        <Text style={styles.textSecondary}>Search bus stop or route</Text>
+                    </View>
+                    <View style={styles.secondRowIcon}>
+                        <Image 
+                            source={require('@/assets/images/search.png')}  
+                        />
+                    </View>
+                </TouchableOpacity>
+            </View>
 
             <MapView
                 style={{ flex: 1 }}
@@ -85,6 +96,22 @@ const Map = () => {
 
 
 const styles = StyleSheet.create({
+    firstRow: {
+        width: '20%',
+    },
+    secondRow: {
+        width: '100%',
+        // backgroundColor: 'grey',
+        flexDirection: 'row',
+    },
+    secondRowText: {
+        width: '90%',
+        paddingLeft: 15,
+        // backgroundColor: 'white',
+    },
+    secondRowIcon: {
+        width: '10%',
+    },
     background: {
         flex: 1,
         backgroundColor: colors.backgroundPrimary,
@@ -92,17 +119,18 @@ const styles = StyleSheet.create({
     },
     input: {
         marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-        overflow: 'hidden',
-        borderRadius: 30,
-        borderWidth: 1,
+        // overflow: 'hidden',
+        // borderRadius: 30,
+        // borderWidth: 1,
         flexDirection: 'row',
+        width: '100%',
         paddingVertical: 15,
-        paddingHorizontal: 15,
-        borderColor: colors.border,
+        // paddingHorizontal: 15,
+        // borderColor: colors.border,
     },
     back: {
         color: colors.textPrimary,
-        paddingRight: 15,
+        // paddingRight: 15,
     },
     textSecondary: {
         color: colors.textSecondary,
