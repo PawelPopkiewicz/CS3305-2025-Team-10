@@ -22,6 +22,6 @@ def process_json(json_data):
 if __name__ == "__main__":
     from preprocessing.json_io import load_json
     test_data = load_json("test_record")
+    test_data["vehicle_updates"] = test_data["vehicle_updates"][:-5]
     last_trip = process_json(test_data)
-    for stop in last_trip.stops:
-        print(stop)
+    print(last_trip.display_df())

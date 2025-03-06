@@ -6,6 +6,7 @@ per stop
 
 import logging
 import numpy as np
+import pandas as pd
 
 from .coordinates_mapping import (map_coord_to_distance,
                                   check_trip_id_exists,
@@ -34,7 +35,8 @@ class Trip():
         self.remaining_stops = []
         self.record = record
         self.trip_id = record["trip_id"]
-        self.route_name = get_route_name_from_trip(self.trip_id) self.day = map_date_to_day(record["start_date"])
+        self.route_name = get_route_name_from_trip(self.trip_id)
+        self.day = map_date_to_day(record["start_date"])
         self.record_id = self.create_id(counter)
         self.start_time = None
         self.start_distance = None
@@ -52,6 +54,12 @@ class Trip():
         self.start_distance = start_distance
         self.current_delay = stop_time - start_time
         self.configured = True
+
+
+    def inference_eligible(self):
+        """Returns true if the trip is ready to be inferred upon"""
+        return self.enough_inference_stops_filter()
+
 
     def enough_training_stops_filter(self):
         """Return true if there are enough stops with arrival times"""
@@ -112,22 +120,59 @@ class Trip():
     def display_df(self):
         """Return all of the stops with proper flags"""
         # stop_id, scheduled_arrival_time, predicted_time (None for remaining), flag (Observed, Predicted, Scheduled)
-        observed_df = self.observed_stops
-        observed_df["arrival_time"] = observed_df["scheduled_arrival_time"] + observed_df["residual_stop_time"]
-        observed_df["arrival_time"] += self.current_delay
-        target_df = self.target_df
-        target_df["arrival_time"] = target_df["scheduled_arrival_time"] + observed_df["residual_stop_time"]
-        target_df["arrival_time"] += self.current_delay
-        remaining_df = self.remaining_df
-        remaining_df["arrival_time"] = np.nan
-        dispaly_df = pd.concat([self.observed_df, self.target_df, self.remaining_df], ignore_index=True)
+        observed_df = self.observed_df.copy() if not self.observed_df.empty else pd.DataFrame()
+        target_df = self.target_df.copy() if not self.target_df.empty else pd.DataFrame()
+        remaining_df = self.remaining_df.copy() if not self.remaining_df.empty else pd.DataFrame()
+
+        if not observed_df.empty:
+            observed_df["residual_stop_time"] = observed_df["residual_stop_time"].fillna(0).infer_objects(copy=False)
+            observed_df["arrival_time"] = (
+                observed_df["scheduled_arrival_time"].fillna(0) +
+                observed_df["residual_stop_time"] +
+                self.current_delay +
+                self.start_time
+            )
+            observed_df["type"] = "Observed"
+
+        if not target_df.empty:
+            target_df["residual_stop_time"] = target_df["residual_stop_time"].fillna(0).infer_objects(copy=False)
+            target_df["arrival_time"] = (
+                target_df["scheduled_arrival_time"].fillna(0) +
+                target_df["residual_stop_time"] +
+                self.current_delay +
+                self.start_time
+            )
+            target_df["type"] = "Predicted"
+
+        if not remaining_df.empty:
+            remaining_df["arrival_time"] = np.nan  # Explicitly set to NaN
+            remaining_df["type"] = "Scheduled"
+
+        # Exclude empty DataFrames before concatenation
+        dfs_to_concat = [df for df in [observed_df, target_df, remaining_df] if not df.empty]
+        display_df = pd.concat(dfs_to_concat, ignore_index=True) if dfs_to_concat else pd.DataFrame()
+        display_df["scheduled_arrival_time"] = display_df["scheduled_arrival_time"] + self.start_time
+        display_df["scheduled_departure_time"] = display_df["scheduled_departure_time"] + self.start_time
+
+        display_df = display_df.drop(columns=["id", "route_name", "day", "time", "distance_to_stop", "time_to_stop", "residual_stop_time"])
+
         return display_df
+        # observed_df = self.observed_df
+        # observed_df["arrival_time"] = observed_df["scheduled_arrival_time"] + observed_df["residual_stop_time"]
+        # observed_df["arrival_time"] += self.current_delay + self.start_time
+        # target_df = self.target_df
+        # target_df["arrival_time"] = target_df["scheduled_arrival_time"] + target_df["residual_stop_time"]
+        # target_df["arrival_time"] += self.current_delay + self.start_time
+        # remaining_df = self.remaining_df
+        # remaining_df["arrival_time"] = np.nan
+        # display_df = pd.concat([self.observed_df, self.target_df, self.remaining_df], ignore_index=True)
+        # return display_df
 
     def add_predictions(self, predictions):
         """Add the predictions(vector) to the target_stops"""
         target_df = self.target_df
         target_df["residual_stop_time"] = predictions
-        self.target_stops = target_df.to_dict("record")
+        self.target_stops = target_df.to_dict("records")
 
     def create_stop_row_dict(self, stop_info, stop_time, stop_metadata, last_stop_metadata=None):
         """Creates one dict which will serve as a row in csv for all stop"""
@@ -296,7 +341,7 @@ class TripGenerator():
 
         stop_index = self.add_update_stops(update_rows, stop_index)
 
-        self.add_remaining_stops(stop_index)
+        self.add_unobserved_stops(stop_index)
 
     def create_training_trips(self, update_rows):
         """Computes the arrival times for all stops based on the updates"""

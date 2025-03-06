@@ -44,7 +44,7 @@ def create_csv(raw_json_filename, csv_filename, subset_trips=None):
         trips = tg.map_record_to_training_stop_times()
         if trips is not None and len(trips) > 0:
             for trip in trips:
-                df_list += trip.stops
+                df_list.append(trip.observed_df)
             processed_trips += 1
 
     logging.info(f"Processed {processed_trips} out of {num_of_rows_to_process}, {num_of_rows_to_process - processed_trips} removed")

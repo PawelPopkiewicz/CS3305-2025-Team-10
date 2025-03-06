@@ -6,10 +6,10 @@ import torch
 import pandas as pd
 import numpy as np
 
-from .process_json import process_json
+from preprocessing.trip_to_stop_times import TripGenerator
+
 from .model import BusTimeEncoderDecoder
 from .get_root import get_root
-from preprocessing.trip_to_stop_times import TripGenerator
 
 class BusTimesInference():
     """
@@ -53,7 +53,7 @@ class BusTimesInference():
         route_encoded = self.route_encoder.transform(route_name_df)[0]
 
         # One-hot encode day
-        day_df = pd.DataFrame([[day]], column=['day'])
+        day_df = pd.DataFrame([[day]], columns=['day'])
         day_encoded = self.day_encoder.transform(day_df)[0]
 
         # Trip features
@@ -61,7 +61,9 @@ class BusTimesInference():
             route_encoded,
             day_encoded
         ])
+        print(f"trip_features shape: {trip_features.shape}")
         trip_features = torch.tensor(trip_features, dtype=torch.float32).unsqueeze(0)
+        print(f"trip_features shape: {trip_features.shape}")
         return trip_features
 
     def get_observed_data(self, observed_df):
@@ -69,20 +71,24 @@ class BusTimesInference():
         observed_times = self.time_scaler.transform(
                 observed_df[['time']])
         observed_distances = self.distance_scaler.transform(
-                observed_df[['stop_distance']])
+                observed_df[['distance_to_stop']])
         observed_scheduled_times = self.scheduled_time_scaler.transform(
-                observed_df[['scheduled_stop_time']])
+                observed_df[['time_to_stop']])
         observed_residual_times = self.residual_time_scaler.transform(
                 observed_df[['residual_stop_time']])
+        print(f"observed_times shape: {observed_times.shape}")
 
         observed_times = torch.tensor(
-                observed_times, dtype=torch.float32).unsqueeze(0)
+                observed_times, dtype=torch.float32).transpose(0, 1)
         observed_distances = torch.tensor(
-                observed_distances, dtype=torch.float32).unsqueeze(0)
+                observed_distances, dtype=torch.float32).transpose(0, 1)
         observed_scheduled_times = torch.tensor(
-                observed_scheduled_times, dtype=torch.float32).unsqueeze(0)
+                observed_scheduled_times, dtype=torch.float32).transpose(0, 1)
         observed_residual_times = torch.tensor(
-                observed_residual_times, dtype=torch.float32).unsqueeze(0)
+                observed_residual_times, dtype=torch.float32).transpose(0, 1)
+
+        for feature in [observed_times, observed_distances, observed_residual_times, observed_scheduled_times]:
+            print(f"Feature dimension: {feature.shape}")
 
         return observed_times, observed_distances, observed_scheduled_times, observed_residual_times
 
@@ -91,16 +97,16 @@ class BusTimesInference():
         target_times = self.time_scaler.transform(
                 remaining_df[['time']])
         target_distances = self.distance_scaler.transform(
-                remaining_df[['stop_distance']])
+                remaining_df[['distance_to_stop']])
         target_scheduled_times = self.scheduled_time_scaler.transform(
-                remaining_df[['scheduled_stop_time']])
+                remaining_df[['time_to_stop']])
 
         target_times = torch.tensor(
-                target_times, dtype=torch.float32).unsqueeze(0)
+                target_times, dtype=torch.float32).transpose(0, 1)
         target_distances = torch.tensor(
-                target_distances, dtype=torch.float32).unsqueeze(0)
+                target_distances, dtype=torch.float32).transpose(0, 1)
         target_scheduled_times = torch.tensor(
-                target_scheduled_times, dtype=torch.float32).unsqueeze(0)
+                target_scheduled_times, dtype=torch.float32).transpose(0, 1)
 
         return target_times, target_distances, target_scheduled_times
 
@@ -113,52 +119,59 @@ class BusTimesInference():
             return [None, None]
         return observed_df, remaining_df
 
-    def add_predicted_residuals_to_df(self, remaining_df, predicted_time_residuals):
-        """Adds predicted time residuals to the remaining_df"""
-        # Convert predictions back to original scale
-        predicted_time_residuals_np = predicted_time_residuals.numpy().reshape(-1, 1)
-        predicted_time_residuals_orig = self.residual_time_scaler.inverse_transform(predicted_time_residuals_np).flatten()
-
-        # Add predictions to the dataframe
-        remaining_df['predicted_time'] = predicted_time_residuals_orig
+    def add_overlap(self, observed_df, remaining_df):
+        """Add the overlapping stops from observed to remaining"""
+        overlap_rows = observed_df.tail(self.OVERLAP)
+        remaining_df = pd.concat([overlap_rows, remaining_df], ignore_index=True)
         return remaining_df
 
-    def combine_dfs(self, observed_df, remaining_df):
-        """Concat the dfs"""
-        all_stops_df = pd.concat([
-            observed_df,
-            remaining_df
-        ])
-        return all_stops_df
-
-    def process_json(self, json_data):
-        """Convert json to df"""
-        tg = TripGenerator(json_data)
-        trips = tg.map_record_to_inference_stop_times()
-        if trips is not None and len(trips) > 0:
-            # Return the latest trip after the potential split
-            return trips[-1]
-        # return pd.DataFrame(trips[-1])
-        return None
+    def remove_overlap(self, predicted_time_residuals):
+        """Remove the overlapped predicted stops"""
+        return predicted_time_residuals[self.OVERLAP:]
 
     def predict_trip(self, trip):
         """
         Predict the bus trip for the next target stops
         """
+        if not trip.inference_eligible():
+            return False
         observed_df, remaining_df = trip.observed_df, trip.target_df
+        remaining_df = self.add_overlap(observed_df, remaining_df)
+        print(f"observed_df shape {observed_df.shape}")
         if observed_df is None or remaining_df is None:
             return False
             # return None
-        trip_features = self.get_trip_features(trip_data)
+        trip_features = self.get_trip_features(pd.concat([observed_df, remaining_df]))
         observed_times, observed_distances, observed_scheduled_times, observed_residual_times = self.get_observed_data(observed_df)
         target_times, target_distances, target_scheduled_times = self.get_target_data(remaining_df)
         with torch.no_grad():
             predicted_time_residuals = self.model(trip_features,
                                              observed_times, observed_distances, observed_scheduled_times, observed_residual_times,
                                              target_times, target_distances, target_scheduled_times)
-        trip.add_predicted_residuals_to_df(predicted_time_residuals)
+        print(f"predictions shape: {predicted_time_residuals.squeeze(0).shape}")
+        print(predicted_time_residuals)
+        predicted_time_residuals = predicted_time_residuals.squeeze(0)
+        predicted_time_residuals = self.remove_overlap(predicted_time_residuals)
+        trip.add_predictions(predicted_time_residuals)
         return True
         # remaining_df = self.add_predicted_residuals_to_df(remaining_df, predicted_time_residuals)
         # all_stops_df = self.combine_dfs(observed_df, remaining_df)
         # return trip.display_df().to_dict(orient="records")
         # return all_stops_df.to_dict(orient="records")
+
+
+if __name__ == "__main__":
+    from preprocessing.json_io import load_json
+    test_data = load_json("test_record")
+    test_data["vehicle_updates"] = test_data["vehicle_updates"][-2:]
+    from .process_json import process_json
+    test_trip = process_json(test_data)
+    bus_time_inference = BusTimesInference("bus_time_prediction_model_2.pth")
+    predicted = bus_time_inference.predict_trip(test_trip)
+    json_prediction = {
+            "stops": test_trip.display_df().to_dict("records"),
+            "delay": test_trip.current_delay,
+            "trip_id": test_trip.trip_id
+            }
+    import json
+    print(json.dumps(json_prediction, indent=4))
