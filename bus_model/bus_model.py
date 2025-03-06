@@ -1,4 +1,9 @@
-from datetime import datetime, time
+from datetime import datetime, timedelta
+from time import time
+from collections import defaultdict
+import gtfsr
+import os
+import requests
 
 class Bus:
     """A class to represent a bus and its relevant information."""
@@ -19,15 +24,21 @@ class Bus:
     FUEL_HYDROGEN = 5
 
 
-    def __init__(self, bus_id: str):
-        self._all[bus_id] = self
-        self.bus_id = bus_id
+    def __init__(self, slug: str):
+        self._all[slug] = self
+        self.slug = slug
+        self.time_lat_lon = []
+        self.latest_timestamp = 0
+        self.latest_trip = None
+        self.latest_route = None
+        self.lat = None
+        self.lon = None
+        self.rotation = 0
     
-    def set_details(self, reg: str, fleet_code: str, slug: str, name: str, style: int, fuel: int, double_decker: bool, coach: bool, electric: bool, livery: int, withdrawn: bool, special_features: str):
+    def set_details(self, reg: str, fleet_code: str, name: str, style: int, fuel: int, double_decker: bool, coach: bool, electric: bool, livery: dict, withdrawn: bool, special_features: str):
         """Sets the details of the bus."""
         self.reg = reg
         self.fleet_code = fleet_code
-        self.slug = slug
         self.name = name
         self.style = style
         self.fuel = fuel
@@ -38,13 +49,60 @@ class Bus:
         self.withdrawn = withdrawn
         self.special_features = special_features
     
+    def add_live_update(self, trip_id: str, route_id: str, timestamp: int, latitude: float, longitude: float, start_time: str, start_date: str, schedule_relationship: str, direction_id: bool):
+        """Populates the object with the latest live bus data."""
+        if self.latest_trip != trip_id:
+            self.time_lat_lon = []
+            self.latest_trip = trip_id
+            self.latest_route = route_id
+            self.start_time = start_time
+            self.start_date = start_date
+        if (tup := (timestamp, latitude, longitude)) not in self.time_lat_lon:
+            self.time_lat_lon.append(tup)
+            self.latest_timestamp = self.time_lat_lon[-1][0]   # Unix timestamp
+            self.lat = self.time_lat_lon[-1][1]
+            self.lon = self.time_lat_lon[-1][2]
+            self.schedule_relationship = schedule_relationship
+            self.direction = direction_id
+            shape_id = Trip._all[trip_id].shape.shape_id
+            points = gtfsr.StaticGTFSR.nearest_points(self.lat, self.lon, shape_id)
+            if points:
+                p1, p2 = points
+                lat1, lon1, lat2, lon2 = p1[1], p1[2], p2[1], p2[2]
+                angle = gtfsr.StaticGTFSR.calculate_bearing(lat1, lon1, lat2, lon2)
+                self.rotation = angle
+            # Get inference update
+            # try:
+            #     uri = os.getenv("INFERENCE_URI")
+            #     response = requests.post(uri, json=self.inference_data_supply())
+            #     ... # Do something with response data, ie, populate fields
+            # except requests.exceptions.RequestException as e:
+            #     print(f"Failed to fetch inference data: {e}")
+
+        trip = Trip._all.get(trip_id, None)
+        if trip:
+            trip.latest_bus = self.slug
+    
+    def inference_data_supply(self) -> dict:
+        """Returns JSON data in the correct format for the model."""
+        return {
+            "trip_id": self.latest_trip,
+            "start_time": self.start_time,
+            "start_date": self.start_date,
+            "schedule_relationship": self.schedule_relationship,
+            "route_id": self.latest_route,
+            "direction_id": self.direction,
+            "vehicle_updates": [
+                {"latitude": tll[1], "longitude": tll[2], "timestamp": tll[0]} for tll in self.time_lat_lon
+            ]
+            }
+    
     def get_info(self) -> dict[str, str]:
         """Returns the bus's information in a dictionary."""
         return {
-            "bus_id": self.bus_id,
+            "bus_id": self.slug,
             "reg": self.reg,
             "fleet_code": self.fleet_code,
-            "slug": self.slug,
             "vehicle_details": {
                 "name": self.name,
                 "style": self.style,
@@ -55,50 +113,114 @@ class Bus:
                 },
             "livery": self.livery,
             "withdrawn": self.withdrawn,
-            "special_features": self.special_features
+            "special_features": self.special_features,
+            "trip_id": self.latest_trip,
+            "route_id": self.latest_route,
+            "timestamp": self.latest_timestamp,
+            "latitude": self.lat,
+            "longitude": self.lon
         }
+    
+    @classmethod
+    def get_all_buses(cls) -> list[dict]:
+        """Returns a list of all buses."""
+        buses = []
+        threshold_time = time() - 600   # 10 mins ago
+        for bus in cls._all.values():
+            if bus.latest_timestamp > threshold_time:
+                trip = Trip._all.get(bus.latest_trip, None)
+                route = Route._all.get(bus.latest_route, None)
+                if trip and route:
+                    data = {"id" : bus.slug,
+                            "route" : route.route_short_name,
+                            "headsign" : trip.trip_headsign,
+                            "direction" : bus.rotation,
+                            "lat" : bus.lat,
+                            "lon" : bus.lon,
+                            "timestamp" : bus.latest_timestamp
+                            }
+                    buses.append(data)
+        print(f"Active buses/total buses: {len(buses)}/{len(cls._all)}")
+        if len(buses) == 0:
+            print("Likely to be missing live bus data.")
+        return buses
+            
 
 
 class Stop:
     """A class to represent a bus stop and its relevant information."""
     _all: dict[str, "Stop"] = {}
 
-    def __init__(self, stop_id: str, stop_code: int, stop_name: str, stop_lat: float, stop_lon: float):
+    def __init__(self, stop_id: str, stop_code: str, stop_name: str, stop_lat: float, stop_lon: float):
         self._all[stop_id] = self
         self.stop_id = stop_id
         self.stop_code = stop_code
         self.stop_name = stop_name
         self.stop_lat = stop_lat
         self.stop_lon = stop_lon
-        self.bus_visits: list[BusStopVisit] = [] # List of BusStopVisit objects at this stop
-        self.routes: set[Route] = set()
-        self.trips: set[Trip] = set()
+        self.bus_visits: list[str] = [] # List of BusStopVisit ids at this stop
+        self.routes: set[str] = set()
+        self.trips: set[str] = set()
+        self.rotation = 0
     
     def get_info(self) -> dict[str, str]:
         """Returns the stop's information in a dictionary."""
         return {
-            "stop_id": self.stop_id,
-            "stop_code": self.stop_code,
-            "stop_name": self.stop_name,
-            "stop_lat": self.stop_lat,
-            "stop_lon": self.stop_lon,
-            "route_ids": [route.route_id for route in self.routes],
-            "trip_ids": [trip.trip_id for trip in self.trips]
+            "id": self.stop_id,
+            "code": self.stop_code,
+            "name": self.stop_name,
+            "lat": self.stop_lat,
+            "lon": self.stop_lon,
+            "direction": self.rotation,
         }
+    
+    def get_timetables(self, date: datetime) -> list[dict]:
+        """Fetches the timestamps of all trip visits on the given date."""
+        date_str = date.date().strftime("%Y-%m-%d")
+        visits: list = []
+        for trip_id in self.trips:
+            trip = Trip._all.get(trip_id, None)
+            if trip:        # Current trip goes through stop
+                timestamps = trip.get_schedule_times().get(date_str, {})
+                visit_time = timestamps.get(self.stop_id, None)
+                if visit_time and trip.latest_bus:
+                    visits.append({
+                        "id": trip.latest_bus,
+                        "route": trip.route.route_short_name,
+                        "headsign": trip.trip_headsign,
+                        "arrival": visit_time,
+                        #"current_trip": True,
+                    })
+                elif visit_time:    # Next trip goes through stop
+                    trips = trip.get_trips_in_block(date)
+                    #print(f"{[trip.trip_id for trip in trips]}")
+                    prev_trips = [t for t in sorted(trips, key=lambda t: BusStopVisit._all[t.bus_stop_times[0]].arrival_time) if BusStopVisit._all[t.bus_stop_times[0]].arrival_time < BusStopVisit._all[trip.bus_stop_times[0]].arrival_time]
+                    #print(f"Current trip: {trip.trip_id}\nPrev trips:")
+                    #[print(f"{t.trip_id} : {BusStopVisit._all[t.bus_stop_times[0]].arrival_time} | {t.service.schedule_days[date.weekday()]}") for t in prev_trips[::-1]]
+                    if len(prev_trips) > 0 and prev_trips[-1].latest_bus:
+                        visits.append({
+                            "id": prev_trips[-1].latest_bus,
+                            "route": trip.route.route_short_name,
+                            "headsign": trip.trip_headsign,
+                            "arrival": visit_time,
+                            #"current_trip": False, 
+                        })
+        return sorted([v for v in visits if v["arrival"] > datetime.now().timestamp()], key=lambda x: x["arrival"])
+
 
 class Route:
     """A class to represent a bus route and its relevant information."""
     _all: dict[str, 'Route'] = {}
 
-    def __init__(self, route_id: int, agency_id: int, route_short_name: str, route_long_name: str, route_type: int):
+    def __init__(self, route_id: str, agency_id: str, route_short_name: str, route_long_name: str, route_type: int):
         self._all[route_id] = self
         self.route_id = route_id
         self.agency = Agency._all[agency_id]
         self.route_short_name = route_short_name
         self.route_long_name = route_long_name
         self.route_type = route_type
-        self.all_trips: list[Trip] = []
-        self.all_stops: set[Stop] = set()
+        self.all_trips: list[str] = []
+        self.all_stops: set[str] = set()
 
     def get_info(self) -> dict[str, str]:
         """Returns the route's information in a dictionary."""
@@ -110,22 +232,22 @@ class Route:
             "route_type": self.route_type
         }
     
-    def add_stop(self, stop: Stop):
+    def add_stop(self, stop_id: str):
         """Adds a stop to the route's list of stops."""
-        self.all_stops.add(stop)
+        self.all_stops.add(stop_id)
     
     def enumerate_stops(self):
-        for trip in self.all_trips:
-            for bus_stop_visit in trip.bus_stop_times:
-                self.add_stop(bus_stop_visit.stop.stop_id)
-        for stop in self.all_stops:
-            stop.routes.add(self)
+        for trip_id in self.all_trips:
+            for bus_stop_visit_id in Trip._all[trip_id].bus_stop_times:
+                self.add_stop(BusStopVisit._all[bus_stop_visit_id].stop.stop_id)
+        for stop_id in self.all_stops:
+            Stop._all[stop_id].routes.add(self.route_id)
     
 class Trip:
     """A class to represent a trip and its relevant information."""
     _all: dict[str, "Trip"] = {}
 
-    def __init__(self, trip_id: int, route_id: int, service_id: int, shape_id: int, trip_headsign: str, trip_short_name: str, direction_id: int, block_id: str):
+    def __init__(self, trip_id: str, route_id: str, service_id: str, shape_id: str, trip_headsign: str, trip_short_name: str, direction: bool, block_id: str):
         self._all[trip_id] = self
         self.trip_id = trip_id
         self.route = Route._all[route_id]
@@ -133,12 +255,13 @@ class Trip:
         self.shape = Shape._all.get(shape_id, None)
         self.trip_headsign = trip_headsign
         self.trip_short_name = trip_short_name
-        self.direction_id = direction_id
+        self.direction = direction
         self.block_id = block_id
-        self.bus_stop_times: list[BusStopVisit] = []
+        self.bus_stop_times: list[str] = []
         self.stop_id_stop_seq: dict[str, int] = {}
+        self.latest_bus: str = None
 
-        self.route.all_trips.append(self)
+        self.route.all_trips.append(self.trip_id)
     
     def get_info(self) -> dict[str, str]:
         """Returns the trip's information in a dictionary."""
@@ -149,41 +272,63 @@ class Trip:
             "shape_id": self.shape.shape_id,
             "trip_headsign": self.trip_headsign,
             "trip_short_name": self.trip_short_name,
-            "direction_id": self.direction_id,
+            "direction": self.direction,
             "block_id": self.block_id
         }
     
-    def get_times(self) -> list[datetime]:
-        """Returns a list of all timestamps for the trip.""" # this sort of should be returning something else, maybe combine into stop -> routes -> trips -> times
-        timestamps: list[datetime] = []
+    def sort_bus_stop_times(self):
+        self.bus_stop_times = sorted(self.bus_stop_times, key=lambda x: BusStopVisit._all[x].stop_sequence)
+    
+    def get_schedule_times(self) -> dict[str, dict[str, int]]:
+        """Returns a dict of all timestamps for the trip for each day.""" # this sort of should be returning something else, maybe combine into stop -> routes -> trips -> times
+        all_timestamps: defaultdict = defaultdict(dict)
         current_date = self.service.start_date
         while current_date <= self.service.end_date:
             day = current_date.weekday()
-            if self.service.schedule_days[day]:
-                if current_date not in self.service.cancelled_exceptions:
-                    for visit in self.bus_stop_times:
-                        new_timestamp = current_date.combine(current_date, visit.arrival_time)
-                        timestamps.append(new_timestamp)
+            if self.service.schedule_days[day] and current_date not in self.service.cancelled_exceptions:
+                timestamps: dict[str, int] = {}
+                for visit in self.bus_stop_times:
+                    bus_stop_time: BusStopVisit = BusStopVisit._all[visit]
+                    new_timestamp = int(current_date.timestamp()) + int(bus_stop_time.arrival_time.total_seconds())
+                    timestamps[bus_stop_time.stop.stop_id] = new_timestamp
+                all_timestamps[current_date.date().strftime("%Y-%m-%d")] = timestamps
+            current_date += timedelta(days=1)
+        
         for exception in self.service.extra_exceptions:
             if exception not in self.service.cancelled_exceptions:
+                timestamps = all_timestamps[exception.date().strftime("%Y-%m-%d")]
                 for visit in self.bus_stop_times:
-                    new_timestamp = exception.combine(exception, visit.arrival_time)
-                    timestamps.append(new_timestamp)
-        return timestamps
+                    bus_stop_time: BusStopVisit = BusStopVisit._all[visit]
+                    new_timestamp = int(exception.timestamp()) + int(bus_stop_time.arrival_time.total_seconds())
+                    timestamps[bus_stop_time.stop.stop_id] = new_timestamp
+                all_timestamps[exception.date().strftime("%Y-%m-%d")] = timestamps
+        return all_timestamps
 
+    def get_trips_in_block(self, date: datetime, subsequent_only: bool = False) -> list['Trip']:
+        potential_trips = []
+        for trip_id in self._all:
+            trip = self._all[trip_id]
+            if trip.block_id == self.block_id:
+                if trip.service.check_in_range(date): # check if it is in date range
+                    potential_trips.append(trip)
+        return [t for t in sorted(potential_trips, key=lambda t: BusStopVisit._all[t.bus_stop_times[0]].arrival_time) if not subsequent_only or BusStopVisit._all[t.bus_stop_times[0]].arrival_time > BusStopVisit._all[self.bus_stop_times[0]].arrival_time]
 
+    def get_start_time(self) -> datetime:
+        """Returns the datetime object for the start of the trip."""
+        return datetime.fromtimestamp(int(self.service.start_date.timestamp()) + int(BusStopVisit._all[self.bus_stop_times[0]].arrival_time.total_seconds()))
     
     @classmethod
-    def filter_by_routes(cls, route_ids: list|int) -> list[dict[str, str]]:
+    def filter_by_routes(cls, route_ids: list|str) -> list[dict[str, str]]:
         """Filters the list of all trips by specified route IDs."""
-        if isinstance(route_ids, int):
+        if isinstance(route_ids, str):
             route_ids = [route_ids]
         return [trip.get_info() for trip in cls._all.values() if trip.route.route_id in route_ids]
     
 class BusStopVisit:
     """A class to record the time of a stop in a trip."""
+    _all: dict[str, 'BusStopVisit'] = {}
 
-    def __init__(self, trip_id: int, stop_id: int, arrival_time: time, departure_time: time, stop_sequence: int, stop_headsign: str, pickup_type: int, drop_off_type: int, timepoint_type: int):
+    def __init__(self, trip_id: str, stop_id: str, arrival_time: timedelta, departure_time: timedelta, stop_sequence: int, stop_headsign: str, pickup_type: bool, drop_off_type: bool, timepoint: bool):
         self.trip = Trip._all[trip_id]
         self.stop = Stop._all[stop_id]
         self.arrival_time = arrival_time
@@ -192,11 +337,13 @@ class BusStopVisit:
         self.stop_headsign = stop_headsign
         self.pickup_type = pickup_type
         self.drop_off_type = drop_off_type
-        self.timepoint_type = timepoint_type
+        self.timepoint_type = timepoint
+        self._id = f"{trip_id}_{stop_id}_{stop_sequence}"
+        self._all[self._id] = self
 
-        self.stop.bus_visits.append(self)
-        self.trip.bus_stop_times.append(self)
-        self.stop.trips.add(self.trip)
+        self.stop.bus_visits.append(self._id)
+        self.trip.bus_stop_times.append(self._id)
+        self.stop.trips.add(self.trip.trip_id)
         self.trip.stop_id_stop_seq[stop_sequence] = stop_id
 
 
@@ -206,12 +353,12 @@ class Service:
     ADDED_EXCEPTION = 1
     REMOVED_EXCEPTION = 2
 
-    def __init__(self, service_id: int, monday: bool, tuesday: bool, wednesday: bool, thursday: bool, friday: bool, saturday: bool, sunday: bool, start_date: datetime, end_date: datetime):
+    def __init__(self, service_id: str, monday: bool, tuesday: bool, wednesday: bool, thursday: bool, friday: bool, saturday: bool, sunday: bool, start_date: datetime, end_date: datetime):
         self._all[service_id] = self
         self.service_id = service_id
         self.schedule_days = [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
         self.start_date = start_date
-        self.end_date = end_date
+        self.end_date = end_date + timedelta(days=1)    # inclusive, this brings it to the end of the day
         self.extra_exceptions: list[datetime] = []
         self.cancelled_exceptions: list[datetime] = []
     
@@ -223,12 +370,16 @@ class Service:
             self.cancelled_exceptions.append(date)
         else:
             raise ValueError("Invalid exception type.")
+    
+    def check_in_range(self, date: datetime) -> bool:
+        """Checks if the given date is within the service's date range and is on the right day of week."""
+        return self.start_date <= date <= self.end_date and self.schedule_days[date.weekday()]
 
 class Agency:
     """A class to represent a bus agency and its relevant information."""
     _all: dict[str, 'Agency'] = {}
 
-    def __init__(self, agency_id: int, agency_name: str):
+    def __init__(self, agency_id: str, agency_name: str):
         self._all[agency_id] = self
         self.agency_id = agency_id
         self.agency_name = agency_name
@@ -244,14 +395,14 @@ class Shape:
     """A class representing a trip's journey via sequence of coordinates."""
     _all: dict[str, 'Shape'] = {}
 
-    def __init__(self, shape_id: int):
+    def __init__(self, shape_id: str):
         self._all[shape_id] = self
         self.shape_id = shape_id
         self.shape_coords: list[Point] = []
     
-    def add_point(self, lat: float, lon: float):
+    def add_point(self, lat: float, lon: float, sequence: int, dist_traveled: float):
         """Adds a point to the shape."""
-        self.shape_coords.append(Point(lat, lon))
+        self.shape_coords.append(Point(lat, lon, sequence, dist_traveled))
 
     def get_info(self) -> list[dict[str, float]]:
         """Returns a list of the coordinates of the shape."""
@@ -260,15 +411,19 @@ class Shape:
 class Point:
     """A class representing a latitude and longitude coordinate."""
 
-    def __init__(self, lat: float, lon: float):
+    def __init__(self, lat: float, lon: float, sequence: int, dist_traveled: float):
         self.lat = lat
         self.lon = lon
+        self.sequence = sequence
+        self.dist_traveled = dist_traveled
 
     def get_info(self) -> dict[str, float]:
         """Returns the latitude and longitude of the point."""
         return {
             "lat": self.lat,
-            "lon": self.lon
+            "lon": self.lon,
+            "sequence": self.sequence,
+            "dist_traveled": self.dist_traveled
         }
 
 

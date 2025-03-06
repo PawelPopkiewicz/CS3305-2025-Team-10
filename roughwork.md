@@ -26,7 +26,7 @@
 5. App displays the information about the next bus coming to this stop on the main page
 
 **Extensions**
-1. a: Passenger already logged in once, so the app logs him in automatically (no time outs)
+1. a: Passenger already logged in once, so the app logs him in automatically (no time-outs)
 1. b: Passenger needs to confirm cookies and settings (sharing locations, etc.)
 2. a: Passenger already picked the favourite bus route, so it is automatically chosen on the home page
 3. a: Passenger already picked the favourite bus stop, so if combined with 2a, it displays data on opening the app
@@ -84,7 +84,7 @@
 	- Pick a bus stop by clicking on it
 	- Search for a bus stop (By id, once found, display the bus stop page (departures from that bus stop))
 	- Search for a bus route (like 220 -> displays all 220s currently on the map) -> then you can click on a specific bus on that map which would display the route page
-	- Display suggestions for close bus stops under the search bar (like google maps showing "coffee", etc.)
+	- Display suggestions for close bus stops under the search bar (like Google Maps showing "coffee", etc.)
 	-  Bus stop (shows departures)
 	- Show the departure from current time
 	- Option to specify a later time

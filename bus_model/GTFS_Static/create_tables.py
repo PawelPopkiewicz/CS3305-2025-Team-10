@@ -22,7 +22,8 @@ class TableCreator:
     route_id VARCHAR(12) PRIMARY KEY,
     agency_id VARCHAR(10),
     route_short_name VARCHAR(10),
-    route_long_name VARCHAR(100)
+    route_long_name VARCHAR(100),
+    route_type INTEGER
     );
     """
 
@@ -31,7 +32,10 @@ class TableCreator:
     route_id VARCHAR(12) NOT NULL REFERENCES routes(route_id) ON DELETE CASCADE,
     service_id VARCHAR(5),
     trip_id VARCHAR(20) PRIMARY KEY,
+    trip_headsign VARCHAR(40),
+    trip_shortname VARCHAR(40),
     direction BOOLEAN,
+    block_id VARCHAR(100),
     shape_id VARCHAR(20)
     );
     """
@@ -39,6 +43,7 @@ class TableCreator:
     STOPS_TABLE = """
     CREATE TABLE stops (
     stop_id VARCHAR(20) PRIMARY KEY,
+    stop_code VARCHAR(20),
     stop_name VARCHAR(100),
     stop_lat DOUBLE PRECISION,
     stop_lon DOUBLE PRECISION
@@ -108,7 +113,7 @@ class TableCreator:
 
     def create_table(self, name, table):
         """
-        Creates an sqlite table
+        Creates a sqlite table
         """
         self.cursor.execute(f"DROP TABLE IF EXISTS {name} CASCADE;")
         self.cursor.execute(table)

@@ -4,29 +4,34 @@ import {router} from 'expo-router';
 
 import colors from '@/config/Colors';
 import fonts from '@/config/Fonts';
+import {Stop} from "@/types/stop";
+import {shallowEqual, useSelector} from "react-redux";
+import {RootState} from "@/app/redux/store";
 
-const ButtonBus = ({buttonData}) => {
-
-    const handlePress = (title) => {
-        alert(`You pressed ${title}`);
-    };
+const ButtonStop = () => {
+    const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
+    const favs = useSelector((state: RootState) => state.favStop.stops ?? [], shallowEqual);
+    const favStops = stops.filter((stop: Stop) => favs?.includes?.(stop.id));
 
     return (
         <View>
-            {buttonData.map((item) => (
-                <View key={item.id} style={styles.buttonContainer}>
+
+            {/* create component for each stop */}
+            {favStops.map((stop: Stop) => (
+
+                <View key={stop.id} style={styles.buttonContainer}>
+
                     <TouchableOpacity
                     style={styles.buttonContainer}
-                    // {/* onPress={() => handlePress(item.title)} */}
-                    onPress={() => router.push("/screens/bus")}
+                    onPress={() => router.push({ pathname: `/screens/arrivals/${stop.id}`})}      // forward data of the selected stop to stop page
                     activeOpacity={0.1}
                     >
                         <View>
                             <Text style={styles.textPrimary}>
-                                {item.title.split(",")[0]?.trim() || ""}
+                                {`Stop ${stop.code}`}  
                             </Text>
                             <Text style={styles.textSecondary}>
-                            {item.title.split(",")[1]?.trim() || ""}
+                                {`${stop.name}`}  
                             </Text>
                         </View>
                     </TouchableOpacity>
@@ -42,19 +47,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.backgroundPrimary,
         padding: 5,
         paddingHorizontal: 7,
-        // borderBottomWidth: 1,
-        // borderBottomColor: colors.border,
-        // justifyContent: 'left',
     },
-    // button: {
-    //     backgroundColor: colors.backgroundPrimary,
-    //     justifyContent: 'flex-start',
-    // },
-    // title: {
-    //     textAlign: 'left',
-    //     // padding: 7,
-    //     fontSize: fonts.subHeading,
-    // },
     textPrimary: {
         fontSize: fonts.subHeading,
         color: colors.textPrimary,
@@ -65,4 +58,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default ButtonBus;
+export default ButtonStop;

@@ -9,7 +9,7 @@ A route is a collection of trips that fall under one name (eg. 220 or 220X). It 
 The route can branch, and describe both directions of travel.
 
 ## Service
-A ID that shows the dates where the service runs, when the service is valid from and to, and also known exceptions to the schedule (eg. Christmas)
+An ID that shows the dates where the service runs, when the service is valid from and to, and also known exceptions to the schedule (eg. Christmas)
 
 ## Shape
 A shape is a sequence of lat/long points that denote where a trip is scheduled to go. This is more detailed than a list of stops. It is directional.

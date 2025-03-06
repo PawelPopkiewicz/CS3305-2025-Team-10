@@ -10,7 +10,7 @@ rm source_text_files/*.txt -f
 
 unzip -d source_text_files/ GTFS_Realtime.zip 
 
-rm GTFS_Realtime.zip
+rm GTFS_Realtime.zip*
 rm gtfsr.db
 cp chosen_routes.txt source_text_files/chosen_routes.txt
 

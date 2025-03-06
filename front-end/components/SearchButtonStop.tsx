@@ -5,29 +5,28 @@ import {router} from 'expo-router';
 import colors from '@/config/Colors';
 import fonts from '@/config/Fonts';
 
-const ButtonList = ({buttonData}) => {
-
+const SearchButtonStop = ({ item }) => {
     return (
         <View>
-            {buttonData.map((item) => (
                 <View key={item.id} style={styles.buttonContainer}>
+
                     <TouchableOpacity
                     style={styles.buttonContainer}
-                    onPress={() => router.push("/screens/stop")}
+                    onPress={() => router.push({ pathname: `/screens/arrivals/${item.id}`, params: { stop: item.id } })} // forward data of the selected bus to bus page
                     activeOpacity={0.1}
                     >
                         <View>
                             <Text style={styles.textPrimary}>
-                                {item.title.split(",")[0]?.trim() || ""}
+                                {`Stop ${item.code}`}       
                             </Text>
                             <Text style={styles.textSecondary}>
-                            {item.title.split(",")[1]?.trim() || ""}
+                                {`${item.name}`} 
                             </Text>
                         </View>
+
                     </TouchableOpacity>
 
                 </View>
-            ))}
         </View>
     );
 };
@@ -48,4 +47,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default ButtonList;
+export default SearchButtonStop;

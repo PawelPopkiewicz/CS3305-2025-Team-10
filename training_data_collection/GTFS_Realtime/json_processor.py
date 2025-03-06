@@ -66,7 +66,7 @@ class JsonProcessor():
         except TypeError as e:
             print(f"Dump was not possible: {e}")
         except Exception as e:
-            print(f"Unexpected error occured: {e}")
+            print(f"Unexpected error occurred: {e}")
 
 
 if __name__ == "__main__":

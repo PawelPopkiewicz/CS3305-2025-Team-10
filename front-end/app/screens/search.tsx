@@ -1,98 +1,122 @@
-import {ScrollView, StyleSheet, Text, TouchableOpacity, View} from "react-native";
-import {Icon, Input} from '@rneui/themed';
-import React, {useState, useRef, useEffect} from "react";
+import {FlatList, Platform, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {Icon, Input} from "@rneui/themed";
+import React, {useEffect, useRef, useState} from "react";
 import {router} from "expo-router";
 
-import ButtonList from "@/components/ButtonList";
-import ButtonBus from "@/components/ButtonBus";
+import SearchButtonStop from "@/components/SearchButtonStop";
+import SearchButtonRoute from "@/components/SearchButtonRoute";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
-
+import {Stop} from "@/types/stop";
+import {Route} from "@/types/route";
+import {shallowEqual, useSelector} from "react-redux";
+import {RootState} from "@/app/redux/store";
 
 export default function Search() {
 
-    const [text, setText] = useState("");
+    const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
+    const routes = useSelector((state: RootState) => state.route.routes, shallowEqual);
+
+    const [selected, setSelected] = useState<"Stop" | "Route">("Stop"); // Default to Stop
+    const [query, setQuery] = useState("");
+    const [filteredResults, setFilteredResults] = useState<(Route | Stop)[]>(stops); // Fix here
     const inputRef = useRef(null);
+
+    const changeFilter = (filter: "Stop" | "Route") => {
+        setSelected(filter);
+        setQuery("");
+        setFilteredResults(filter === "Route" ? routes : stops);
+        if (filter === "Route") {
+            console.log("Buses when Bus filter selected:", routes);
+        } else {
+            console.log("Stops when Stop filter selected:", stops);
+        }
+    };
+
+    const handleSearch = (text: string) => {
+        setQuery(text);
+        const lowerText = text.toLowerCase().trim(); // Convert input to lowercase & remove extra spaces
+
+        if (text.length > 0) {
+            if (selected === "Stop") {
+                setFilteredResults(stops.filter((stop) =>
+                    stop.name.toLowerCase().includes(text.toLowerCase()) ||
+                    stop.code.toLowerCase().includes(text.toLowerCase())
+                ));
+            } else {
+                setFilteredResults(routes.filter((route) =>
+                    route.name.toLowerCase().trim() === lowerText || // Exact match for route
+                    route.name.toLowerCase().includes(lowerText) // Partial match for route
+                ));
+                
+            }
+        } else {
+            setFilteredResults(selected === "Route" ? routes : stops);
+        }
+    };
 
     useEffect(() => {
         const timer = setTimeout(() => {
-          if (inputRef.current) {
-            inputRef.current.focus(); // Open keyboard automatically
-          }
-        }, 100); // Delay ensures the UI is ready
-    
+            if (inputRef.current) {
+                // @ts-ignore
+                inputRef.current.focus();
+            }
+        }, 100);
         return () => clearTimeout(timer);
-      }, []);
+    }, []);
+
     return (
-        <View style={styles.background}>
-
+        <SafeAreaView style={styles.background}>
+            {/* Input Field */}
             <Input
-            ref={inputRef}
-            inputStyle={styles.textPrimary}
-            inputContainerStyle={styles.input}
-            value={text} // Controlled input
-            onChangeText={setText} // Update state on change
-            placeholder="Search bus stop or route"
-            rightIcon={<Icon iconStyle={styles.clear} onPress={() => setText("")} name="plus" type="font-awesome"/>}
-            leftIcon={<Icon iconStyle={styles.back} onPress={() => router.back()} name="chevron-left"
-                            type="font-awesome"/>}
-            >
-            </Input>
+                ref={inputRef}
+                inputStyle={styles.textPrimary}
+                inputContainerStyle={styles.input}
+                value={query}
+                onChangeText={handleSearch}
+                placeholder={`Search ${selected === "Route" ? "bus route" : "stop name or code"}`}
+                rightIcon={<Icon iconStyle={styles.clear} onPress={() => handleSearch("")} name="plus" type="font-awesome" />}
+                leftIcon={<Icon iconStyle={styles.back} onPress={() => router.back()} name="chevron-left" type="font-awesome" />}
+            />
 
+            {/* Filter Buttons */}
             <View style={styles.filters}>
-
                 <TouchableOpacity
-                style={styles.filterNotSelected}
-                // {/* onPress={() => handlePress(item.title)} */}
-                activeOpacity={0.1}
+                    style={[styles.filter, { backgroundColor: selected === "Route" ? colors.backgroundSecondary : colors.backgroundPrimary }]}
+                    onPress={() => changeFilter("Route")}
+                    activeOpacity={0.1}
                 >
-                    <View>
-                        <Text style={styles.textSecondary}>
-                            Bus
-                        </Text>
-                    </View>
+                    <Text style={{ color: selected === "Route" ? colors.textSwitchable : colors.textSecondary }}>Route</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                style={styles.filterSelected}
-                // {/* onPress={() => handlePress(item.title)} */}
-                activeOpacity={0.1}
+                    style={[styles.filter, { backgroundColor: selected === "Stop" ? colors.backgroundSecondary : colors.backgroundPrimary }]}
+                    onPress={() => changeFilter("Stop")}
+                    activeOpacity={0.1}
                 >
-                    <View>
-                        <Text style={styles.textSelected}>
-                            Stop
-                        </Text>
-                    </View>
+                    <Text style={{ color: selected === "Stop" ? colors.textSwitchable : colors.textSecondary }}>Stop</Text>
                 </TouchableOpacity>
             </View>
 
-            {/* Display buses and stops based on search here*/}
-            <ScrollView style={styles.test}>
-                <ButtonBus buttonData= {[
-                    { id: '3', title: 'Bus 220, Carrigaline - Crosshaven' },
-                    ]}/>
-                <ButtonList buttonData={[
-                    { id: '1', title: 'Stop 2232, University College Cork'},
-                ]}/>
-            </ScrollView>
-        </View >
-
-
+            {/* Filtered List */}
+            <FlatList
+                data={filteredResults}
+                keyExtractor={(item) =>
+                    selected === "Route" ? item.name : (item as Stop).id.toString()
+                }
+                renderItem={({ item }) =>
+                    selected === "Route" ? <SearchButtonRoute item={item as Route} /> : <SearchButtonStop item={item as Stop} />
+                }
+            />
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    test: {
-        // borderBottomWidth: 3,
-        // borderBottomColor: colors.border,
-    },
     background: {
-        // paddingTop: Platform.OS === 'android' ? 20 : 0,
-        paddingTop: 50,
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
         flex: 1,
-        // justifyContent: 'flex-end',
         backgroundColor: colors.backgroundPrimary,
-        // height: '100%'
     },
     input: {
         alignItems: "center",
@@ -113,21 +137,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-evenly',
     },
-    filterNotSelected: {
+    filter: {
         padding: 7,
         paddingHorizontal: 30,
         borderWidth: 1,
         borderRadius: 17,
         borderColor: colors.border,
-        backgroundColor: colors.backgroundPrimary,
-    },
-    filterSelected: {
-        padding: 7,
-        paddingHorizontal: 30,
-        borderWidth: 1,
-        borderColor: colors.border,
-        borderRadius: 17,
-        backgroundColor: colors.backgroundSecondary,
     },
     textSelected: {
         color: colors.objectSelected,

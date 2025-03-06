@@ -1,9 +1,8 @@
-import {Trip} from "@/types/trip";
-
 export type Stop = {
-    id: number;
+    id: string;
     name: string;
-    latitude: number;
-    longitude: number;
-    tripIds: Trip[];
+    code: string;
+    lat: number;
+    lon: number;
+    direction: number;
 }

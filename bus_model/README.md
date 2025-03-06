@@ -1,5 +1,5 @@
 # Downloading Additional Files
-The static files supplied by TFI are too large for Github, so you may download the files yourself from the [TFI website](https://www.transportforireland.ie/transitData/PT_Data.html).
+The static files supplied by TFI are too large for GitHub, so you may download the files yourself from the [TFI website](https://www.transportforireland.ie/transitData/PT_Data.html).
 
 # Running a Development Server
 Assuming you have the full repository open, use the following command to run the development server.

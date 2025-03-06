@@ -1,15 +1,48 @@
 import requests
 import os
-import csv
 import bus_model
 import datetime
 import time
+import subprocess
+import math
 
 from dotenv import load_dotenv
+from GTFS_Static.db_connection import create_connection, close_connection
 
 
 load_dotenv()
 
+def manage_read_only_connection(func):
+    def wrapper(*args, **kwargs):
+        conn = create_connection()
+        cursor = conn.cursor()
+        try:
+            data = func(cursor, *args, **kwargs)
+        finally:
+            close_connection(conn)
+            return data or None
+    return wrapper
+
+class BustimesAPI:
+    base_url = "https://bustimes.org/api/vehicles?limit="
+    limit = "70000"
+
+    @classmethod
+    def fetch_vehicles(self) -> dict:
+        """Fetches and filters all the vehicles from the Bustimes API."""
+        url = self.base_url + self.limit
+        try:
+            data = requests.get(url)
+            data = data.json()
+        except Exception as e:
+            print("Non-fatal Error:", e)
+            print(data.text)
+            return None
+        vehicles: list[dict] = data.get("results", [])
+        if vehicles:
+            filtered = [vehicle for vehicle in vehicles if vehicle.get("slug", "").startswith("ie-")]
+            return filtered
+        return None
 
 class GTFSR:
     """A class to make requests to the GTFSR API. All methods can be used without initialising the class."""
@@ -70,134 +103,213 @@ class GTFSR:
 
 
 class StaticGTFSR:
-    """A class to parse the static csv-format GTFSR data."""
-    static_folder = "back-end/static_gtfsr/"
-    agency  = static_folder + "agency.txt"
-    stops   = static_folder + "stops.txt"
-    routes  = static_folder + "routes.txt"
-    trips   = static_folder + "trips.txt"
-    stop_times = static_folder + "stop_times.txt"   # "cork_stop_times.txt"
-    calendar = static_folder + "calendar.txt"
-    calendar_dates = static_folder + "calendar_dates.txt"
-    shapes = static_folder + "shapes.txt"
-    feed_info = static_folder + "feed_info.txt"
+    """A class to parse GTFSR data from the PostgreSQL db."""
     date_format = "%Y%m%d"
     time_format = "%H:%M:%S"
-    cork_trip_ids = static_folder + "cork_trip_ids.txt"
+
 
     @classmethod
-    def read_routes(self, path=routes):
-        with open(path, 'r', encoding="utf-8") as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-            for row in csv_reader:
-                bus_model.Route(row['route_id'], row['agency_id'],
-                                row['route_short_name'], row['route_long_name'], row['route_type'])
+    @manage_read_only_connection
+    def get_routes(cursor, _):
+        query = """SELECT * FROM ROUTES"""
+        cursor.execute(query)
+        res = cursor.fetchall()
+        for row in res:
+            bus_model.Route(route_id=row[0], agency_id=row[1], route_short_name=row[2], route_long_name=row[3], route_type=row[4])
 
     @classmethod
-    def read_stops(self, path=stops):
-        with open(path, 'r', encoding="utf-8") as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-            for row in csv_reader:
-                bus_model.Stop(row['stop_id'], row['stop_code'] or None,
-                               row['stop_name'], row['stop_lat'], row['stop_lon'])
+    @manage_read_only_connection
+    def get_stops(cursor, _):
+        query = """SELECT * FROM STOPS"""
+        cursor.execute(query)
+        res = cursor.fetchall()
+        type_coerce = lambda x: str(int(float(x)))
+        for row in res:
+            bus_model.Stop(stop_id=row[0], stop_code=type_coerce(row[1]), stop_name=row[2], stop_lat=row[3], stop_lon=row[4])
 
     @classmethod
-    def read_agencies(self, path=agency):
-        with open(path, 'r', encoding="utf-8") as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-            for row in csv_reader:
-                bus_model.Agency(row['agency_id'], row['agency_name'])
+    @manage_read_only_connection
+    def get_agencies(cursor, _):
+        query = """SELECT * FROM AGENCY"""
+        cursor.execute(query)
+        res = cursor.fetchall()
+        for row in res:
+            bus_model.Agency(agency_id=row[0], agency_name=row[1])
 
     @classmethod
-    def read_calendar(self, path=calendar):
-        with open(path, 'r', encoding="utf-8") as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-            for row in csv_reader:
-                start_date = datetime.datetime.strptime(
-                    row['start_date'], self.date_format)
-                end_date = datetime.datetime.strptime(
-                    row['end_date'], self.date_format)
-                bus_model.Service(row['service_id'], row['monday'], row['tuesday'], row['wednesday'],
-                                  row['thursday'], row['friday'], row['saturday'], row['sunday'], start_date, end_date)
+    @manage_read_only_connection
+    def get_calendar(cursor, cls):
+        query = """SELECT * FROM CALENDAR"""
+        cursor.execute(query)
+        res = cursor.fetchall()
+        for row in res:
+            start_date = datetime.datetime.strptime(row[8], cls.date_format)
+            end_date = datetime.datetime.strptime(row[9], cls.date_format)
+            bus_model.Service(service_id=row[0], monday=row[1], tuesday=row[2], wednesday=row[3], thursday=row[4], friday=row[5], saturday=row[6], sunday=row[7], start_date=start_date, end_date=end_date)
 
     @classmethod
-    def read_calendar_dates(self, path=calendar_dates):
-        with open(path, 'r', encoding="utf-8") as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-            for row in csv_reader:
-                date = datetime.datetime.strptime(
-                    row['date'], self.date_format)
-                service = bus_model.Service._all[row['service_id']]
-                service.add_exception(date, int(row['exception_type']))
+    @manage_read_only_connection
+    def get_calendar_dates(cursor, cls):
+        query = """SELECT * FROM CALENDAR_DATES"""
+        cursor.execute(query)
+        res = cursor.fetchall()
+        for row in res:
+            date = datetime.datetime.strptime(row[1], cls.date_format)
+            service = bus_model.Service._all[row[0]]
+            service.add_exception(date, int(row[2]))
 
     @classmethod
-    def read_shapes(self, path=shapes):
-        with open(path, 'r', encoding="utf-8") as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-            for row in csv_reader:
-                shape_id = row['shape_id']
-                if shape_id not in bus_model.Shape._all:
-                    shape = bus_model.Shape(shape_id)
-                else:
-                    shape = bus_model.Shape._all[shape_id]
-                shape.add_point(row['shape_pt_lat'], row['shape_pt_lon'])
+    @manage_read_only_connection
+    def get_shapes(cursor, _):
+        query = """SELECT * FROM SHAPES
+                   ORDER BY shape_pt_sequence"""
+        cursor.execute(query)
+        res = cursor.fetchall()
+        for row in res:
+            shape_id = row[0]
+            if shape_id not in bus_model.Shape._all:
+                shape = bus_model.Shape(shape_id)
+            else:
+                shape = bus_model.Shape._all[shape_id]
+            shape.add_point(lat=row[1], lon=row[2], sequence=row[3], dist_traveled=row[4])
 
     @classmethod
-    def read_trips(self, path=trips):
-        with open(path, 'r', encoding="utf-8") as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-            for row in csv_reader:
-                bus_model.Trip(row['trip_id'], row['route_id'], row['service_id'], row['shape_id'],
-                               row['trip_headsign'], row['trip_short_name'], row['direction_id'], row['block_id'])
+    @manage_read_only_connection
+    def get_trips(cursor, _):
+        query = """SELECT * FROM TRIPS"""
+        cursor.execute(query)
+        res = cursor.fetchall()
+        for row in res:
+            bus_model.Trip(route_id=row[0], service_id=row[1], trip_id=row[2], trip_headsign=row[3], trip_short_name=row[4], direction=row[5], block_id=row[6], shape_id=row[7])
 
     @classmethod
-    def read_stop_times(self, path=stop_times):
-        # with open(self.cork_trip_ids, 'r', encoding="utf-8") as csv_file:
-        #     cork_trip_ids = set(csv_file.read().splitlines())
+    @manage_read_only_connection
+    def get_stop_times(cursor, _):
+        query = """SELECT * FROM STOP_TIMES"""
+        cursor.execute(query)
+        res = cursor.fetchall()
+        for row in res:
+            h, m, s = map(int, row[1].split(":"))
+            arrival_delta = datetime.timedelta(hours=h, minutes=m, seconds=s)
+            h, m, s = map(int, row[2].split(":"))
+            departure_delta = datetime.timedelta(hours=h, minutes=m, seconds=s)
+            headsign = row[5] if row[5] != "nan" else None
+            bus_model.BusStopVisit(trip_id=row[0], arrival_time=arrival_delta, departure_time=departure_delta, stop_id=row[3], stop_sequence=row[4], stop_headsign=headsign, pickup_type=row[6], drop_off_type=row[7], timepoint=row[8])
+    
+    @classmethod
+    def calculate_bearing(cls, lat1: float, lon1: float, lat2: float, lon2: float) -> int:
+        """
+        Calculates the bearing/angle between two lat/lon points relative to North.
+        """
+        lat1, lon1, lat2, lon2 = map(math.radians, [float(lat1), float(lon1), float(lat2), float(lon2)])
+        
+        delta_lon = lon2 - lon1
+        
+        x = math.sin(delta_lon) * math.cos(lat2)
+        y = math.cos(lat1) * math.sin(lat2) - (math.sin(lat1) * math.cos(lat2) * math.cos(delta_lon))
+        
+        initial_bearing = math.atan2(x, y)
+        initial_bearing = math.degrees(initial_bearing)
+        compass_bearing = int((initial_bearing + 360) % 360)
+        return compass_bearing
 
-        with open(path, 'r', encoding="utf-8") as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-            for row in csv_reader:
-                # if row['trip_id'] not in cork_trip_ids:    # Filter to cork times only to reduce size from 250mb
-                #     continue
 
-                # datetime only allows times between 0-23, so adjust the 24-29h times
-                if (t := int(row['arrival_time'][:2])) > 23:
-                    row['arrival_time'] = "0" + str(t-24) + row['arrival_time'][2:]
-                if (t := int(row['departure_time'][:2])) > 23:
-                    row['departure_time'] = "0" + str(t-24) + row['departure_time'][2:]
-                arrival_time = datetime.datetime.strptime(
-                    row['arrival_time'], self.time_format).time()
-                departure_time = datetime.datetime.strptime(
-                    row['departure_time'], self.time_format).time()
-                
-                bus_model.BusStopVisit(row['trip_id'], row['stop_id'], arrival_time, departure_time, row['stop_sequence'],
-                                       row['stop_headsign'], row['pickup_type'], row['drop_off_type'], row['timepoint'])
+    @classmethod
+    @manage_read_only_connection
+    def nearest_points(cursor, cls, lat: float, lon: float, shape_id: str) -> list[tuple]:
+        query = """
+                    WITH sh1 AS (
+                        SELECT shape_pt_sequence AS stop_seq, shape_pt_lat AS lat, shape_pt_lon AS lon, shape_dist_traveled, shape_id
+                        FROM shapes AS sh1
+                        WHERE shape_id = %s
+                        ORDER BY POWER(shape_pt_lat - %s, 2) + POWER(shape_pt_lon - %s, 2)
+                        LIMIT 1
+                        ),
+                    sh2 AS (
+                        SELECT shape_pt_sequence AS stop_seq, shape_pt_lat AS lat, shape_pt_lon AS lon
+                        FROM shapes AS sh2
+                        JOIN sh1 AS sh1 ON sh2.shape_id = sh1.shape_id
+                        WHERE sh2.shape_id = %s
+                            AND (sh2.shape_dist_traveled <= (sh1.shape_dist_traveled - 5) OR sh2.shape_dist_traveled >= (sh1.shape_dist_traveled + 5))
+                        ORDER BY abs(sh2.shape_dist_traveled - sh1.shape_dist_traveled) ASC
+                        LIMIT 1
+                    )
+                    SELECT * FROM (
+                        SELECT stop_seq, lat, lon FROM sh1
+                        UNION ALL
+                        SELECT stop_seq, lat, lon FROM sh2
+                   ) as combined_results
+                   ORDER BY stop_seq ASC;
+                   """
+        cursor.execute(query, (shape_id, lat, lon, shape_id))
+        if res := cursor.fetchall():
+            return [(seq, lat, lon) for seq, lat, lon in res]
+        print("No res", lat, lon)
+        return None
 
+    @classmethod
+    @manage_read_only_connection
+    def post_loading_calculations(cursor, cls):
+        # These are basically "joins" of SQL tables
+        for trip in bus_model.Trip._all.values():
+            trip.sort_bus_stop_times()
+        for route in bus_model.Route._all.values():
+            route.enumerate_stops()
+        # Get direction
+        for stop in bus_model.Stop._all.values():
+            stop_lat, stop_lon = stop.stop_lat, stop.stop_lon
+            shape_id = bus_model.Trip._all[list(stop.trips)[0]].shape.shape_id
+            points = StaticGTFSR.nearest_points(stop_lat, stop_lon, shape_id)
+            if points:
+                assert len(points) == 2, f"Only {len(points)} points returned."
+                p1, p2 = points
+                lat1, lon1, lat2, lon2 = p1[1], p1[2], p2[1], p2[2]
+                angle = cls.calculate_bearing(lat1, lon1, lat2, lon2)
+                stop.rotation = angle              
+    
+        
+    
     @classmethod
     def load_all_files(self):
-        t = time.time()
-        self.read_agencies()
+        t1 = time.time()
+        postgres_db_flag_dir = os.getenv("POSTGRES_DB_MADE_DIR")
+        file_name = "flag.txt"
+        file_path = os.path.join(postgres_db_flag_dir, file_name)
+
+        try:
+            if not os.path.exists(file_path):
+                process = subprocess.run(["bash", "scripts/update_GTFS_Static.sh"], capture_output=True, text=True) # Create and populate DB
+                if process.returncode == 0:
+                    with open(file_path, "w") as f: # Only create flag on success
+                        f.write("1")
+                else:
+                    print("Error updating GTFS Static data. Error code:", process.returncode)
+        except Exception as e:
+            print("Error updating GTFS Static data:", e)
+
+        print(f"GTFS Static data updated in {(t:=time.time()) - t1}s")
+        self.get_agencies()
         print(f"Agencies loaded in {(t1:=time.time()) - t}s")
-        self.read_calendar()
+        self.get_calendar()
         print(f"Calendar loaded in {(t:=time.time()) - t1}s")
-        self.read_stops()
+        self.get_stops()
         print(f"Stops loaded in {(t1:=time.time()) - t}s")
-        self.read_shapes()
+        self.get_shapes()
         print(f"Shapes loaded in {(t:=time.time()) - t1}s")
-        self.read_routes()
+        self.get_routes()
         print(f"Routes loaded in {(t1:=time.time()) - t}s")
-        self.read_calendar_dates()
+        self.get_calendar_dates()
         print(f"Calendar dates loaded in {(t:=time.time()) - t1}s")
-        self.read_trips()
+        self.get_trips()
         print(f"Trips loaded in {(t1:=time.time()) - t}s")
-        self.read_stop_times()
+        self.get_stop_times()
         print(f"Stop times loaded in {(t:=time.time()) - t1}s")
+        self.post_loading_calculations()
+        print(f"Post loading calculations completed in {(t1:=time.time()) - t}s")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": 
     # quick debugging
-    import time
     start = time.time()
     StaticGTFSR.load_all_files()
     #print("num visits", len(bus_model.Trip._all))

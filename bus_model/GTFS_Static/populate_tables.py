@@ -14,9 +14,9 @@ class AgencyNotFoundError(Exception):
 class TablePopulator():
     """Populates the tables with data"""
 
-    ROUTES_FIELDS = [0, 1, 2, 3]
-    TRIPS_FIELDS = [0, 1, 2, 5, 7]
-    STOPS_FIELDS = [0, 2, 4, 5]
+    ROUTES_FIELDS = [0, 1, 2, 3, 5]
+    TRIPS_FIELDS = [0, 1, 2, 3, 4, 5, 6, 7]
+    STOPS_FIELDS = [0, 1, 2, 4, 5]
     STOP_TIMES_FIELDS = [0, 1, 2, 3, 4, 5, 6, 7, 8]
     SHAPES_FIELDS = [0, 1, 2, 3, 4]
     AGENCY_FIELDS = [0, 1]
@@ -24,9 +24,9 @@ class TablePopulator():
     CALENDAR_DATES_FIELDS = [0, 1, 2]
     CHOSEN_ROUTES_FIELDS = [0]
 
-    ROUTES_MASK = ["str", "str", "str", "str"]
-    TRIPS_MASK = ["str", "str", "str", "bool", "str"]
-    STOPS_MASK = ["str", "str", "float", "float"]
+    ROUTES_MASK = ["str", "str", "str", "str", "int"]
+    TRIPS_MASK = ["str", "str", "str", "str", "str", "bool", "str", "str"]
+    STOPS_MASK = ["str", "str", "str", "float", "float"]
     STOP_TIMES_MASK = ["str", "str", "str", "str", "int", "str", "bool", "bool", "bool"]
     SHAPES_MASK = ["str", "float", "float", "int", "float"]
     AGENCY_MASK = ["str", "str"]
