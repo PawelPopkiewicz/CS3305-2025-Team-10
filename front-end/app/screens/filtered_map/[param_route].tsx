@@ -13,7 +13,7 @@ import {DEFAULT_REGION} from "@/config/constants";
 import ErrorData from "@/components/ErrorData";
 
 const FilteredMap = () => {
-    const { param_route } = useLocalSearchParams() as { param_route: string };
+    const { param_route } = useLocalSearchParams();
     const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
     const buses = useSelector((state: RootState) => state.bus.buses, shallowEqual);
     const routes = useSelector((state: RootState) => state.route.routes, shallowEqual);

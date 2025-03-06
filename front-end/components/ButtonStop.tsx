@@ -23,7 +23,7 @@ const ButtonStop = () => {
 
                     <TouchableOpacity
                     style={styles.buttonContainer}
-                    onPress={() => router.push({ pathname: `/screens/arrivals/${String(stop.id)}`, params: { stop: stop.id } })}      // forward data of the selected stop to stop page
+                    onPress={() => router.push({ pathname: `/screens/arrivals/${stop.id}`, params: { stop: stop.id } })}      // forward data of the selected stop to stop page
                     activeOpacity={0.1}
                     >
                         <View>
