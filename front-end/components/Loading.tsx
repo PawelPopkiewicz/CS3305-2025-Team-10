@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import colors from '@/config/Colors';
 import fonts from '@/config/Fonts';
+import { Button } from 'react-native-elements';
 
 
 const Loading = ({ text }: { text: String }) => {
@@ -12,6 +13,7 @@ const Loading = ({ text }: { text: String }) => {
         <SafeAreaView style={styles.loading}>
                 <Text style={styles.textData}>{text}</Text>
                 <ActivityIndicator size="large" color={colors.objectSelected} />
+                <Button titleStyle={styles.textData}>Go Back</Button>
         </SafeAreaView>
     );
 };
