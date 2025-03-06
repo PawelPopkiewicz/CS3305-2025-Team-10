@@ -4,6 +4,12 @@ import {store} from "./redux/store";
 import {rehydrateStopsFavorites} from "@/app/redux/favStopsSlice";
 import {rehydrateRoutesFavorites} from "@/app/redux/favRoutesSlice";
 import {useEffect} from "react";
+import { LogBox } from 'react-native';
+
+LogBox.ignoreLogs([
+    'Warning: Each child in a list should have a unique "key" prop.',
+    'Warning: Encountered two children with the same key',
+]);
 
 export default function Layout() {
     useEffect(() => {
