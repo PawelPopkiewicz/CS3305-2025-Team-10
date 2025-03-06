@@ -224,7 +224,8 @@ class TripGenerator():
 
     def check_trip_filters_before(self):
         """Return true if the trip is eligible for conversion"""
-        return check_trip_id_exists(self.trip_id, self.direction)
+        exists = check_trip_id_exists(self.trip_id, self.direction)
+        return exists
 
     def on_route_filter(self):
         """Checks if any of the updates are not on route"""
@@ -391,7 +392,7 @@ class TripGenerator():
         if update_rows is None:
             return None
         self.create_inference_trips(update_rows)
-        self.check_trip_filters_after()
+        # self.check_trip_filters_after()
         return self.trips
 
 

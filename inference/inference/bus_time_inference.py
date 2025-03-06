@@ -17,8 +17,8 @@ class BusTimesInference():
     Offering prediction method
     """
 
-    HIDDEN_DIM = 100
-    OVERLAP = 2
+    HIDDEN_DIM = 120
+    OVERLAP = 3
 
     def __init__(self, model_filename):
         # Load the model and preprocessing objects
@@ -27,7 +27,6 @@ class BusTimesInference():
 
         # Create model
         self.trip_feature_dim = len(checkpoint['route_encoder'].categories_[0]) + len(checkpoint['day_encoder'].categories_[0])  # routes + days
-        self.hidden_dim = 100
         self.model = BusTimeEncoderDecoder(self.trip_feature_dim, self.HIDDEN_DIM)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.model.eval()
@@ -133,12 +132,17 @@ class BusTimesInference():
         """
         Predict the bus trip for the next target stops
         """
+        print(trip.observed_stops)
         if not trip.inference_eligible():
+            raise ValueError("Trip did not pass enough stops (3)")
+            print("trip was not eligible for prediction")
             return False
         observed_df, remaining_df = trip.observed_df, trip.target_df
         remaining_df = self.add_overlap(observed_df, remaining_df)
         print(f"observed_df shape {observed_df.shape}")
         if observed_df is None or remaining_df is None:
+            print("no dataframes to work with")
+            raise ValueError("no dataframes to work with")
             return False
             # return None
         trip_features = self.get_trip_features(pd.concat([observed_df, remaining_df]))
@@ -161,17 +165,31 @@ class BusTimesInference():
 
 
 if __name__ == "__main__":
-    from preprocessing.json_io import load_json
-    test_data = load_json("test_record")
-    test_data["vehicle_updates"] = test_data["vehicle_updates"][-2:]
+    # from preprocessing.json_io import load_json
+    # test_data = load_json("test_record")
+    # test_data["vehicle_updates"] = test_data["vehicle_updates"][-2:]
+    # test_data = {'trip_id': '4497_67055', 'start_time': '17:00:00', 'start_date': '20250306', 'schedule_relationship': 'SCHEDULED', 'route_id': '4497_87351', 'direction_id': 1, 'vehicle_updates': [{'latitude': 51.7338715, 'longitude': -8.48255062, 'timestamp': 1741280802}, {'latitude': 51.7396965, 'longitude': -8.48602581, 'timestamp': 1741280919}, {'latitude': 51.7602119, 'longitude': -8.49677944, 'timestamp': 1741281071}, {'latitude': 51.7707, 'longitude': -8.49569321, 'timestamp': 1741281162}]}
     from .process_json import process_json
-    test_trip = process_json(test_data)
+    # test_trip = process_json(test_data)
     bus_time_inference = BusTimesInference("bus_time_prediction_model_3.pth")
-    predicted = bus_time_inference.predict_trip(test_trip)
+    # predicted = bus_time_inference.predict_trip(test_trip)
+    # json_prediction = {
+    #         "stops": test_trip.display_df().to_dict("records"),
+    #         "delay": test_trip.current_delay,
+    #         "trip_id": test_trip.trip_id
+    #         }
+    trip = {'trip_id': '4497_67055', 'start_time': '17:00:00', 'start_date': '20250306', 'schedule_relationship': 'SCHEDULED', 'route_id': '4497_87351', 'direction_id': 1, 'vehicle_updates': [{'latitude': 51.7338715, 'longitude': -8.48255062, 'timestamp': 1741280802}, {'latitude': 51.7396965, 'longitude': -8.48602581, 'timestamp': 1741280919}, {'latitude': 51.7602119, 'longitude': -8.49677944, 'timestamp': 1741281071}, {'latitude': 51.7707, 'longitude': -8.49569321, 'timestamp': 1741281162}]}
+    trip = process_json(trip)
+    if trip is None:
+        raise ValueError("Invalid trip data")
+    print("predicting...")
+    predicted = bus_time_inference.predict_trip(trip)
+    if not predicted:
+        raise ValueError("Unable to make an prediction")
     json_prediction = {
-            "stops": test_trip.display_df().to_dict("records"),
-            "delay": test_trip.current_delay,
-            "trip_id": test_trip.trip_id
+            "stops": trip.display_df().to_dict("records"),
+            "delay": trip.current_delay,
+            "trip_id": trip.trip_id
             }
     import json
     print(json.dumps(json_prediction, indent=4))

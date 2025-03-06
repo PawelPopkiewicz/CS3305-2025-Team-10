@@ -33,12 +33,34 @@ def predict_times():
     Returns: The prediction for the bus route
     """
     trip_data = request.get_json()
+    print(trip_data, flush=True)
     trip = process_json(trip_data)
     if trip is None:
         raise ValueError("Invalid trip data")
+    print("predicting...")
     predicted = bus_time_inference.predict_trip(trip)
     if not predicted:
-        raise ValueError("Unable to infer prediction")
+        raise ValueError("Unable to make an prediction")
+    json_prediction = {
+            "stops": trip.display_df().to_dict("records"),
+            "delay": trip.current_delay,
+            "trip_id": trip.trip_id
+            }
+    return jsonify(json_prediction), 200
+
+
+@app.route("/predictions/test", methods=["GET"])
+@general_exception
+def test_prediction():
+    """Test prediction"""
+    trip = {'trip_id': '4497_67055', 'start_time': '17:00:00', 'start_date': '20250306', 'schedule_relationship': 'SCHEDULED', 'route_id': '4497_87351', 'direction_id': 1, 'vehicle_updates': [{'latitude': 51.7338715, 'longitude': -8.48255062, 'timestamp': 1741280802}, {'latitude': 51.7396965, 'longitude': -8.48602581, 'timestamp': 1741280919}, {'latitude': 51.7602119, 'longitude': -8.49677944, 'timestamp': 1741281071}, {'latitude': 51.7707, 'longitude': -8.49569321, 'timestamp': 1741281162}]}
+    trip = process_json(trip)
+    if trip is None:
+        raise ValueError("Invalid trip data")
+    print("predicting...")
+    predicted = bus_time_inference.predict_trip(trip)
+    if not predicted:
+        raise ValueError("Unable to make an prediction")
     json_prediction = {
             "stops": trip.display_df().to_dict("records"),
             "delay": trip.current_delay,
