@@ -10,7 +10,7 @@ from inference.bus_time_inference import BusTimesInference
 from inference.process_json import process_json
 
 app = Flask(__name__)
-bus_time_inference = BusTimesInference("bus_time_prediction_model.pth")
+bus_time_inference = BusTimesInference("bus_time_prediction_model_3.pth")
 
 
 def general_exception(func):

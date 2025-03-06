@@ -166,7 +166,7 @@ if __name__ == "__main__":
     test_data["vehicle_updates"] = test_data["vehicle_updates"][-2:]
     from .process_json import process_json
     test_trip = process_json(test_data)
-    bus_time_inference = BusTimesInference("bus_time_prediction_model_2.pth")
+    bus_time_inference = BusTimesInference("bus_time_prediction_model_3.pth")
     predicted = bus_time_inference.predict_trip(test_trip)
     json_prediction = {
             "stops": test_trip.display_df().to_dict("records"),
