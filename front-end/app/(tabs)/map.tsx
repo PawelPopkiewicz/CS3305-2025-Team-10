@@ -70,8 +70,9 @@ const Map = () => {
                         lon={stop.lon} 
                         name={stop.name} 
                         code={stop.code}
+                        direction={stop.direction}
                     />
-                ))}
+                ))} 
 
                 {/* Bus Markers */}
                 {visibleBuses.map((bus) => (
