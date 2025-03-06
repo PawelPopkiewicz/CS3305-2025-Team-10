@@ -60,9 +60,7 @@ class BusTimesInference():
             route_encoded,
             day_encoded
         ])
-        print(f"trip_features shape: {trip_features.shape}")
         trip_features = torch.tensor(trip_features, dtype=torch.float32).unsqueeze(0)
-        print(f"trip_features shape: {trip_features.shape}")
         return trip_features
 
     def get_observed_data(self, observed_df):
@@ -75,7 +73,6 @@ class BusTimesInference():
                 observed_df[['time_to_stop']])
         observed_residual_times = self.residual_time_scaler.transform(
                 observed_df[['residual_stop_time']])
-        print(f"observed_times shape: {observed_times.shape}")
 
         observed_times = torch.tensor(
                 observed_times, dtype=torch.float32).transpose(0, 1)
@@ -85,9 +82,6 @@ class BusTimesInference():
                 observed_scheduled_times, dtype=torch.float32).transpose(0, 1)
         observed_residual_times = torch.tensor(
                 observed_residual_times, dtype=torch.float32).transpose(0, 1)
-
-        for feature in [observed_times, observed_distances, observed_residual_times, observed_scheduled_times]:
-            print(f"Feature dimension: {feature.shape}")
 
         return observed_times, observed_distances, observed_scheduled_times, observed_residual_times
 
@@ -114,7 +108,6 @@ class BusTimesInference():
         observed_df = new_trip_data[~new_trip_data['residual_stop_time'].isna()]
         remaining_df = new_trip_data[new_trip_data['residual_stop_time'].isna()]
         if observed_df.empty or remaining_df.empty:
-            print("Error: No observed stops or no remaining stops to predict")
             return [None, None]
         return observed_df, remaining_df
 
@@ -132,19 +125,12 @@ class BusTimesInference():
         """
         Predict the bus trip for the next target stops
         """
-        print(trip.observed_stops)
         if not trip.inference_eligible():
             raise ValueError("Trip did not pass enough stops (3)")
-            print("trip was not eligible for prediction")
-            return False
         observed_df, remaining_df = trip.observed_df, trip.target_df
-        remaining_df = self.add_overlap(observed_df, remaining_df)
-        print(f"observed_df shape {observed_df.shape}")
         if observed_df is None or remaining_df is None:
-            print("no dataframes to work with")
-            raise ValueError("no dataframes to work with")
-            return False
-            # return None
+            raise ValueError("Failed in resolving the dataframes")
+        remaining_df = self.add_overlap(observed_df, remaining_df)
         trip_features = self.get_trip_features(pd.concat([observed_df, remaining_df]))
         observed_times, observed_distances, observed_scheduled_times, observed_residual_times = self.get_observed_data(observed_df)
         target_times, target_distances, target_scheduled_times = self.get_target_data(remaining_df)
@@ -152,37 +138,18 @@ class BusTimesInference():
             predicted_time_residuals = self.model(trip_features,
                                              observed_times, observed_distances, observed_scheduled_times, observed_residual_times,
                                              target_times, target_distances, target_scheduled_times)
-        print(f"predictions shape: {predicted_time_residuals.squeeze(0).shape}")
-        print(predicted_time_residuals)
         predicted_time_residuals = predicted_time_residuals.squeeze(0)
         predicted_time_residuals = self.remove_overlap(predicted_time_residuals)
         trip.add_predictions(predicted_time_residuals)
-        return True
-        # remaining_df = self.add_predicted_residuals_to_df(remaining_df, predicted_time_residuals)
-        # all_stops_df = self.combine_dfs(observed_df, remaining_df)
-        # return trip.display_df().to_dict(orient="records")
-        # return all_stops_df.to_dict(orient="records")
 
 
 if __name__ == "__main__":
-    # from preprocessing.json_io import load_json
-    # test_data = load_json("test_record")
-    # test_data["vehicle_updates"] = test_data["vehicle_updates"][-2:]
-    # test_data = {'trip_id': '4497_67055', 'start_time': '17:00:00', 'start_date': '20250306', 'schedule_relationship': 'SCHEDULED', 'route_id': '4497_87351', 'direction_id': 1, 'vehicle_updates': [{'latitude': 51.7338715, 'longitude': -8.48255062, 'timestamp': 1741280802}, {'latitude': 51.7396965, 'longitude': -8.48602581, 'timestamp': 1741280919}, {'latitude': 51.7602119, 'longitude': -8.49677944, 'timestamp': 1741281071}, {'latitude': 51.7707, 'longitude': -8.49569321, 'timestamp': 1741281162}]}
     from .process_json import process_json
-    # test_trip = process_json(test_data)
     bus_time_inference = BusTimesInference("bus_time_prediction_model_3.pth")
-    # predicted = bus_time_inference.predict_trip(test_trip)
-    # json_prediction = {
-    #         "stops": test_trip.display_df().to_dict("records"),
-    #         "delay": test_trip.current_delay,
-    #         "trip_id": test_trip.trip_id
-    #         }
     trip = {'trip_id': '4497_67055', 'start_time': '17:00:00', 'start_date': '20250306', 'schedule_relationship': 'SCHEDULED', 'route_id': '4497_87351', 'direction_id': 1, 'vehicle_updates': [{'latitude': 51.7338715, 'longitude': -8.48255062, 'timestamp': 1741280802}, {'latitude': 51.7396965, 'longitude': -8.48602581, 'timestamp': 1741280919}, {'latitude': 51.7602119, 'longitude': -8.49677944, 'timestamp': 1741281071}, {'latitude': 51.7707, 'longitude': -8.49569321, 'timestamp': 1741281162}]}
     trip = process_json(trip)
     if trip is None:
         raise ValueError("Invalid trip data")
-    print("predicting...")
     predicted = bus_time_inference.predict_trip(trip)
     if not predicted:
         raise ValueError("Unable to make an prediction")

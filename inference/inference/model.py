@@ -41,24 +41,19 @@ class BusTimeEncoder(nn.Module):
     def forward(self, trip_features, observed_times, observed_distances, observed_scheduled_times, observed_residual_times):
         """Forward pass"""
         # Process trip features
-        print(f"features shape: {trip_features.shape}")
         trip_embedding = self.trip_fc(trip_features)
-        print(f"trip_embedding shape: {trip_embedding.shape}")
 
         # Combine distance and time for each stop
         batch_size = observed_distances.size(0)
         seq_length = observed_distances.size(1)
         observed_features = torch.stack([observed_times, observed_distances, observed_scheduled_times, observed_residual_times], dim=2)
-        print(f"shape of observed_features [1, seq_len, 4]: {observed_features.shape}")
 
         # Process each stop
         observed_embedded = self.stop_embedding(observed_features)
-        print(f"observed_embedded shape: {observed_embedded.shape}")
         # Initialize hidden state with trip features
         h0 = trip_embedding.repeat(1, batch_size, 1)
         # h0 = trip_embedding.unsqueeze(0)
         c0 = torch.zeros_like(h0)
-        print(f"h0 shape: {h0.shape}, c0 shape: {c0.shape}")
 
         # Process the sequence
         output, (hn, cn) = self.lstm(observed_embedded, (h0, c0))
