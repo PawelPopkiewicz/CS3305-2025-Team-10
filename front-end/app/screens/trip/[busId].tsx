@@ -116,7 +116,7 @@ export default function TripScreen() {
                     <Button
                         icon={<Icon iconStyle={styles.icon} name="arrow-right" type="font-awesome" />}
                         buttonStyle={styles.button}
-                        onPress={() => router.push({ pathname: `/screens/filtered_map/${busData.route}`, params: { route: busData.route } })}
+                        onPress={() => router.push(`/screens/filtered_map/${busData.route}`)}
                     />
                 </View>
             </View>
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
         padding: 7,
         textAlign: 'center',
         fontSize: fonts.heading,
-        color: colors.textPrimary,
+        color: colors.textSwitchable,
     },
     textSecondary: {
         color: colors.textPrimary,

@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Marker } from "react-native-maps";
-import { View, Text, Image } from "react-native";
+import { View, Text, Image, StyleSheet } from "react-native";
 import { router } from "expo-router";
 
 interface BusProps {
@@ -21,7 +21,7 @@ const BusMarker: React.FC<BusProps> = ({ id, lat, lon, route, direction }) => {
             coordinate={{ latitude: lat, longitude: lon }}
             title={`Bus ${route}`}
             description="Live Bus Location"
-            onPress={() => router.push({ pathname: `/screens/trip/${id}`, params: { bus: id } })}
+            onPress={() => router.push(`/screens/trip/${id}`)}
         >
             <View style={{ alignItems: 'center' }}>
                 {/* Bus route label */}
@@ -42,7 +42,7 @@ const BusMarker: React.FC<BusProps> = ({ id, lat, lon, route, direction }) => {
 // Optimize re-renders
 export default React.memo(BusMarker);
 
-const styles = {
+const styles = StyleSheet.create({
     routeText: {
         backgroundColor: 'black',
         padding: 4,
@@ -55,4 +55,4 @@ const styles = {
         height: 25,
         resizeMode: 'contain',
     },
-};
+});
