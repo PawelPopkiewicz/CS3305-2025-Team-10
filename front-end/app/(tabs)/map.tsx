@@ -1,8 +1,8 @@
 import React, {useCallback, useState} from "react";
-import {Platform, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity} from "react-native";
+import {Platform, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, Image} from "react-native";
 import {Icon} from '@rneui/themed';
 import MapView, {Region} from "react-native-maps";
-import {router} from "expo-router";
+import {router, useLocalSearchParams} from "expo-router";
 import {shallowEqual, useSelector} from "react-redux";
 // import ClusteredMapView from "react-native-maps-super-cluster";
 import BusMarker from "@/components/BusMarker";
@@ -13,6 +13,8 @@ import {RootState} from "@/app/redux/store";
 import {DEFAULT_REGION} from "@/config/constants";
 
 const Map = () => {
+
+    const searchIcon = () => Image.resolveAssetSource(require('@/assets/images/search.png')).uri;
     const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
     const buses = useSelector((state: RootState) => state.bus.buses, shallowEqual);
     
@@ -35,14 +37,19 @@ const Map = () => {
             )
         };
     }, [stops, buses, region]);
-
+    
     const { visibleStops, visibleBuses } = getVisibleMarkers();
+    
 
     return (
         <SafeAreaView style={styles.background}>
             <TouchableOpacity style={styles.input} onPress={() => router.push("/screens/search")}>
                 <Icon iconStyle={styles.back} onPress={() => router.back()} name="chevron-left" type="font-awesome" />
                 <Text style={styles.textSecondary}>Search bus stop or route</Text>
+                <Image 
+                    style={styles.back}
+                    source={{ uri: searchIcon() }} 
+                />
             </TouchableOpacity>
 
             <MapView
@@ -94,7 +101,7 @@ const styles = StyleSheet.create({
     },
     back: {
         color: colors.textPrimary,
-        paddingRight: 10,
+        paddingRight: 15,
     },
     textSecondary: {
         color: colors.textSecondary,

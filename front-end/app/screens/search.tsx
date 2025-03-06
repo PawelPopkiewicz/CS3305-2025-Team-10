@@ -86,7 +86,7 @@ export default function Search() {
                     onPress={() => changeFilter("Route")}
                     activeOpacity={0.1}
                 >
-                    <Text style={{ color: selected === "Route" ? colors.objectSelected : colors.textSecondary }}>Route</Text>
+                    <Text style={{ color: selected === "Route" ? colors.textSwitchable : colors.textSecondary }}>Route</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -94,7 +94,7 @@ export default function Search() {
                     onPress={() => changeFilter("Stop")}
                     activeOpacity={0.1}
                 >
-                    <Text style={{ color: selected === "Stop" ? colors.objectSelected : colors.textSecondary }}>Stop</Text>
+                    <Text style={{ color: selected === "Stop" ? colors.textSwitchable : colors.textSecondary }}>Stop</Text>
                 </TouchableOpacity>
             </View>
 
@@ -102,7 +102,7 @@ export default function Search() {
             <FlatList
                 data={filteredResults}
                 keyExtractor={(item) =>
-                    selected === "Route" ? item.name : item.id.toString()
+                    selected === "Route" ? item.name : (item as Stop).id.toString()
                 }
                 renderItem={({ item }) =>
                     selected === "Route" ? <SearchButtonRoute item={item as Route} /> : <SearchButtonStop item={item as Stop} />
