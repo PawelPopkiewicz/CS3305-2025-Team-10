@@ -11,7 +11,8 @@ const SearchButtonRoute = ({ item }: { item: Route }) => {
         <View style={styles.buttonContainer}>
             <TouchableOpacity
                 style={styles.buttonContainer}
-                onPress={() => router.push({ pathname: `/screens/filtered_map/${item.name}`, params: { route: item.name } })}
+                // onPress={() => router.push({ pathname: `/screens/filtered_map/${item.name}`, params: { route: item.name } })}
+                onPress={() => router.push(`/screens/filtered_map/${item.name}`)}
                 activeOpacity={0.1}
             >
                 <View style={styles.routeContainer}>
@@ -32,7 +33,7 @@ const styles = StyleSheet.create({
     },
     textPrimary: {
         fontSize: fonts.subHeading,
-        color: colors.textPrimary,
+        color: colors.textSwitchable,
         paddingVertical: 5,
         textAlign: 'center',
     },

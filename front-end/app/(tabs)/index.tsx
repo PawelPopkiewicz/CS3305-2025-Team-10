@@ -75,6 +75,7 @@ const styles = StyleSheet.create({
         padding: 7,
         textAlign: 'left',
         fontSize: fonts.heading,
-        color: colors.textPrimary
+        color: colors.textSwitchable,
+        fontWeight: 'bold',
     }
 });

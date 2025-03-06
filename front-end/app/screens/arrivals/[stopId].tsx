@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     textPrimary: {
         textAlign: 'left',
         fontSize: fonts.heading,
-        color: colors.textPrimary
+        color: colors.textSwitchable,
     },
     textSecondary: {
         color: colors.textPrimary,
