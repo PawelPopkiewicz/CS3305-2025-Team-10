@@ -4,13 +4,13 @@ import {Icon} from '@rneui/themed';
 import MapView, {Region} from "react-native-maps";
 import {router, useLocalSearchParams} from "expo-router";
 import {shallowEqual, useSelector} from "react-redux";
-// import ClusteredMapView from "react-native-maps-super-cluster";
 import BusMarker from "@/components/BusMarker";
 import StopMarker from "@/components/StopMarker";
 import colors from "@/config/Colors";
 import fonts from "@/config/Fonts";
 import {RootState} from "@/app/redux/store";
 import {DEFAULT_REGION} from "@/config/constants";
+import ErrorData from "@/components/ErrorData";
 
 const FilteredMap = () => {
     const { param_route } = useLocalSearchParams() as { param_route: string };
@@ -19,6 +19,10 @@ const FilteredMap = () => {
     const routes = useSelector((state: RootState) => state.route.routes, shallowEqual);
     const [region, setRegion] = useState<Region>(DEFAULT_REGION);
 
+    const routeData = routes.find(route => route.name === param_route)
+    if (!routeData) {
+        return <ErrorData text={"Route not found"} />
+    }
     // Filter only visible markers
     const getVisibleMarkers = useCallback(() => {
         return {
