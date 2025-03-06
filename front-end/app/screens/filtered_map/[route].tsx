@@ -13,16 +13,17 @@ import {RootState} from "@/app/redux/store";
 import {DEFAULT_REGION} from "@/config/constants";
 
 const FilteredMap = () => {
-    const { route } = useLocalSearchParams() as { route: string };
+    const { param_route } = useLocalSearchParams() as { param_route: string };
     const stops = useSelector((state: RootState) => state.stop.stops, shallowEqual);
     const buses = useSelector((state: RootState) => state.bus.buses, shallowEqual);
-
+    const routes = useSelector((state: RootState) => state.route.routes, shallowEqual);
     const [region, setRegion] = useState<Region>(DEFAULT_REGION);
 
     // Filter only visible markers
     const getVisibleMarkers = useCallback(() => {
         return {
             visibleStops: stops.filter(stop =>
+                routeData.stop_ids.includes(stop.id) &&
                 stop.lat > region.latitude - region.latitudeDelta / 2 &&
                 stop.lat < region.latitude + region.latitudeDelta / 2 &&
                 stop.lon > region.longitude - region.longitudeDelta / 2 &&
@@ -33,7 +34,7 @@ const FilteredMap = () => {
                 bus.lat < region.latitude + region.latitudeDelta / 2 &&
                 bus.lon > region.longitude - region.longitudeDelta / 2 &&
                 bus.lon < region.longitude + region.longitudeDelta / 2 &&
-                bus.route === route
+                bus.route === param_route
             )
         };
     }, [stops, buses, region]);
