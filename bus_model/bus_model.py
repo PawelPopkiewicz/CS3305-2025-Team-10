@@ -78,23 +78,26 @@ class Bus:
             
             try:
                 uri = os.getenv("INFERENCE_URI")
-                response = requests.post(uri, json=self.inference_data_supply())
+                response = requests.post(uri + "/predictions", json=self.inference_data_supply())
                 json_data = response.json()
                 if json_data:
                     delay = json_data.get("delay", 0)   #   Delay in seconds
                     predictions = {}
-                    for stop in json_data.get("stops", {}):
-                        stop_id = stop.get("stop_id", "")
-                        time_type = stop.get("type", "")
-                        schedule_arr_time = stop.get("schedule_arrival_time", 0)
-                        arrival_time  = stop.get("arrival_time", 0)
-                        if time_type == "SCHEDULED":
-                            arrival_time = schedule_arr_time + delay
-                        predictions[stop_id] = {"arrival_time": arrival_time,
-                                                "type": time_type,
-                                                "delay": delay, 
-                                                "schedule_arrival_time": schedule_arr_time}
-                    Trip._all[trip_id].predicted_stop_visit_times = predictions
+                    all_stops = json_data.get("stops", {})
+                    if all_stops:
+                        for stop in all_stops:
+                            stop_id = stop.get("stop_id", "")
+                            time_type = stop.get("type", "")
+                            schedule_arr_time = stop.get("schedule_arrival_time", 0)
+                            arrival_time  = stop.get("arrival_time", 0)
+                            if time_type == "SCHEDULED":
+                                arrival_time = schedule_arr_time + delay
+                            predictions[stop_id] = {"arrival_time": arrival_time,
+                                                    "type": time_type,
+                                                    "delay": delay, 
+                                                    "schedule_arrival_time": schedule_arr_time}
+                        Trip._all[trip_id].predicted_stop_visit_times = predictions
+                        print(f"Added data to {trip_id}")
 
             except requests.exceptions.RequestException as e:
                 print(f"Failed to fetch inference data: {e}")
@@ -230,10 +233,7 @@ class Stop:
                         })
                     elif visit_time:    # Next trip goes through stop
                         trips = trip.get_trips_in_block(date)
-                        #print(f"{[trip.trip_id for trip in trips]}")
                         prev_trips = [t for t in sorted(trips, key=lambda t: BusStopVisit._all[t.bus_stop_times[0]].arrival_time) if BusStopVisit._all[t.bus_stop_times[0]].arrival_time < BusStopVisit._all[trip.bus_stop_times[0]].arrival_time]
-                        #print(f"Current trip: {trip.trip_id}\nPrev trips:")
-                        #[print(f"{t.trip_id} : {BusStopVisit._all[t.bus_stop_times[0]].arrival_time} | {t.service.schedule_days[date.weekday()]}") for t in prev_trips[::-1]]
                         if len(prev_trips) > 0 and prev_trips[-1].latest_bus:
                             if prev_trips[-1].predicted_stop_visit_times:
                                 stop_info_dict = prev_trips[-1].predicted_stop_visit_times.get(self.stop_id, {})
@@ -258,7 +258,7 @@ class Stop:
                                     "arrival": visit_time,
                                     #"current_trip": False, 
                                 })
-        return sorted([v for v in visits if v["arrival"] > datetime.now().timestamp()], key=lambda x: x["arrival"])
+        return sorted([v for v in visits if v["arrival"] > timestamp_to_HM(datetime.now().timestamp())], key=lambda x: x["arrival"])
 
 
 class Route:
@@ -423,7 +423,7 @@ class Service:
         elif exception_type == self.REMOVED_EXCEPTION:
             self.cancelled_exceptions.append(date)
         else:
-            raise ValueError("Invalid exception type.")
+            raise ValueError("X exception type.")
     
     def check_in_range(self, date: datetime) -> bool:
         """Checks if the given date is within the service's date range and is on the right day of week."""
