@@ -59,8 +59,7 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     heading: {
-        borderTopLeftRadius: 17,
-        borderBottomLeftRadius: 17,
+        borderRadius: 17,
         paddingLeft: 7,
         backgroundColor: colors.backgroundSecondary,
         fontSize: fonts.heading,
