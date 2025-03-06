@@ -4,7 +4,7 @@ Filters the response json data
 
 import json
 from .gtfsr import GTFSR
-from .gtfs_static_funcs import get_route_id_to_name
+# from .gtfs_static_funcs import get_route_id_to_name
 from .get_root import get_root
 
 
@@ -13,7 +13,7 @@ class JsonProcessor():
 
     def __init__(self):
         self.gtfsr = GTFSR()
-        self.route_id_to_name = get_route_id_to_name()
+        self.route_id_to_name = {}  # get_route_id_to_name()
 
     def update_route_id_to_name(self, route_id_to_name):
         """Updates the route_id_to_name mapping"""
@@ -21,6 +21,8 @@ class JsonProcessor():
 
     def filter_vehicles(self, vehicles_json):
         """filters the vehicles.json to only cork city"""
+        if len(self.route_id_to_name) == 0:
+            raise ValueError("route_id_to_name was not provided")
         entities = vehicles_json.get("entity", [])
         entity_count = len(entities)
         for i in range(len(entities)-1, -1, -1):

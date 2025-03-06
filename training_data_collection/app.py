@@ -55,7 +55,11 @@ def get_html_trips():
 @app.route("/trips", methods=["POST"])
 def update_trips():
     """Fetches the vehicles api data and updates the mongodb with it"""
-    return jsonify(vu.fetch_update_trips())
+    try:
+        fetch_update_report = vu.fetch_update_trips()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    return fetch_update_report
 
 
 @app.route("/trips", methods=["PUT"])
