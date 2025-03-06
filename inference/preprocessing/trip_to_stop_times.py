@@ -145,7 +145,7 @@ class Trip():
             target_df["type"] = "Predicted"
 
         if not remaining_df.empty:
-            remaining_df["arrival_time"] = np.nan  # Explicitly set to NaN
+            remaining_df["arrival_time"] = None  # Explicitly set to NaN
             remaining_df["type"] = "Scheduled"
 
         # Exclude empty DataFrames before concatenation

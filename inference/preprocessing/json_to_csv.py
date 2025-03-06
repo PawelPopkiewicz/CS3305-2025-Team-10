@@ -54,7 +54,7 @@ def create_csv(raw_json_filename, csv_filename, subset_trips=None):
 
 
 if __name__ == "__main__":
-    json_file = "filtered_training_data"  # input("Name of the json file(without .json): ")
+    json_file = "pretty_filtered_training_data"  # input("Name of the json file(without .json): ")
     csv_name = "test"  # input("Name of the csv file to be created: ")
     rows_subset = input("Number of rows to process out of the dataset: ")
     if rows_subset == "":
