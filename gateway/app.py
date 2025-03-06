@@ -96,13 +96,7 @@ def stop_arrivals(stop_id: str):
     try:
         response = requests.get(f"{BUS_MODEL_URI}/v1/stop/arrivals/{stop_id}")
         if response.status_code == 200:
-            data = [{
-                "id": bus["id"],
-                "route": bus["route"],
-                "headsign": bus["headsign"],
-                "arrival": datetime.datetime.fromtimestamp(bus["arrival"]).strftime('%H:%M'),
-                } for bus in response.json()]
-            return data                     # Standard response
+            return response.json()          # Standard response
         elif response.status_code == 404:
             return abort(404)               # Not found
         else:
@@ -139,13 +133,7 @@ def get_trips(bus_id: str):
     try:
         response = requests.get(f"{BUS_MODEL_URI}/v1/bus/{bus_id}")
         if response.status_code == 200:
-            data = [{
-                "id": stop["id"], 
-                "code": stop["code"], 
-                "name": stop["name"], 
-                "arrival": datetime.datetime.fromtimestamp(stop["arrival"]).strftime('%H:%M'),
-                } for stop in response.json()]
-            return data                     # Standard response
+            return response.json()          # Standard response
         elif response.status_code == 404:
             return abort(404)               # Not found
         else:
