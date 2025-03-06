@@ -70,6 +70,7 @@ const FilteredMap = () => {
                         lon={stop.lon}
                         name={stop.name}
                         code={stop.code}
+                        direction={stop.direction}
                     />
                 ))}
 
