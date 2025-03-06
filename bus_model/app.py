@@ -4,11 +4,14 @@ from gtfsr import GTFSR, StaticGTFSR, BustimesAPI
 import bus_model
 from GTFS_Static.db_funcs import get_route_id_to_name_dict
 from dotenv import load_dotenv
+import os
+import requests
 
 import subprocess
 subprocess.Popen(["service", "cron", "start"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 load_dotenv()
+training_uri = os.getenv("TRAINING_URI")
 
 app = Flask(__name__)
 load_before = time.time()
@@ -160,6 +163,10 @@ def update_realtime():
             except KeyError as e:
                 print(f"KeyError: {e}")
                 continue
+    try:
+        requests.put(training_uri + "/trips", data=data)
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to send data to training container: {e}")
     return "Success"
 
 @app.route("/v1/update_static", methods=["GET"])
@@ -190,6 +197,7 @@ def update_bus():
                 withdrawn=bus.get("withdrawn", ""),
                 special_features=bus.get("special_features", "")
             )
+        # Make PUT req to AI
         return "Success"
     return "Failed"
 
