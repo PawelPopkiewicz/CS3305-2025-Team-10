@@ -3,5 +3,6 @@ export type Stop = {
     name: string;
     code: string;
     lat: number;
-    lon: number
+    lon: number;
+    direction: number;
 }
