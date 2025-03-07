@@ -1,6 +1,8 @@
 """
 Provides a class which holds the loaded model
 """
+import warnings
+warnings.filterwarnings("ignore")
 
 import torch
 import pandas as pd
@@ -141,6 +143,7 @@ class BusTimesInference():
         predicted_time_residuals = predicted_time_residuals.squeeze(0)
         predicted_time_residuals = self.remove_overlap(predicted_time_residuals)
         trip.add_predictions(predicted_time_residuals)
+        return True
 
 
 if __name__ == "__main__":
