@@ -123,6 +123,13 @@ class BusTimesInference():
         """Remove the overlapped predicted stops"""
         return predicted_time_residuals[self.OVERLAP:]
 
+    def rescale_predictions(self, predicted_time_residuals):
+        """Convert predicted times back to scale"""
+        # Convert predictions back to original scale
+        predicted_time_residuals_np = predicted_time_residuals.numpy().reshape(-1, 1)
+        predicted_time_residuals_orig = self.residual_time_scaler.inverse_transform(predicted_time_residuals_np).flatten()
+        return predicted_time_residuals_orig
+
     def predict_trip(self, trip):
         """
         Predict the bus trip for the next target stops
@@ -140,7 +147,8 @@ class BusTimesInference():
             predicted_time_residuals = self.model(trip_features,
                                              observed_times, observed_distances, observed_scheduled_times, observed_residual_times,
                                              target_times, target_distances, target_scheduled_times)
-        predicted_time_residuals = predicted_time_residuals.squeeze(0)
+        predicted_time_residuals = self.rescale_predictions(predicted_time_residuals)
+        # predicted_time_residuals = predicted_time_residuals# .squeeze(0)
         predicted_time_residuals = self.remove_overlap(predicted_time_residuals)
         trip.add_predictions(predicted_time_residuals)
         return True
@@ -149,13 +157,11 @@ class BusTimesInference():
 if __name__ == "__main__":
     from .process_json import process_json
     bus_time_inference = BusTimesInference("bus_time_prediction_model_3.pth")
-    trip = {'trip_id': '4497_67055', 'start_time': '17:00:00', 'start_date': '20250306', 'schedule_relationship': 'SCHEDULED', 'route_id': '4497_87351', 'direction_id': 1, 'vehicle_updates': [{'latitude': 51.7338715, 'longitude': -8.48255062, 'timestamp': 1741280802}, {'latitude': 51.7396965, 'longitude': -8.48602581, 'timestamp': 1741280919}, {'latitude': 51.7602119, 'longitude': -8.49677944, 'timestamp': 1741281071}, {'latitude': 51.7707, 'longitude': -8.49569321, 'timestamp': 1741281162}]}
+    trip = {'trip_id': '4497_66378', 'start_time': '10:50:00', 'start_date': '20250307', 'schedule_relationship': 'SCHEDULED', 'route_id': '4497_87351', 'direction_id': 0, 'vehicle_updates': [{'latitude': 51.8992348, 'longitude': -8.46604156, 'timestamp': 1741342091}, {'latitude': 51.8992348, 'longitude': -8.46604156, 'timestamp': 1741342182}, {'latitude': 51.8992348, 'longitude': -8.46604156, 'timestamp': 1741342242}, {'latitude': 51.8992348, 'longitude': -8.46604156, 'timestamp': 1741342304}, {'latitude': 51.8992348, 'longitude': -8.46604156, 'timestamp': 1741342364}, {'latitude': 51.8992348, 'longitude': -8.46604156, 'timestamp': 1741342425}, {'latitude': 51.8992348, 'longitude': -8.46604156, 'timestamp': 1741342546}, {'latitude': 51.8992348, 'longitude': -8.46604156, 'timestamp': 1741342780}]}
     trip = process_json(trip)
     if trip is None:
         raise ValueError("Invalid trip data")
-    predicted = bus_time_inference.predict_trip(trip)
-    if not predicted:
-        raise ValueError("Unable to make an prediction")
+    bus_time_inference.predict_trip(trip)
     json_prediction = {
             "stops": trip.display_df().to_dict("records"),
             "delay": trip.current_delay,

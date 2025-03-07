@@ -55,11 +55,10 @@ class Trip():
         self.current_delay = stop_time - start_time
         self.configured = True
 
-
     def inference_eligible(self):
         """Returns true if the trip is ready to be inferred upon"""
+        logging.info(f"number of stops: {len(self.observed_stops)}")
         return self.enough_inference_stops_filter()
-
 
     def enough_training_stops_filter(self):
         """Return true if there are enough stops with arrival times"""
@@ -157,16 +156,6 @@ class Trip():
         display_df = display_df.drop(columns=["id", "route_name", "day", "time", "distance_to_stop", "time_to_stop", "residual_stop_time"])
 
         return display_df
-        # observed_df = self.observed_df
-        # observed_df["arrival_time"] = observed_df["scheduled_arrival_time"] + observed_df["residual_stop_time"]
-        # observed_df["arrival_time"] += self.current_delay + self.start_time
-        # target_df = self.target_df
-        # target_df["arrival_time"] = target_df["scheduled_arrival_time"] + target_df["residual_stop_time"]
-        # target_df["arrival_time"] += self.current_delay + self.start_time
-        # remaining_df = self.remaining_df
-        # remaining_df["arrival_time"] = np.nan
-        # display_df = pd.concat([self.observed_df, self.target_df, self.remaining_df], ignore_index=True)
-        # return display_df
 
     def add_predictions(self, predictions):
         """Add the predictions(vector) to the target_stops"""

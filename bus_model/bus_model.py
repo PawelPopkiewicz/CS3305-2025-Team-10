@@ -89,9 +89,9 @@ class Bus:
                         for stop in all_stops:
                             stop_id = stop.get("stop_id", "")
                             time_type = stop.get("type", "")
-                            schedule_arr_time = stop.get("schedule_arrival_time", 0)
+                            schedule_arr_time = stop.get("scheduled_arrival_time", 0)
                             arrival_time  = stop.get("arrival_time", 0)
-                            if time_type == "scheduled":
+                            if time_type == "Scheduled":
                                 arrival_time = schedule_arr_time + delay
                             predictions[stop_id] = {"arrival_time": arrival_time,
                                                     "type": time_type,
