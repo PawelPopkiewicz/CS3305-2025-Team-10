@@ -57,7 +57,6 @@ class Trip():
 
     def inference_eligible(self):
         """Returns true if the trip is ready to be inferred upon"""
-        logging.info(f"number of stops: {len(self.observed_stops)}")
         return self.enough_inference_stops_filter()
 
     def enough_training_stops_filter(self):

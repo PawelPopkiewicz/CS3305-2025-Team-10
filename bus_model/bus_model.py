@@ -5,6 +5,9 @@ import requests
 from collections import defaultdict
 from datetime import datetime, timedelta
 from time import time
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 def timestamp_to_HM(timestamp: int) -> str:
     """Converts a Unix timestamp to HH:MM format."""
