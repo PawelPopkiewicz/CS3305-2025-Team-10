@@ -1,13 +1,15 @@
-from flask import Flask, g, abort, jsonify, request
-import time, datetime
-from gtfsr import GTFSR, StaticGTFSR, BustimesAPI
 import bus_model
-from GTFS_Static.db_funcs import get_route_id_to_name_dict
-from dotenv import load_dotenv
+import datetime
 import os
 import requests
-
 import subprocess
+import time
+
+from flask import Flask, g, abort, jsonify, request
+from gtfsr import GTFSR, StaticGTFSR, BustimesAPI
+from GTFS_Static.db_funcs import get_route_id_to_name_dict
+from dotenv import load_dotenv
+
 subprocess.Popen(["service", "cron", "start"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 load_dotenv()
