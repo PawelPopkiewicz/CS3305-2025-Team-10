@@ -33,7 +33,7 @@ def predict_times():
     Returns: The prediction for the bus route
     """
     trip_data = request.get_json()
-    print(trip_data, flush=True)
+    #print(trip_data, flush=True)
     trip = process_json(trip_data)
     if trip is None:
         raise ValueError("Invalid trip data")
