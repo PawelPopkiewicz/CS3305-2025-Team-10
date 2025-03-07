@@ -209,7 +209,7 @@ class Stop:
                 if trip.predicted_stop_visit_times:
                     stop_info_dict = trip.predicted_stop_visit_times.get(self.stop_id, {})
                     if stop_info_dict and trip.latest_bus:
-                        if stop_info_dict.get("type", "SCHEDULED") == "SCHEDULED":
+                        if stop_info_dict.get("type", "Scheduled") == "Scheduled":
                             schedule_time = trip.get_bus_stop_schedule_arrival_time(self.stop_id)
                             arr_time = timestamp_to_HM(schedule_time + stop_info_dict.get("delay", 0))
                             schedule_time = timestamp_to_HM(schedule_time)
@@ -338,7 +338,8 @@ class Trip:
         for visit_ids in self.bus_stop_times:
             visit = BusStopVisit._all[visit_ids]
             if visit.stop.stop_id == stop_id:
-                return int(datetime.now().timestamp()) + int(visit.arrival_time.total_seconds())
+                today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+                return int(today.timestamp()) + int(visit.arrival_time.total_seconds())
         raise KeyError("Stop not found in trip.")
         return 0
 
