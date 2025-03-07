@@ -33,14 +33,10 @@ def predict_times():
     Returns: The prediction for the bus route
     """
     trip_data = request.get_json()
-    #print(trip_data, flush=True)
     trip = process_json(trip_data)
     if trip is None:
         raise ValueError("Invalid trip data")
-    print("predicting...")
-    predicted = bus_time_inference.predict_trip(trip)
-    if not predicted:
-        raise ValueError("Unable to make an prediction")
+    bus_time_inference.predict_trip(trip)
     json_prediction = {
             "stops": trip.display_df().to_dict("records"),
             "delay": trip.current_delay,
