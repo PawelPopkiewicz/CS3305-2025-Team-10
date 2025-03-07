@@ -1,10 +1,10 @@
-import requests
-import os
 import bus_model
 import datetime
-import time
-import subprocess
 import math
+import os
+import requests
+import subprocess
+import time
 
 from dotenv import load_dotenv
 from GTFS_Static.db_connection import create_connection, close_connection
