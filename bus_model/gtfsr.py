@@ -16,11 +16,12 @@ def manage_read_only_connection(func):
     def wrapper(*args, **kwargs):
         conn = create_connection()
         cursor = conn.cursor()
+        data = None
         try:
             data = func(cursor, *args, **kwargs)
         finally:
             close_connection(conn)
-            return data or None
+            return data
     return wrapper
 
 class BustimesAPI:
