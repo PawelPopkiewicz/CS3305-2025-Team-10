@@ -98,7 +98,7 @@ class Bus:
                                                     "delay": delay, 
                                                     "schedule_arrival_time": schedule_arr_time}
                         Trip._all[trip_id].predicted_stop_visit_times = predictions
-                        print(f"Added data to {trip_id} {predictions}")
+                        #print(f"Added data to {trip_id} {predictions}")
                 else:
                     ... #print(f"Error: {json_data.get('error')}", end=" ")
 
