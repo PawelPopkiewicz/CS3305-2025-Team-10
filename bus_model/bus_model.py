@@ -1,9 +1,10 @@
-from datetime import datetime, timedelta
-from time import time
-from collections import defaultdict
 import gtfsr
 import os
 import requests
+
+from collections import defaultdict
+from datetime import datetime, timedelta
+from time import time
 
 def timestamp_to_HM(timestamp: int) -> str:
     """Converts a Unix timestamp to HH:MM format."""
