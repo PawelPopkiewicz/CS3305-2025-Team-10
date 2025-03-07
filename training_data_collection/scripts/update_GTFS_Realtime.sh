@@ -1,4 +1,4 @@
-#!/bin/bash/
+#!/bin/bash
 
 PROJECT_ROOT=$(pwd | sed 's|training_data_collection/.*|training_data_collection/|' )
 
