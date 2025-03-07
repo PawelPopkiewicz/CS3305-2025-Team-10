@@ -132,7 +132,7 @@ def bus(bus_id: str):
                                 "id": stop.stop_id,
                                 "code": stop.stop_code,
                                 "name": stop.stop_name,
-                                "arrival": bus_model.timestamp_to_HM(timestamp + delay_t) + " DELAY, next",
+                                "arrival": bus_model.timestamp_to_HM(timestamp + delay_t)# + " DELAY, next",
                                 #"current_trip": False,
                                 }
                         all_stops.append(data) 
@@ -146,7 +146,7 @@ def bus(bus_id: str):
                             "id": stop.stop_id,
                             "code": stop.stop_code,
                             "name": stop.stop_name,
-                            "arrival": bus_model.timestamp_to_HM(timestamp) + " SCHEDULE",
+                            "arrival": bus_model.timestamp_to_HM(timestamp)# + " SCHEDULE",
                             #"current_trip": True,
                             }
                     all_stops.append(data)
@@ -159,7 +159,7 @@ def bus(bus_id: str):
                                 "id": stop.stop_id,
                                 "code": stop.stop_code,
                                 "name": stop.stop_name,
-                                "arrival": bus_model.timestamp_to_HM(timestamp) + " SCHEDULE, next",
+                                "arrival": bus_model.timestamp_to_HM(timestamp)# + " SCHEDULE, next",
                                 #"current_trip": False,
                                 }
                         all_stops.append(data) 
