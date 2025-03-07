@@ -97,31 +97,70 @@ def bus(bus_id: str):
     if bus_obj:
         trip = bus_model.Trip._all.get(bus_obj.latest_trip, None)
         if trip:
-            stop_timestamps = trip.get_schedule_times()
-            day = trip.get_start_time()
-            for stop_id, timestamp in stop_timestamps.get(day.strftime("%Y-%m-%d"), {}).items():
-                stop = bus_model.Stop._all.get(stop_id, None)
-                data = {
-                        "id": stop.stop_id,
-                        "code": stop.stop_code,
-                        "name": stop.stop_name,
-                        "arrival": timestamp,
-                        #"current_trip": True,
-                        }
-                all_stops.append(data)
-            other_trips = trip.get_trips_in_block(day, subsequent_only=True)[:1]    # Next n trips
-            for t in other_trips:
-                stop_timestamps = t.get_schedule_times()
+            if trip.predicted_stop_visit_times:
+                stop_info_dicts = trip.predicted_stop_visit_times
+                print("Predictions", trip.trip_id, stop_info_dicts)
+                delay_t = None
+                for stop_id, stop_dict in stop_info_dicts.items():
+                    delay_t = stop_dict.get("delay", 0)
+                    stop = bus_model.Stop._all.get(stop_id, None)
+                    if stop_dict.get("type", "Scheduled") == "Scheduled":
+                        schedule_time = trip.get_bus_stop_schedule_arrival_time(stop_id)
+                        arr_time = bus_model.timestamp_to_HM(schedule_time + stop_dict.get("delay", 0))
+                        schedule_time = bus_model.timestamp_to_HM(schedule_time)
+                        delay = stop_dict.get("delay", 0)
+                        arrival_time = f"{arr_time} ({schedule_time} + {delay})"
+                    else:
+                        arrival_time = bus_model.timestamp_to_HM(stop_dict.get("arrival_time", 0))
+                    data = {
+                            "id": stop.stop_id,
+                            "code": stop.stop_code,
+                            "name": stop.stop_name,
+                            "arrival": arrival_time + " PREDICTION",
+                            #"current_trip": True,
+                            }
+                    all_stops.append(data)
+                day = trip.get_start_time()
+                other_trips = trip.get_trips_in_block(day, subsequent_only=True)[:1]    # Next n trips
+                for t in other_trips:
+                    stop_timestamps = t.get_schedule_times()
+                    for stop_id, timestamp in stop_timestamps.get(day.strftime("%Y-%m-%d"), {}).items():
+                        stop = bus_model.Stop._all.get(stop_id, None)
+                        data = {
+                                "id": stop.stop_id,
+                                "code": stop.stop_code,
+                                "name": stop.stop_name,
+                                "arrival": bus_model.timestamp_to_HM(timestamp + delay_t) + " DELAY, next",
+                                #"current_trip": False,
+                                }
+                        all_stops.append(data) 
+            else:   # Missing predictions
+                print("No predictions", trip.trip_id)
+                stop_timestamps = trip.get_schedule_times()
+                day = trip.get_start_time()
                 for stop_id, timestamp in stop_timestamps.get(day.strftime("%Y-%m-%d"), {}).items():
                     stop = bus_model.Stop._all.get(stop_id, None)
                     data = {
                             "id": stop.stop_id,
                             "code": stop.stop_code,
                             "name": stop.stop_name,
-                            "arrival": timestamp,
-                            #"current_trip": False,
+                            "arrival": bus_model.timestamp_to_HM(timestamp) + " SCHEDULE",
+                            #"current_trip": True,
                             }
-                    all_stops.append(data) 
+                    all_stops.append(data)
+                other_trips = trip.get_trips_in_block(day, subsequent_only=True)[:1]    # Next n trips
+                for t in other_trips:
+                    stop_timestamps = t.get_schedule_times()
+                    for stop_id, timestamp in stop_timestamps.get(day.strftime("%Y-%m-%d"), {}).items():
+                        stop = bus_model.Stop._all.get(stop_id, None)
+                        data = {
+                                "id": stop.stop_id,
+                                "code": stop.stop_code,
+                                "name": stop.stop_name,
+                                "arrival": bus_model.timestamp_to_HM(timestamp) + " SCHEDULE, next",
+                                #"current_trip": False,
+                                }
+                        all_stops.append(data) 
 
             return all_stops
     return abort(404)

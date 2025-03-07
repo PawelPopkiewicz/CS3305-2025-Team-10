@@ -80,7 +80,7 @@ class Bus:
                 uri = os.getenv("INFERENCE_URI")
                 response = requests.post(uri + "/predictions", json=self.inference_data_supply())
                 json_data = response.json()
-                if json_data:
+                if not json_data.get("error", None):
                     delay = json_data.get("delay", 0)   #   Delay in seconds
                     predictions = {}
                     all_stops = json_data.get("stops", {})
@@ -90,14 +90,16 @@ class Bus:
                             time_type = stop.get("type", "")
                             schedule_arr_time = stop.get("schedule_arrival_time", 0)
                             arrival_time  = stop.get("arrival_time", 0)
-                            if time_type == "SCHEDULED":
+                            if time_type == "scheduled":
                                 arrival_time = schedule_arr_time + delay
                             predictions[stop_id] = {"arrival_time": arrival_time,
                                                     "type": time_type,
                                                     "delay": delay, 
                                                     "schedule_arrival_time": schedule_arr_time}
                         Trip._all[trip_id].predicted_stop_visit_times = predictions
-                        print(f"Added data to {trip_id}")
+                        print(f"Added data to {trip_id} {predictions}")
+                else:
+                    ... #print(f"Error: {json_data.get('error')}", end=" ")
 
             except requests.exceptions.RequestException as e:
                 print(f"Failed to fetch inference data: {e}")
@@ -160,7 +162,7 @@ class Bus:
                             "direction" : bus.rotation,
                             "lat" : bus.lat,
                             "lon" : bus.lon,
-                            "timestamp" : bus.latest_timestamp
+                            "timestamp" : timestamp_to_HM(bus.latest_timestamp)
                             }
                     buses.append(data)
         print(f"Active buses/total buses: {len(buses)}/{len(cls._all)}")
@@ -208,9 +210,10 @@ class Stop:
                     stop_info_dict = trip.predicted_stop_visit_times.get(self.stop_id, {})
                     if stop_info_dict and trip.latest_bus:
                         if stop_info_dict.get("type", "SCHEDULED") == "SCHEDULED":
-                            arr_time = timestamp_to_HM(stop_info_dict.get("schedule_arrival_time", 0) + stop_info_dict.get("delay", 0))
-                            schedule_time = timestamp_to_HM(stop_info_dict.get("schedule_arrival_time", 0))
-                            delay = timestamp_to_HM(stop_info_dict.get("delay", 0))
+                            schedule_time = trip.get_bus_stop_schedule_arrival_time(self.stop_id)
+                            arr_time = timestamp_to_HM(schedule_time + stop_info_dict.get("delay", 0))
+                            schedule_time = timestamp_to_HM(schedule_time)
+                            delay = stop_info_dict.get("delay", 0)
                             arrival_time =  f"{arr_time} ({schedule_time} + {delay})"
                         else:
                             arrival_time = f"{timestamp_to_HM(stop_info_dict.get('arrival_time', 0))}"
@@ -228,7 +231,7 @@ class Stop:
                             "id": trip.latest_bus,
                             "route": trip.route.route_short_name,
                             "headsign": trip.trip_headsign,
-                            "arrival": visit_time,
+                            "arrival": timestamp_to_HM(visit_time),
                             #"current_trip": True,
                         })
                     elif visit_time:    # Next trip goes through stop
@@ -239,7 +242,7 @@ class Stop:
                                 stop_info_dict = prev_trips[-1].predicted_stop_visit_times.get(self.stop_id, {})
                                 if stop_info_dict:
                                     delay = stop_info_dict.get("delay", 0)
-                                    schedule_time = stop_info_dict.get("schedule_arrival_time", 0)
+                                    schedule_time = prev_trips[-1].get_bus_stop_schedule_arrival_time(self.stop_id)
                                     arr_time = timestamp_to_HM(schedule_time + delay)
                                     schedule_time = timestamp_to_HM(schedule_time)   
                                     arrival_time = f"{arr_time} ({schedule_time}+{delay})"
@@ -255,7 +258,7 @@ class Stop:
                                     "id": prev_trips[-1].latest_bus,
                                     "route": trip.route.route_short_name,
                                     "headsign": trip.trip_headsign,
-                                    "arrival": visit_time,
+                                    "arrival": timestamp_to_HM(visit_time),
                                     #"current_trip": False, 
                                 })
         return sorted([v for v in visits if v["arrival"] > timestamp_to_HM(datetime.now().timestamp())], key=lambda x: x["arrival"])
@@ -330,6 +333,15 @@ class Trip:
             "block_id": self.block_id
         }
     
+    def get_bus_stop_schedule_arrival_time(self, stop_id: str) -> int:
+        """Returns the BusStopVisit object for the given stop ID."""
+        for visit_ids in self.bus_stop_times:
+            visit = BusStopVisit._all[visit_ids]
+            if visit.stop.stop_id == stop_id:
+                return int(datetime.now().timestamp()) + int(visit.arrival_time.total_seconds())
+        raise KeyError("Stop not found in trip.")
+        return 0
+
     def sort_bus_stop_times(self):
         self.bus_stop_times = sorted(self.bus_stop_times, key=lambda x: BusStopVisit._all[x].stop_sequence)
     
