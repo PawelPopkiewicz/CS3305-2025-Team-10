@@ -183,6 +183,8 @@ def update_realtime():
     """Takes the fetched data and populates the model."""
     print("Triggering realtime update")
     data = GTFSR.fetch_vehicles()
+    # This line breaks, because GTFSR.fetch_vehicles() can return None
+    data = GTFSR.fetch_vehicles()
     entities = data.get("entity", [])
     if entities:
         for entity in entities:
