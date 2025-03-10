@@ -121,6 +121,12 @@ The model also needs to be loaded into memory to be used, because this takes few
 
 ### Training data collection
 
+The purpose of training data collection is to collect the data from GTFS Realtime, filter it and store it in a non-wasteful format. At the start this container has queried the API itself, because the bus model was not implemented yet fully. However it would be wasteful to query it twice, so now the bus model container simply passes the received JSON files to the training data collection container. 
+
+The data is filtered to only contain city Cork buses, this was done to only contain buses with similar routes. In the future new bus routes which are longer distance will be tested to see how they function with our model.  
+
+Afterwards the data is processed to a different format. Instead of a lot of individual updates I create one trip document with an array of vehicle updates, to reduce the size of the stored data.
+
 ### Front end (maybe divided into more chapters)
 
 ### Flow (Events triggering changes in the architecture)
