@@ -1,10 +1,10 @@
-import requests
-import os
 import bus_model
 import datetime
-import time
-import subprocess
 import math
+import os
+import requests
+import subprocess
+import time
 
 from dotenv import load_dotenv
 from GTFS_Static.db_connection import create_connection, close_connection
@@ -16,11 +16,12 @@ def manage_read_only_connection(func):
     def wrapper(*args, **kwargs):
         conn = create_connection()
         cursor = conn.cursor()
+        data = None
         try:
             data = func(cursor, *args, **kwargs)
         finally:
             close_connection(conn)
-            return data or None
+            return data
     return wrapper
 
 class BustimesAPI:

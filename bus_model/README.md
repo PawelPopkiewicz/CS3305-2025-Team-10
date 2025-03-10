@@ -1,14 +1,22 @@
-# Downloading Additional Files
-The static files supplied by TFI are too large for GitHub, so you may download the files yourself from the [TFI website](https://www.transportforireland.ie/transitData/PT_Data.html).
+# Bus Model Container
 
-# Running a Development Server
-Assuming you have the full repository open, use the following command to run the development server.
-```py
-python -m flask --app back-end/app.py run --debug
-```
-If you only have the `back-end` subdirectory open, you can run the following command instead.
-```py
-python -m flask run --debug
-```
-# Running a Production Server
-This is handled by the Docker container.
+> Manages the transfer and processing of TFI data, and fulfills requests from the front-end.
+
+## Front-end API Endpoints
+
+|Endpoint|Method|Note|
+|--|--|--|
+|`/v1/stops`|`GET`|Returns details about every stop|
+|`/v1/stop/arrivals/<stop_id>`|`GET`|Returns the buses that will arrive at a given stop in the near future|
+|`/v1/bus`|`GET`|Returns details about every live bus|
+|`/v1/bus/<bus_id>`|`GET`|Returns a list of times the bus will stop at|
+|`/v1/route`|`GET`|Retuns all routes and their associated bus stops|
+
+## Internal Use API Endpoints
+
+|Endpoint|Method|Note|
+|--|--|--|
+|`/v1/route_id_to_name`|`GET`|Returns a dict of route ids and their names|
+|`/v1/update_realtime`|`GET`|Fetches new live data and updates the bus model. Also sends to `training` container|
+|`/v1/update_static`|`GET`|Fetches the latest static files and updates the database and bus model|
+|`/v1/update_bus`|`GET`|Fetches the latest bus details and updates the bus model|

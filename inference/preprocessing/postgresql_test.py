@@ -2,7 +2,7 @@
 Primitive test functions to see if postgresql works
 """
 
-from db_connection import create_connection, close_connection
+from .db_connection import create_connection, close_connection
 
 
 def test_connection():

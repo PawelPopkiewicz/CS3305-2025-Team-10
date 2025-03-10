@@ -10,6 +10,7 @@ class TableIndexer():
     STOP_TIMES_TRIP_INDEX = """idx_stop_times_trip_id ON stop_times(trip_id)"""
     SHAPE_ID_INDEX = """idx_shape_id ON shapes(shape_id)"""
     TRIPS_TRIP_DIRECTION_INDEX = """idx_trip_route_directon ON trips(trip_id, direction)"""
+    STOP_TIMES_STOP_ID_INDEX = """idx_stop_times_stop_id ON stop_times(stop_id)"""
 
     def __init__(self, conn):
         self.conn = conn
@@ -30,3 +31,12 @@ class TableIndexer():
         self.create_index(self.STOP_TIMES_TRIP_INDEX)
         self.create_index(self.SHAPE_ID_INDEX)
         self.create_index(self.TRIPS_TRIP_DIRECTION_INDEX)
+        self.create_index(self.STOP_TIMES_STOP_ID_INDEX)
+
+
+if __name__ == "__main__":
+    from .db_connection import create_connection, close_connection
+    test_conn = create_connection()
+    ti = TableIndexer(test_conn)
+    # Add index post creation here to not rebuild the db
+    close_connection(test_conn)
