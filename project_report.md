@@ -29,7 +29,7 @@ Later we will showcase different parts of our system and go through the containe
 
 - Bus Model
   - Maintains the current state of the bus data
-  - Responsible for providing the up to date data to the gateway
+  - Responsible for providing the up-to-date data to the gateway
   - Currently fetches the real-time and static data itself
   - Fetches and stores the static data in PostgreSQL
 - Gateway
@@ -37,7 +37,7 @@ Later we will showcase different parts of our system and go through the containe
   - Answers the requests from the client
   - Serves as a proxy to decouple the front facing responsibility from the bus model
 - Training Data Collection
-  - Receives the json real-time data from Bus model after it is fetched
+  - Receives the JSON real-time data from Bus model after it is fetched
   - Processes the data and stores it in mongodb container
   - Provides API to return the contents of the mongodb, mainly to Inference container
 - Inference
@@ -56,13 +56,15 @@ In the future, we would like to introduce Redis to cache the bus data, use async
 
 ## Bad Data
 
-One of the main issues we had to deal with was inconsistent data. The inconsistency comes from the static data mainly. Of course real-time can report a bus which is off-route, not scheduled, etc., but that is to be expected and can be filtered out. However static data is provided as a zip file in csv formatted text files online. This is okay as we can simply download the file, unzip it, process the csv data, turn it into a relational tables and use it. However the main issue is that id fields which are used as primary keys CHANGE. And they change frequently and without a notification. This means a route id for the route "220" might change overnight with no reason to, trip id changes as well, but at a different rate, etc.
+One of the main issues we had to deal with was inconsistent data. The inconsistency comes from the static data mainly. Of course real-time can report a bus which is off-route, not scheduled, etc., but that is to be expected and can be filtered out. However static data is provided as a ZIP file in CSV formatted text files online. This is okay as we can simply download the file, unzip it, process the CSV data, turn it into a relational tables and use it. However the main issue is that id fields which are used as primary keys CHANGE. And they change frequently and without a notification. This means a route id for the route "220" might change overnight with no reason to, trip id changes as well, but at a different rate, etc.
 
 The way to combat this was to build the PostgreSQL periodically, let's say every day to prevent out of data ids. This means the creation of the tables needed to be optimized for speed, because there are millions of rows to process, filter out, index, etc. This was eventually achieved by constructing optimized filter queries, using pandas and constructing indexes for fast lookups.
 
 A second issue now is that the training data can become stale, since there is a lot of preprocessing that needs to be done to get from a set of coordinates and timestamps associated with a trip id to a set of stops and time they were passed at, we need the PostgreSQL database for preprocessing as well, however the data in the "up-to-date" database might not be compatible with the collected data week ago. We are still working to resolve this, we will start storing snapshots of the database each time it is updated and also convert the raw json data into csv datasets because the datasets are actually static data agnostic, meaning they do not rely on static data and thus do not go stale.
 
 ### Bus model
+
+bap
 
 ### Inference
 
