@@ -1,11 +1,12 @@
+import logging
 import gtfsr
 import os
 import requests
 
 from collections import defaultdict
 from datetime import datetime, timedelta
+from math import ceil
 from time import time
-import logging
 
 logging.basicConfig(level=logging.INFO)
 
@@ -249,7 +250,7 @@ class Stop:
                                     schedule_time = prev_trips[-1].get_bus_stop_schedule_arrival_time(self.stop_id)
                                     arr_time = timestamp_to_HM(schedule_time + delay)
                                     schedule_time = timestamp_to_HM(schedule_time)   
-                                    arrival_time = f"{arr_time} ({schedule_time}+{delay})"
+                                    arrival_time = f"{arr_time} ({schedule_time}+{ceil(delay//60)})"
                                     visits.append({
                                         "id": prev_trips[-1].latest_bus,
                                         "route": prev_trips[-1].route.route_short_name,

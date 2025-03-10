@@ -9,6 +9,7 @@ from flask import Flask, g, abort, jsonify, request
 from gtfsr import GTFSR, StaticGTFSR, BustimesAPI
 from GTFS_Static.db_funcs import get_route_id_to_name_dict
 from dotenv import load_dotenv
+from math import ceil
 
 subprocess.Popen(["service", "cron", "start"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -111,7 +112,7 @@ def bus(bus_id: str):
                         arr_time = bus_model.timestamp_to_HM(schedule_time + stop_dict.get("delay", 0))
                         schedule_time = bus_model.timestamp_to_HM(schedule_time)
                         delay = stop_dict.get("delay", 0)
-                        arrival_time = f"{arr_time} ({schedule_time} + {delay})"
+                        arrival_time = f"{arr_time} ({schedule_time} + {ceil(delay//60)})"
                     else:
                         arrival_time = bus_model.timestamp_to_HM(stop_dict.get("arrival_time", 0))
                     data = {
