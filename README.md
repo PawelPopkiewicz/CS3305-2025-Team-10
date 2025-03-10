@@ -1,10 +1,10 @@
-# CS3305-2025-Team-10
+# CS3305-2025-Team-10: Busig
 
 Team Software Project for the CS3305 module
 
-## How to deploy containers locally
+## How to Deploy Containers Locally
 >
-> build, run containers using docker compose and create the database
+> Build, run containers using docker compose and create the database
 
 ### Getting the containers
 
@@ -23,12 +23,11 @@ git pull origin main
 - The containers rely on a file called `.env` existing in the same directory as `docker-compose.yml`
 - This file contains the api key for GTFS api (The real time bus data)
 - The file cannot be put on github because it would be compromised, the method of distribution is just manual now, so you need to create this file in your project root
-- The file was provided
 
 ### Running docker containers
 
 - Docker needs to be installed, run `docker -v` to check it is running on your system
-- First the containers need to be build and then run (building takes ~1 min, but running them is < 5s)
+- First the containers need to be build and then run (building takes 16 min, but running them is 5 mins for the first time, then <2 min after, depends on device specs)
 
 ```bash
 docker compose build
@@ -42,8 +41,7 @@ docker compose up
 
 ### Building the database
 
-- Currently the containers are running, but most of them would not work because the postgresql is not yet created
-- The code to create the database is located inside the `bus_model` container, all you should need to do is run a bash script in the container
+- The first time the containers are ran, the database will be built. This usually takes 5+ mins, but only will happen on the first run. If the database needs to be updated in the future, you can run the script by itself as below.
 
 ```bash
 docker exec -t bus_model bash scripts/update_GTFS_Static.sh
@@ -59,11 +57,10 @@ docker exec -t bus_model bash scripts/update_GTFS_Static.sh
 - The postgres still is located on your system in a custom folder defined in `docker-compose.yml` and it persists!
 - This means that if you build the db once, it stays on your system even after you run `docker compose down`
 - Therefore you need to run this code just once and then only again if you want it updated, the same is true for mongodb
-- Since there is a lot of data, the creation, filtering, indexing, etc. takes ~2 mins to complete, depends on the system, etc.
+- Since there is a lot of data, the creation, filtering, indexing, etc. takes ~5 mins to complete, depends on the system, etc.
 
 ### Running code inside the cotnainers
 
-- Once the db is setup, the rest of the code should be functioning
 - You can run the code inside the containers, but first you need to access them using this command:
 
 ```bash
