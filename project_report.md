@@ -203,7 +203,9 @@ One of our main goals on the front-end was to ensure the user has a smooth and i
 
 We ensured the first-time user can get to the key info they want within 2 clicks, to make the app accessible and avoid any potential confusion.
 
-Additionally, to lower mobile data usage, we optimized the API usage to only need 3 calls for setup and as low as 1 per minute when keeping the app open, while still showing accurate data.
+Typical flow: start on the empty home page -> navigate to the map (see the locations of buses and stops) -> click a bus/stop (see the selected schedule)
+
+Additionally, to lower mobile data usage, we optimized the API usage to only need 3 calls for setup and as low as 1 per minute when keeping the app open, while still showing accurate data. When dealing with the schedule data, we only use calls for the strictly necessary information, saving resources and making the app more responsive. We also utilized useFocusEffect to deal with the schedule screens calling APIs when off-screen.
 
 Despite initial ideas of adding an account based system, we decided against it, as we weighted the user benefit of being able to share their data between their devices against the risk of frustrating the first-time user that just wants to check the timetable.
 
@@ -221,7 +223,7 @@ The above-mentioned techniques let us stay agile even as the project increases i
 
 ##### Live Interactive Map
 
-Upon launching the app, users are greeted with a smooth and responsive map interface. This map displays all nearby buses and bus stops using live data, which is refreshed every minute. For added clarity, each bus and stop includes direction indicators to help users understand the route flow at a glance.
+Upon launching the app, users navigate to a smooth and responsive map interface. This map displays all nearby buses and bus stops using live data, which is efficiently refreshed every minute. For added clarity, each bus and stop includes direction indicators to help users understand the route flow at a glance.
 
 ##### Real-Time Bus Stop Information
 
@@ -237,11 +239,11 @@ The app features a dedicated search page where users can look up specific bus st
 
 ##### Favorites System
 
-To accommodate frequent users, the app allows saving favorite bus routes or stops. By tapping the star icon on any stop or bus, users can add it to their Home Screen for faster access on future trips.
+To accommodate frequent users, the app allows saving favorite bus routes or stops. By tapping the star icon on any stop or bus, users can add it to their Home Screen for faster access on future trips. The data is persistent between sessions due to the usage of AsyncStorage, that saves the data on the local device and rehydrates it on startup.
 
 ##### Map Filtering
 
-Users can filter the displayed data on the map to show only selected bus routes or stops. This reduces clutter and allows for a more personalized and focused map view based on the user’s needs.
+Users can filter the displayed data on the map to show only the selected bus routes or stops. This reduces clutter and allows for a more personalized and focused map view based on the user’s needs. Using this feature also further improves performance, as there are fewer markers to perform calculations on.
 
 ### Flow (Events triggering changes in the architecture)
 
