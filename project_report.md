@@ -217,6 +217,32 @@ By utilising Redux and global state management we ensure our components can acce
 
 The above-mentioned techniques let us stay agile even as the project increases in scope.
 
+#### Features
+
+##### Live Interactive Map
+
+Upon launching the app, users are greeted with a smooth and responsive map interface. This map displays all nearby buses and bus stops using live data, which is refreshed every minute. For added clarity, each bus and stop includes direction indicators to help users understand the route flow at a glance.
+
+##### Real-Time Bus Stop Information
+
+When users tap on a bus stop on the map, detailed information is displayed, including upcoming bus arrival times, route numbers, and directions. This feature is designed to give quick answers to common commuter questions like “When is my bus arriving?”
+
+##### Live Bus Tracking
+
+Users already on a bus can select it directly from the map to view live details such as the current location and estimated time to upcoming stops. This is especially useful for planning when to get off the bus.
+
+##### Search Functionality
+
+The app features a dedicated search page where users can look up specific bus stops or bus routes. Results are dynamically filtered based on user input, streamlining navigation within the app.
+
+##### Favorites System
+
+To accommodate frequent users, the app allows saving favorite bus routes or stops. By tapping the star icon on any stop or bus, users can add it to their Home Screen for faster access on future trips.
+
+##### Map Filtering
+
+Users can filter the displayed data on the map to show only selected bus routes or stops. This reduces clutter and allows for a more personalized and focused map view based on the user’s needs.
+
 ### Flow (Events triggering changes in the architecture)
 
 The flow of the program can be nicely separated into different events which trigger functions in the containers. These events are usually new information, but also requests from the client side. Here is a quick break down:
