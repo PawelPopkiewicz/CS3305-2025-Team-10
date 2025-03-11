@@ -3,14 +3,14 @@
 
 Busig is an app which aims to provide a seamless, smooth and simple way to access bus time data, such as the location of buses, stops, schedules and mainly predictions. It was developed mainly because me (Radek Zajicek) and Liam Cotter commute every workday and we found the existing solutions not satisfactory.
 
-The main issues include cluttered, out of date, "laggy" interface which would be extra frustrating to use for example while holding a cup of coffee and waiting for a bus stop, or when running late to a bus, etc. This frustration guided our front end development and design, instead of for example providing a path finding algorithm to find the route from place A to place B, we already figured google maps does a good enough job and most commuters already know perfectly which bus they would like to take and where. So instead we focused on the daily commuters who already are accustomed to the city. This led to minimal and simple GUI, focus on performance of the map and small number of pages.
+The main issues include cluttered, out of date, "laggy" interface which would be extra frustrating to use for example while holding a cup of coffee and waiting for a bus stop, or when running late to a bus, etc. This frustration guided our front end development and design, instead of for example providing a path finding algorithm to find the route from place A to place B, we already figured Google Maps does a good enough job and most commuters already know perfectly which bus they would like to take and where. So instead we focused on the daily commuters who already are accustomed to the city. This led to minimal and simple GUI, focus on performance of the map and small number of pages.
 
-Another issues where the absurdly inaccurate predictions given to users. I am sure many people know what we are talking about, but for the lucky among our readers, here is a typical experience: You want to go to work in the morning from a satellite town which should have regular buses every 20 minutes into the city centre, however that is never true and there are many mornings when there is a one hour gap or more. Secondly when you look at the app the most you can hope for is that it will show you that a bus exists and will eventually arrive, if you are lucky anyway, sometimes they do not exist, sometimes they do exist but they start skipping stops, and mainly, they arrive way later than predicted, we are talking "Arrival in 5 minutes" but actually you wait for 30 minutes. This problem with unpredictable buses is driving the daily commuters away from mass transport, as many studies have shown. Overall the reasons to look for better predictions and provide them to the public are very relevant and needed.
+Another issues where the absurdly inaccurate predictions given to users. I am sure many people know what we are talking about, but for the lucky among our readers, here is a typical experience: You want to go to work in the morning from a satellite town which should have regular buses every 20 minutes into the city centre, however that is never true and there are many mornings when there is a one-hour gap or more. Secondly when you look at the app the most you can hope for is that it will show you that a bus exists and will eventually arrive, if you are lucky anyway, sometimes they do not exist, sometimes they do exist but they start skipping stops, and mainly, they arrive way later than predicted, we are talking "Arrival in 5 minutes" but actually you wait for 30 minutes. This problem with unpredictable buses is driving the daily commuters away from mass transport, as many studies have shown. Overall the reasons to look for better predictions and provide them to the public are very relevant and needed.
 
 This led us to mainly focus on our data and predictions we could make with it. Instead of focusing on routing algorithms, payments of tickets through the app, etc. our predictions our front stage and center. We needed to dedicate different components just for these predictions and train our own Encoder Decoder AI model. In the end we have managed to get our predictions working and provide them to the user in a nice simple GUI.
 
 # Glossary
-> The terms used need definitions beyond the colloqial meaning
+> The terms used need definitions beyond the colloquial meaning
 
 |Term|Definition|
 |--|--|
@@ -23,7 +23,7 @@ This led us to mainly focus on our data and predictions we could make with it. I
 
 # Overall Architecture
 
-Our architecture is following the latest trend of micro-services, because we realized our program is easy to modularize. This means we would put our code in Docker containers which would then talk to each other through http restful API implemented in flask. In the future when our app would be available for the wider public we could use Kubernetes to organize and deploy a cluster of the containers, ensuring scalability, elasticity and robustness. Especially if we would choose a cloud solution such a Google Kubernetes Engine. For now however all of the containers are orchestrated using the docker compose functionality. Implemented in the docker-compose.yaml file. This takes care of setting up a shared network among the containers, building them, adding variables to their environments, persisting data using docker volumes which maps a part of the local file space to the space in the container and more. Instead of cloud our app currently runs on a home ubuntu server which is enough for development needs.
+Our architecture is following the latest trend of microservices, because we realized our program is easy to modularize. This means we would put our code in Docker containers which would then talk to each other through http restful API implemented in flask. In the future when our app would be available for the wider public we could use Kubernetes to organize and deploy a cluster of the containers, ensuring scalability, elasticity and robustness. Especially if we would choose a cloud solution such a Google Kubernetes Engine. For now however all of the containers are orchestrated using the docker compose functionality. Implemented in the docker-compose.yaml file. This takes care of setting up a shared network among the containers, building them, adding variables to their environments, persisting data using docker volumes which maps a part of the local file space to the space in the container and more. Instead of cloud our app currently runs on a home ubuntu server which is enough for development needs.
 
 Later we will showcase different parts of our system and go through the containers one by one, however to give a sense of the overall architecture, I will list them here first:
 
@@ -96,7 +96,7 @@ Our third and final source of external data is crowdsourced bus data provided th
 
 #### A Pythonic GTFS Representation
 
-With an emalgamation of serveral data sources, I need a logical way of processing the data in a quick manner. The live data did not lend itself well to a relational table format, so I opted for a series of Python classes which would be able to store the data while the server runs and perform various operations with ease. I would be able to create attributes based off of the data sources and then create methods to turn this data into a usable format. For example, generating timetables from the given schedules would be difficult to do solely using a database query, but I can easily do this in Python, while taking into account the latest prediction data as well. These data processing tasks are well suited to Python and vastly reduced the development time. The static data is fetched from the PostgreSQL database on the server startup, usually taking 50-100s to create all of the necessary class instances. The single complex SQL query required was for calculating the orientation of the bus stops and buses themselves.
+With an amalgamation of several data sources, I need a logical way of processing the data in a quick manner. The live data did not lend itself well to a relational table format, so I opted for a series of Python classes which would be able to store the data while the server runs and perform various operations with ease. I would be able to create attributes based off of the data sources and then create methods to turn this data into a usable format. For example, generating timetables from the given schedules would be difficult to do solely using a database query, but I can easily do this in Python, while taking into account the latest prediction data as well. These data processing tasks are well suited to Python and vastly reduced the development time. The static data is fetched from the PostgreSQL database on the server startup, usually taking 50-100s to create all of the necessary class instances. The single complex SQL query required was for calculating the orientation of the bus stops and buses themselves.
 
 Both buses and bus stops share the same basic code to calculate their orientation. The location (as latitude and longitude) and a relevant shape_id (ID of a shape that the bus stop / bus is on) is provided. The nearest set of coordinates (on the given shape) to the provided point is returned, along with the closest point which is >5m away from the first point. By maintaining a 5m minimum, it reduces the chance of the orientation being wildly off due to bad data. The shape data also provides `shape_dist_travelled`, which tells us how far into the shape the given point is. This is used to ensure that we do not return an orientation that is facing 180° off. This uses a single complex SQL query due to the indexing provided by the database, but not Python, as we utilise a join (thus, a Cartesian product) within the query.
 
@@ -165,7 +165,25 @@ The data is filtered to only contain city Cork buses, this was done to only cont
 
 Afterwards the data is processed to a different format. Instead of a lot of individual updates I create one trip document with an array of vehicle updates, to reduce the size of the stored data.
 
-### Front end (maybe divided into more chapters)
+### Front end
+
+#### User Experience
+One of our main goals on the front-end was to ensure the user has a smooth and intuitive experience when navigating the lightweight app. Hence, we decided on the screen layout that centers around the map - the centerpiece of the application, that Alex ensured is readable and works smoothly - unlike the maps of many of our alternatives. Wherever possible, we tried to use familiar user flows, to improve the intuitiveness even further.
+
+We ensured the first-time user can get to the key info they want within 2 clicks, to make the app accessible and avoid any potential confusion.
+
+Additionally, to lower mobile data usage, we optimized the API usage to only need 3 calls for setup and as low as 1 per minute when keeping the app open, while still showing accurate data.
+
+Despite initial ideas of adding an account based system, we decided against it, as we weighted the user benefit of being able to share their data between their devices against the risk of frustrating the first-time user that just wants to check the timetable.
+
+#### Modularity and reusability
+A key aspect the front-end team decided to use React Native is how easy it is to achieve modularity - the key to a scalable and maintainable app. It also ensured the vast majority of our code is reusable between Android, IOS and web browsers.
+
+We wanted to ensure that as many parts of the app were reusable - hence modular components that are used throughout multiple screens. Additionally, the programmatic and centralized implementation of the app theme allows for quick iterations of design, as the changes are reflected throughout the entire map.
+
+By utilising Redux and global state management we ensure our components can access the necessary data regardless of their position in the app - avoiding excessive param passing, which can cause major issues when refactoring in React.
+
+The above-mentioned techniques let us stay agile even as the project increases in scope.
 
 ### Flow (Events triggering changes in the architecture)
 
@@ -248,7 +266,7 @@ I have developed the inference container. First of all by preprocessing the coll
 
 After designing the queries needed I still needed to develop the code which would use those queries in order to process the data into something the model would use. This was not so simple because of course you need to know the model architecture to pre-process the data for it, but you need to know which data you are working with to design the model. So these two design phases happened in tandem, so often I would reiterate on the model architecture and change the data accordingly, then I would find a nicer representation of the data and change the model, etc. Eventually I have developed a trip manager class which converts the training and in the future extended it to preprocess the data for inference as well. 
 
-The model itself was developed in google colab. Firstly I have decided to use Encoder Decoder after reading research papers, then used the library pytorch which handles most of the code for me, all I needed to do was make the existing model architecture fit with my specific data I wanted the model to predict. When eventually the code was compiling I still needed to actually train the model which involves a lot of iterations and adjusting hyper parameters. This was the case for me as well, I have adjusted the epochs, number of trips the model tried to predict, introduced randomness into the dataset to help with generalization and resolved the issue of the first stop prediction with the overlap as I mentioned before. Eventually I have gotten good results on the test dataset.
+The model itself was developed in Google Colab. Firstly I have decided to use Encoder Decoder after reading research papers, then used the library pytorch which handles most of the code for me, all I needed to do was make the existing model architecture fit with my specific data I wanted the model to predict. When eventually the code was compiling I still needed to actually train the model which involves a lot of iterations and adjusting hyper parameters. This was the case for me as well, I have adjusted the epochs, number of trips the model tried to predict, introduced randomness into the dataset to help with generalization and resolved the issue of the first stop prediction with the overlap as I mentioned before. Eventually I have gotten good results on the test dataset.
 
 Finally I have deployed the model in the inference container and provided the API routes to access this model. This involved creating a wrapper class around the model which handled the inference, loading the model and data manipulation. 
 
@@ -258,4 +276,24 @@ I have also created the architecture diagram and played a big role in designing 
 
 ###  Pawel
 
-###  Alex
+Analyzed pain points of users of similar products to ensure positive and accessible UX.
+
+Designed and implemented a maintainable frontend architecture using React, ensuring seamless integration with the backend and enabling efficient data flow across the application.
+
+Took full ownership for architecture related complex parts of the frontend - ranging from advanced data integration to performance optimization.
+
+Developed a custom React hook and set up Redux to fetch, manage, and display dynamic data (buses, stops, timetables, routes) reliably from the backend.
+
+Researched and set up reverse proxies to connect to backend during development.
+
+Standardized TypeScript types to maintain consistency with evolving backend documentation and reduce runtime errors.
+
+Optimized API calls and integrated AsyncStorage persistent storage, resulting in a convenient user experience and a smoother user interface.
+
+Implemented efficient filtering and routing mechanisms to handle large datasets while ensuring the app remained responsive under frequent updates.
+
+Authored the frontend section of the project report, clearly outlining architectural decisions, implementation challenges, and performance improvements.
+
+Contributed to the overall project presentation, ensuring that the frontend design and functionality were effectively communicated.
+
+### Alex
