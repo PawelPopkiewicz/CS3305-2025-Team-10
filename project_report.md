@@ -108,6 +108,14 @@ The Pythonic GTFS model is used by the Flask server to efficiently fulfil reques
 
 The population of the Pythonic bus model is handled by `gtfsr.py` which allows us to abstract and group functionality for more readable code. Handling the TFI static data requires database access, so I created a decorator function which would handle the opening and closing of the database connection, while also providing the wrapped function with the cursor object. Many fields in the PostgreSQL database act as foreign keys referencing other tables, so we must take this into account in the Pythonic bus model too. The order to load the various tables from the database is strict as there are many attributes of the Python classes that rely on pre-existing objects. For example, if we store both a `trip_id` and the corresponding instance of the `Trip` class, we must make sure the instance exists before attempting to assign the attribute. Despite this, there are a still a few Python class attributes that are not populated until all tables are processed, such as the rotation of bus stops which rely on the `Shape`, `Trip` and `Stop` classes.
 
+### Gateway
+
+The gateway was introduced in our architecture to decouple the bus model Flask server from communicating outside of the containers, while also providing sufficient modularity to allow us to add more features in the future that will not use the bus model. For example, an account system or collection of telemetry data could be handled here without modifiying the bus model container, helping keep the cohesion high. The gateway acts as a proxy of sorts which doesn't allow external connections to call internal routes in the bus model container, improving the security of the back-end.
+
+The gateway container solely consists of a Flask server that mirrors five routes that the client requires to operate. These call the corresponding routes in the bus model container through HTTP requests and handle any 404 or 500 status code errors that may pop up. Initially, this Flask server also served dummy data to the front-end when the bus model and inference containers were not fully functional.
+
+A port is exposed to outside of the containers to allow for the client to make requests to this container. The responses (from the bus model) are returned to the client without alteration.
+
 ### Inference
 
 Inference is the container which takes care of the AI predictions. This means the inference itself, in other words using the already trained model to predict new times. But also it handles preprocessing the raw json data into the csv files, which is quite a complex task. You might ask where does this model come from? Well it is not really represented in our architecture, because it was prototyped and trained in google colab.
@@ -276,7 +284,7 @@ Learned about and created the Docker containers for our system. This included cr
 
 Inside the docker containers I have also helped setup the Flask APIs, this means setting the dependencies and running the server using Gunicorn. I had to also manage the networking between the containers, which involved setting up a network which they share and exposing the ports needed. Finally I had to set up port mapping on my home route in order to expose the services to the WAN.
 
-Installed Ubuntu server on my old laptop, set up the networking on that laptop to provide static IP and also implemented basic security with firewall and ssh. I then ran ad managed the server for the duration of the training data collection, sometimes debugging and troubleshooting it.
+Installed Ubuntu server on my old laptop, set up the networking on that laptop to provide static IP and also implemented basic security with firewall and ssh. I then ran and managed the server for the duration of the training data collection, sometimes debugging and troubleshooting it.
 
 I have written the code to collect the training data, this involves connecting to the API endpoint, deciding on which routes to collect, filtering the data accordingly, designing the structure of the mongodb collection to store the collected data efficiently and writing the code to convert the raw data to the more storage efficient form.
 
@@ -299,6 +307,18 @@ Finally I have deployed the model in the inference container and provided the AP
 I have also created the architecture diagram and played a big role in designing the architecture because I was in charge of the containerization. And as everyone else I have worked on the presentation, helped with the design of the one page report and I wrote most of the project report, except for the containers and contributions which I have not worked on personally.
 
 ### Liam
+
+I primarily managed the bus model container, which initially only consisted of the Pythonic bus model representation and the Flask server, but latest involved other data processing tasks. Initially, I fetched and parsed the static (CSV) data myself, which fed directly into the Pythonic bus model. I expanded the bus model to include more than just the fields in the CSV files such as "joins" between the  as it was necessary to make the code more readable and quicker.
+
+When the responsibility of the PostgreSQL database fell under the bus model container, I modified Radek's implementation and moved the data source of the Pythonic bus model to use the database. This also required me to modify the tables in the database to include some previously excluded fields found in the CSV files. I added a Docker Volume with a flag file to help indicate a complete database as well.
+
+After we made a slight adjustment to the overall architecture of the back-end, I took responsiblity of ensuring that the training-data-collection and inference containers both had access to the static and live data by forwarding relevent data on each update. I also started fetching the bus vehicle data which is used in the Pythonic bus model.
+
+I created a cronjob to fetch the live data minutely within the Dockerfile of the bus model container, so only the cron process must start to get it running.
+
+I collect and store the required information that the prediction model needs and pass the data to the inference container on each bus location update. I handle the returned data in the Pythonic bus model.
+
+I maintained the bus model Flask routes and made sure that the gateway container's Flask routes correctly called them and had appropriate error checking in place.
 
 ###  Pawel
 
