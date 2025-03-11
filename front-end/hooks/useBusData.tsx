@@ -84,7 +84,7 @@ export const useBusData = () => {
 
         // Only set up the interval if it doesn't exist yet
         if (!intervalRef.current) {
-            intervalRef.current = setInterval(fetchBusPositions, 180000);
+            intervalRef.current = setInterval(fetchBusPositions, 60000);
         }
 
         // Cleanup function
