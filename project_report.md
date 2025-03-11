@@ -12,7 +12,7 @@ This led us to mainly focus on our data and predictions we could make with it. I
 
 ## Glossary
 
-> The terms used need definitions beyond the colloqial meaning
+> The terms used need definitions beyond the colloquial meaning
 
 |Term|Definition|
 |--|--|
