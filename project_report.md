@@ -62,9 +62,45 @@ The way to combat this was to build the PostgreSQL periodically, let's say every
 
 A second issue now is that the training data can become stale, since there is a lot of preprocessing that needs to be done to get from a set of coordinates and timestamps associated with a trip id to a set of stops and time they were passed at, we need the PostgreSQL database for preprocessing as well, however the data in the "up-to-date" database might not be compatible with the collected data week ago. We are still working to resolve this, we will start storing snapshots of the database each time it is updated and also convert the raw json data into csv datasets because the datasets are actually static data agnostic, meaning they do not rely on static data and thus do not go stale.
 
-### Bus model
+### Bus Model
 
-bap
+The Bus model container runs a Flask server which primarily manages the transfer of data and responding to requests from the front-end.
+
+#### Data Sources
+
+Transport For Ireland (TFI), provide static data files for several transport operators in the country. The data is provided in a ZIP file consisting of 9 CSV files. The files are listed below:
+
+|File Name|Contents|Approx Size (rows)|
+|--|--|--|
+|agency.txt|Information for all operators|7|
+|feed_info.txt|Data Feed Metadata|1|
+|calendar.txt|Specifies on what days a trip runs|170|
+|calendar_dates.txt|Exceptions to calendar.txt|380|
+|routes.txt|Specifies details about routes|440|
+|trips.txt|Specifies details about trips, including the route it is on|216K|
+|stops.txt|Specifies details about each stop|10500|
+|stop_times.txt|Specifies the time for each trip arriving at each stop|6.3M|
+|shapes.txt|Specifies the coordinates of each trip's physical route|6.3M|
+
+The data is formatted to comply with GTFS, the General Transit Feed Specification, a standardised format for supplying public transport data amongst many transport authorities around the world. Fortunately this means that the format is well documented. The relation between the nine files can be handily presented in a relational table format, presented below.
+
+![https://www.researchgate.net/figure/Relations-among-different-text-files-of-a-GTFS-feed_fig1_319605381](images/relation_GTFS_diagram.png)
+
+As PostgreSQL utilises a relational database schema, this matched up well with the static GTFS data, allowing us to create tables very similar to the headers of each CSV file. The database creation and population uses a combination of bash and Python scripts, more of which is explained in the [Static Update](#static-update) section.
+
+Live data is sourced from `https://api.nationaltransport.ie/gtfsr/v2/vehicles`, provided by TFI, and fetched minutely with a cronjob. Due to the nature of Docker images, we can only create cronjobs when building the images, but we cannot run the `cron service` process until the container starts. We have opted to start the process in the background from the Python script as to avoid the creation of another container just for cronjobs. An ideal future solution to this issue is to create the cronjobs outside of all of the Docker containers and have them be triggered on the local machine. This may cause installation issues as the project would have external dependancies now.
+
+The live data primarily serves to provide the location of buses and the corresponding timestamp. They also include other metadata such as a trip ID and the status of the schedule (cancelled, scheduled or added).
+
+Our third and final source of external data is crowdsourced bus data provided through an API at `https://bustimes.org/api/vehicles/`. The data uses a common (but slightly modified) ID to the TFI live data, allowing us to relate this data to our other sources of data. This API provides information such as number plates, vehicle model, fuel source, bus style (double decker vs coach, etc) and special features. With this data, we may collect extra information which would allow us to estimate maximum bus capacity or provide images of the buses. This data is not currently presented in the front-end app, but can easily be integrated to any information screen.
+
+#### A Pythonic GTFS Representation
+
+With an emalgamation of serveral data sources, I need a logical way of processing the data in a quick manner. The live data did not lend itself well to a relational table format, so I opted for a series of Python classes which would be able to store the data while the server runs and perform various operations with ease. I would be able to create attributes based off of the data sources and then create methods to turn this data into a usable format. For example, generating timetables from the given schedules would be difficult to do solely using a database query, but I can easily do this in Python, while taking into account the latest prediction data as well. These data processing tasks are well suited to Python and vastly reduced the development time. The static data is fetched from the PostgreSQL database on the server startup, usually taking 50-100s to create all of the necessary class instances. The single complex SQL query required was for calculating the orientation of the bus stops and buses themselves.
+
+Both buses and bus stops share the same basic code to calculate their orientation. The location (as latitude and longitude) and a relevant shape_id (ID of a shape that the bus stop / bus is on) is provided. The nearest set of coordinates (on the given shape) to the provided point is returned, along with the closest point which is >5m away from the first point. By maintaining a 5m minimum, it reduces the chance of the orientation being wildly off due to bad data. The shape data also provides `shape_dist_travelled`, which tells us how far into the shape the given point is. This is used to ensure that we do not return an orientation that is facing 180° off. This uses a single complex SQL query due to the indexing provided by the database, but not Python, as we utilise a join (thus, a Cartesian product) within the query.
+
+The Pythonic GTFS model is used by the Flask server to efficiently fulfil requests by both the front-end and the other containers
 
 ### Inference
 
@@ -135,10 +171,10 @@ Afterwards the data is processed to a different format. Instead of a lot of indi
 
 The flow of the program can be nicely separated into different events which trigger functions in the containers. These events are usually new information, but also requests from the client side. Here is a quick break down:
 
-|Event|Flow triggered|Duration|
+|Event|Flow triggered|Frequency|
 |--|--|--|
 |Real-time update|bus model fetches data, which is then stored by training data collection. If there is a new update, inference is asked to update its prediction|1 min|
-|Static update|bus model fetches the latest static data and rebuilds the PostgreSQL, it also sends the new route id to name dictionary to inference|~1day|
+|Static update|bus model fetches the latest static data and rebuilds the PostgreSQL, it also sends the new route id to name dictionary to inference|~1 day|
 |Client update|Client queries gateway for updated bus data, it then fetches this info from bus model|~1 min|
 |Client request|Client requests more detailed info, queries gateway which then queries the bus model|Unscripted|
 
