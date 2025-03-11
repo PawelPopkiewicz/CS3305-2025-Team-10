@@ -133,13 +133,90 @@ Afterwards the data is processed to a different format. Instead of a lot of indi
 
 ### Flow (Events triggering changes in the architecture)
 
+The flow of the program can be nicely separated into different events which trigger functions in the containers. These events are usually new information, but also requests from the client side. Here is a quick break down:
+
+|Event|Flow triggered|Duration|
+|--|--|--|
+|Real-time update|bus model fetches data, which is then stored by training data collection. If there is a new update, inference is asked to update its prediction|1 min|
+|Static update|bus model fetches the latest static data and rebuilds the PostgreSQL, it also sends the new route id to name dictionary to inference|~1day|
+|Client update|Client queries gateway for updated bus data, it then fetches this info from bus model|~1 min|
+|Client request|Client requests more detailed info, queries gateway which then queries the bus model|Unscripted|
+
+During development we have used this prototype of a diagram to assist us:
+
+--->>> Insert the architecture drawing 
+
+I have found that thinking about our architecture in this way is helpful to conceptualize the architecture and connect components together. Also when extending our functionality you should ask yourself which flow does this fit in and if it does not fit into any of them, then it is probably not needed. 
+
+#### Real-time update
+
+In further detail, the real-time update is triggered by a cronjob which start running automatically on running the bus model container every minute. At first the data is fetched from the endpoint: `https://api.nationaltransport.ie/gtfsr/v2/vehicles`. What is helpful is that this endpoint is standardized over different transport providers, which makes our code further expendable to new locations. 
+
+Then the responsibility of the bus model container after receiving this information is to send it to the training data collection container, which processes it as described above. Furthermore the bus model keeps track of the current live buses and they should have the most up to date predictions for them, so they are ready to go when the client requests them. So if new information is received, new predictions need to be made. Therefore inference is contacted and its predictions are stored in the bus model. 
+
+#### Static update
+
+As mentioned in the bad data section, the static data is highly unstable and needs to be updated regularly. The scripts to do so are located in the bus model container, since it is responsible for providing the up to date information. The scripts download the zip file containing the static data from `https://www.transportforireland.ie/transitData/Data/GTFS_Realtime.zip`, then unzipped into a directory using a bash script, which afterwards call the python script to create tables, populate them with the data from the unzipped files and filter them to only contain the data we care about. 
+
+Since the PostgreSQL database is centralized, not many other actions need to be made in this flow, except for one. `route_id_to_name`is often used to filter out the trips we care about, because it contains only the route ids of routes we choose to track. It is stored in PostgreSQL as a table with two attributes, the route id and the name of the route. However an issue arises when a container stores this mapping of route ids on startup, because the route ids might change while it is running and then the stored data becomes stale. To prevent simply fetching the data periodically, the bus model pushes it to the containers that need it on the event of the static data update. Currently it only services the inference container. This probably made you think about publisher subscriber architecture and it is the same principle, however we did not go full out on the publisher subscriber architecture for example using Redis, because we deemed it a bit of an overkill. 
+
 ## Summary
+
+In this report we have shown that the architecture of our system is modular, separated into Docker containers for the many benefits that it brings. These benefits are collaboration, abstraction, reusability, scalability and elasticity if we deploy our containers in a cluster. Afterwards we have went through the individual containers and explained their respective functionality, focusing on justifying the choices made about the design, explaining where future improvements could be made and explaining the function in high level abstractions. 
+
+Furthermore we have shown how these containers connect to each other in the flow section of the report. In our view the flow ties everything together and it is a great perspective on our architecture which improves understanding and helps us and potential contributors stay on the right track when it comes to implementing features. The reader should now have a good understanding of the different components, what they do and how they help achieve the overall goal of providing real-time information about buses. The reader should also be aware of the potential drawbacks in our design, how they could be addressed and hopefully also learned from our observations during development. 
+
+Overall our architecture provides up to date information on buses which it fetches from GTFS. We store the data fetched in order to provide new training data for our AI model. This model is then used to infer the arrival times of the buses which are currently on the roads, focusing on reliability of our predictions and understanding the limitations of our model. All of this real-time state of the buses is managed by the bus model container, which offers extensive API endpoints to fetch the latest information. These endpoints are mainly accessed by our gateway container which acts as a sort of proxy to sit in between the client requests and the bus model. This helps with decoupling and for example introducing security in the future. All of this data is then displayed by the front end code, which aims to provide a fast, smooth, simple experience to its users. Integrating a map significantly improved the user experience.
+
+Finally our goal of providing a simple, smooth experience of looking up credible information on real-time bus data was achieved, however there are still many areas we aim to improve in the near future. 
 
 ## Lessons learned
 
+The architecture of our system is modularized in containers. This has helped us collaborate between each other, because all was needed to do was define APIs well between the containers. Afterwards we could work on our own containers and collaborate on the things that matter such as overall architecture, satisfying the use cases, etc. while abstracting the implementation details. This had a surprising effect on our collaboration as well, because our understanding of individual containers we have not worked on was not in depth, we were more critical of each others work and everyone else served as a sort of product manager, checking that the development is useful for the use cases mainly. This helped us focus on our goals and not stray too far into implementation rabbit holes and details. It was also interesting see how important mutual respect was as well during development, because otherwise this criticality of others work would hinder collaboration. 
+
+Defining the API endpoints is a crucial step during development of modularized architecture, so it should be done as soon as possible to prevent one developer waiting on the definition of an API to continue his work. Another reason to do so is to write dummy containers which would be used for testing, which is something we would greatly benefit from, especially when it comes to the development of the front-end code, because often front end developers where waiting on the back end to be implemented to test out their features. 
+
+Another important takeaway is to keep your code on main a functional version of your program that other developers can use as a jumping off point to develop their code further. This lends itself into developing in small incremental changes instead of massive features all at once. We found ourselves all too often merging development branches while leaving the main behind because the code on main was simply outdated and the massive features the branches were used for were too big to be considered "done" to be merged into main, because the are always somewhat unfinished. So instead of doing this we would dedicate the branches to smaller, manageable features which can be implemented, tested and then pushed to main. Instead of basically abusing branches to just do our own thing the whole time and merging the branches if someone needed our updates. 
+
+On the topic of merging code to main, we now really appreciate CI/CD pipelines, which would make our life much much more easier and less stressful. If we had more time we would definitely focus on setting up the pipelines as soon as possible. This would also allow us to push code straight to our home server which Radek has setup, but because during most of the development cycle the main was either too outdated to work with the front end in its current state or somewhat broken, we ended not using our server nearly at all. 
+
+The CI/CD pipelines would also involve a lot of tests. I do not need to stress how important are tests during development and the lack of automated testing was really a burden on all of us, the main issue was that we had so much code to write that test were simply an afterthought. I am not sure if so pressed for time tests are still something that needs to be automated, because we are not super familiar with testing frameworks, so it would take some time to set it up and put everyone on board. However it is one of our priorities now to have a decent test coverage of our code, since the MVP is functional, so we can focus on cementing the current architecture in place and make it more stable. If we knew we had more time, our focus would definitely shift towards testing more. 
+
+Although big design up front is something seen as a bit outdated, I think our team would still benefit from spending a little bit more time in the initial design phase and mapping out a clear step by step plan on how to achieve what we have wanted. Although we have individually managed the tasks we needed to do individually, it is equally if not more important to manage to time plan as a group. So in the future we would definitely focus more on planning out our weeks and holding ourselves accountable to meet the team deadlines. 
+
+Communication among team members is also very important, mainly explaining the reasoning behind your choices to the rest of the team, without focusing too much on the technical detail. This improves mutual understanding and nurtures the collaborative environment. 
+
 ## Contributions
 
+As discussed before, the collaboration between team members was nicely separated because we have worked on separate containers when it comes to the back end. The front end was of course more coupled, so the workflows between Alex and Pawel overlap.
+
 ### Radek
+
+Learned about and created the Docker containers for our system. This included creating the Dockerfiles for each of the containers, orchestrating the deployment using the docker compose yaml file and using docker hub to transfer the images to my home server. Furthermore I have given a quick tutorial on how to use docker, how to deploy it on your own machine and how to run code inside it for testing. 
+
+Inside the docker containers I have also helped setup the Flask APIs, this means setting the dependencies and running the server using Gunicorn. I had to also manage the networking between the containers, which involved setting up a network which they share and exposing the ports needed. Finally I had to set up port mapping on my home route in order to expose the services to the WAN. 
+
+Installed Ubuntu server on my old laptop, set up the networking on that laptop to provide static IP and also implemented basic security with firewall and ssh. I then ran ad managed the server for the duration of the training data collection, sometimes debugging and troubleshooting it. 
+
+I have written the code to collect the training data, this involves connecting to the API endpoint, deciding on which routes to collect, filtering the data accordingly, designing the structure of the mongodb collection to store the collected data efficiently and writing the code to convert the raw data to the more storage efficient form.
+
+Setup the mongodb container with authentication and managing the connection to that database with pymongo. Wrote insert queries to insert the converted collected data into the collection. Also wrote some basic queries to check the state of the database which help to monitor its health. 
+
+This training data collection container also has a RESTful API which allows it to communicate with other containers, usually for the purpose of providing the collected data.
+
+In order to filter the data out I also needed to implement the static data database, which at first I have done with SQLite but later migrated all of that code to PostgreSQL. This means designing the database schema to store static data such as routes, trips, stops, etc., setting up the dependencies and cascades on the database, which proved harder than it looks because the way PostgreSQL handles cascades can be incredibly inefficient, so sometimes even though the reference is there, it is better to not write it for performance reasons. I have then wrote the code to filter out the database which was also quite tricky to optimize thanks to the sizes of the tables which can go into millions of rows for some of them. And of course we needed the code to be efficient, because this database would be rebuild essentially every day. This also involved setting up indexes on the tables to allow for faster filtering and faster queries down the line.
+
+I have written the bash script to download the zip file, unzip it and create the relational PostgreSQL database with it. Which was initially inside the training data collection container but later I moved it to the bus model.
+
+I have developed the inference container. First of all by preprocessing the collected training data and converting it into a dataset which can be trained on. This was one of the most challenging parts of the entire project, because I needed to map the coordinates associated with timestamps and a trip id to much more rich data, such as when were stops passed on that trip with distances to them on that trip, etc. All of this is too complicated to put down in text, but it involved designing a very efficient way to query the databases on the tables which contain millions of rows (sometimes you would need to join these tables together, which would need to be done efficiently, otherwise the amount of rows to process would be in billions). 
+
+After designing the queries needed I still needed to develop the code which would use those queries in order to process the data into something the model would use. This was not so simple because of course you need to know the model architecture to pre-process the data for it, but you need to know which data you are working with to design the model. So these two design phases happened in tandem, so often I would reiterate on the model architecture and change the data accordingly, then I would find a nicer representation of the data and change the model, etc. Eventually I have developed a trip manager class which converts the training and in the future extended it to preprocess the data for inference as well. 
+
+The model itself was developed in google colab. Firstly I have decided to use Encoder Decoder after reading research papers, then used the library pytorch which handles most of the code for me, all I needed to do was make the existing model architecture fit with my specific data I wanted the model to predict. When eventually the code was compiling I still needed to actually train the model which involves a lot of iterations and adjusting hyper parameters. This was the case for me as well, I have adjusted the epochs, number of trips the model tried to predict, introduced randomness into the dataset to help with generalization and resolved the issue of the first stop prediction with the overlap as I mentioned before. Eventually I have gotten good results on the test dataset.
+
+Finally I have deployed the model in the inference container and provided the API routes to access this model. This involved creating a wrapper class around the model which handled the inference, loading the model and data manipulation. 
+
+I have also created the architecture diagram and played a big role in designing the architecture because I was in charge of the containerization. And as everyone else I have worked on the presentation, helped with the design of the one page report and I wrote most of the project report, except for the containers and contributions which I have not worked on personally.
 
 ### Liam
 
