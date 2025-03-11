@@ -64,7 +64,7 @@ A second issue now is that the training data can become stale, since there is a 
 
 ### Bus Model
 
-The Bus model container runs a Flask server which primarily manages the transfer of data and responding to requests from the front-end.
+The Bus model container runs a Flask server which primarily manages the transfer of data and responding to requests from the front-end. The data transfer aspect is more deeply discussed in the [Data Flow](#flow-events-triggering-changes-in-the-architecture) section.
 
 #### Data Sources
 
@@ -194,7 +194,9 @@ Then the responsibility of the bus model container after receiving this informat
 
 #### Static update
 
-As mentioned in the bad data section, the static data is highly unstable and needs to be updated regularly. The scripts to do so are located in the bus model container, since it is responsible for providing the up to date information. The scripts download the zip file containing the static data from `https://www.transportforireland.ie/transitData/Data/GTFS_Realtime.zip`, then unzipped into a directory using a bash script, which afterwards call the python script to create tables, populate them with the data from the unzipped files and filter them to only contain the data we care about. 
+As mentioned in the bad data section, the static data is highly unstable and needs to be updated regularly. The scripts to do so are located in the bus model container, since it is responsible for providing the up to date information. The scripts download the zip file containing the static data from `https://www.transportforireland.ie/transitData/Data/GTFS_Realtime.zip`, then unzipped into a directory using a bash script, which afterwards call the python script to create tables, populate them with the data from the unzipped files and filter them to only contain the data we care about.
+
+When frequently restarting the server (such as during development or kubernetes pods being spun up and down), we do not wish to build the database each time. Additionally, we create 2-4 workers per container and we do not want to create the database 2-4 times as it is shared amongst all containers and workers. However, we still want it to be built if it does not exist in it's entirety, as the remainder of the back-end would struggle to function. Our solution is to create a Docker Volume which contains a file which acts as a flag to identify the presence of a complete database. On the first run of the containers, the file does not exist, so the static update script is executed, which usually takes ~5 minutes. If the database is successfully built, populated and indexed, the flag file is created. During future server boots, the file will be present and the database will not be recreated. It can still be created through by executing the bash script, either manually or through a cronjob.
 
 Since the PostgreSQL database is centralized, not many other actions need to be made in this flow, except for one. `route_id_to_name`is often used to filter out the trips we care about, because it contains only the route ids of routes we choose to track. It is stored in PostgreSQL as a table with two attributes, the route id and the name of the route. However an issue arises when a container stores this mapping of route ids on startup, because the route ids might change while it is running and then the stored data becomes stale. To prevent simply fetching the data periodically, the bus model pushes it to the containers that need it on the event of the static data update. Currently it only services the inference container. This probably made you think about publisher subscriber architecture and it is the same principle, however we did not go full out on the publisher subscriber architecture for example using Redis, because we deemed it a bit of an overkill. 
 
