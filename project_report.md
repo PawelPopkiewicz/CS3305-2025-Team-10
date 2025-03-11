@@ -14,14 +14,14 @@ This led us to mainly focus on our data and predictions we could make with it. I
 
 > The terms used need definitions beyond the colloquial meaning
 
-|Term|Definition|
-|--|--|
-|Route|Collection of trips following a similar path, think of `220`|
-|Trip|One instance of a bus trip, repeats weekly, think of `220` leaving at Ovens at 10:00 and arriving in Carrigaline at 13:00|
-|Shape|The shape of the path a specific trip follows|
-|Stop|Straightforward, just a bus stop|
-|Distance|Distance from the beginning of the trip in meters|
-|(Vehicle) Updates|Real-time updates, a timestamp and a location of a bus given in coordinates|
+| Term              | Definition                                                                                                                |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Route             | Collection of trips following a similar path, think of `220`                                                              |
+| Trip              | One instance of a bus trip, repeats weekly, think of `220` leaving at Ovens at 10:00 and arriving in Carrigaline at 13:00 |
+| Shape             | The shape of the path a specific trip follows                                                                             |
+| Stop              | Straightforward, just a bus stop                                                                                          |
+| Distance          | Distance from the beginning of the trip in meters                                                                         |
+| (Vehicle) Updates | Real-time updates, a timestamp and a location of a bus given in coordinates                                               |
 
 ## Overall Architecture
 
@@ -74,17 +74,17 @@ The Bus model container runs a Flask server which primarily manages the transfer
 
 Transport For Ireland (TFI), provide static data files for several transport operators in the country. The data is provided in a ZIP file consisting of 9 CSV files. The files are listed below:
 
-|File Name|Contents|Approx Size (rows)|
-|--|--|--|
-|agency.txt|Information for all operators|7|
-|feed_info.txt|Data Feed Metadata|1|
-|calendar.txt|Specifies on what days a trip runs|170|
-|calendar_dates.txt|Exceptions to calendar.txt|380|
-|routes.txt|Specifies details about routes|440|
-|trips.txt|Specifies details about trips, including the route it is on|216K|
-|stops.txt|Specifies details about each stop|10500|
-|stop_times.txt|Specifies the time for each trip arriving at each stop|6.3M|
-|shapes.txt|Specifies the coordinates of each trip's physical route|6.3M|
+| File Name          | Contents                                                    | Approx Size (rows) |
+| ------------------ | ----------------------------------------------------------- | ------------------ |
+| agency.txt         | Information for all operators                               | 7                  |
+| feed_info.txt      | Data Feed Metadata                                          | 1                  |
+| calendar.txt       | Specifies on what days a trip runs                          | 170                |
+| calendar_dates.txt | Exceptions to calendar.txt                                  | 380                |
+| routes.txt         | Specifies details about routes                              | 440                |
+| trips.txt          | Specifies details about trips, including the route it is on | 216K               |
+| stops.txt          | Specifies details about each stop                           | 10500              |
+| stop_times.txt     | Specifies the time for each trip arriving at each stop      | 6.3M               |
+| shapes.txt         | Specifies the coordinates of each trip's physical route     | 6.3M               |
 
 The data is formatted to comply with GTFS, the General Transit Feed Specification, a standardised format for supplying public transport data amongst many transport authorities around the world. Fortunately this means that the format is well documented. The relation between the nine files can be handily presented in a relational table format, presented below.
 
@@ -118,29 +118,29 @@ To make sense of the workflow, the model and the usage of the model, let me spli
 
 Preprocessing our data was crucial in order to extract useful information for the model to learn from. The methodology I used to pick the features and shape of data to feed the model was along the lines of "if I cannot make a reasonable estimate from the data, the model cannot either." So for example simply giving the model coordinates and timestamps with the hopes it would predict the next ones would be naive.
 
-The first step in this procedure is to decide how to encode time. In other words how to encode the fact that the bus is progressing through time. As raw data the updates (coordinates + timestamps) are at random intervals, ~ 2 mins apart. That is quite bad for our model as it does not transition nicely to the arrival time at stops which we are ultimately interested in. Instead I decided to structure the data in bus stops. So we would give the model information about bus stops, first the observed ones, in other words the stops which the bus already passed with information of arrival time, scheduled arrival time, time in the day and distance along the route. 
+The first step in this procedure is to decide how to encode time. In other words how to encode the fact that the bus is progressing through time. As raw data the updates (coordinates + timestamps) are at random intervals, ~ 2 mins apart. That is quite bad for our model as it does not transition nicely to the arrival time at stops which we are ultimately interested in. Instead I decided to structure the data in bus stops. So we would give the model information about bus stops, first the observed ones, in other words the stops which the bus already passed with information of arrival time, scheduled arrival time, time in the day and distance along the route.
 
-Converting the updates into bus stops is not straightforward. First I fetch all of the stops for this trip, calculate the distance of that stop from the beginning of the trip (using shapes table). During processing I keep track of the processed ones with an index. Then I start going through the updates, if a stop (or more) happen to be between these updates, I use linear interpolation to estimate the arrival time. This is possible because I know the distance travelled for the stops and the updates too, this gives me a nice correlation. So assuming the bus travels at constant speed (this also means it never stops) then it would arrive at that bus stop in x amount of time. For example if update 1 is 100 meters and update 2 is 200 meters and our bus stop is 175 meters far, then our interpolation ratio would be (175 - 100) / (200 - 100) = 0.75. And if update one would be at 10 seconds and update 2 at 18 seconds, then the stop was passed at 0.75 * (18 - 10) + 10 = 16 seconds. This might seem like a bad estimation, but overall it preserves the progress of the trip perfectly and slight deviations in the exact arrival time are okay as long as the overall speed through the trip is preserved. The fact our model does not account for idling times at stops seems like an oversight, but when researchers have tried to deal with this issue, they ended up creating two models, one to predict the travel and the other to predict the stop times, but without an incredible improvement boost. Instead I assume that there is a high correlation between high waiting times and slow travel, meaning if the model can learn that the trip is going slowly, the longer idle times will be naturally modeled as well, so I do not see a reason to focus on idle prediction yet. I would like to add that better techniques exist, such as spline interpolation, however that was beyond my scope as of now.  
+Converting the updates into bus stops is not straightforward. First I fetch all of the stops for this trip, calculate the distance of that stop from the beginning of the trip (using shapes table). During processing I keep track of the processed ones with an index. Then I start going through the updates, if a stop (or more) happen to be between these updates, I use linear interpolation to estimate the arrival time. This is possible because I know the distance travelled for the stops and the updates too, this gives me a nice correlation. So assuming the bus travels at constant speed (this also means it never stops) then it would arrive at that bus stop in x amount of time. For example if update 1 is 100 meters and update 2 is 200 meters and our bus stop is 175 meters far, then our interpolation ratio would be (175 - 100) / (200 - 100) = 0.75. And if update one would be at 10 seconds and update 2 at 18 seconds, then the stop was passed at 0.75 \* (18 - 10) + 10 = 16 seconds. This might seem like a bad estimation, but overall it preserves the progress of the trip perfectly and slight deviations in the exact arrival time are okay as long as the overall speed through the trip is preserved. The fact our model does not account for idling times at stops seems like an oversight, but when researchers have tried to deal with this issue, they ended up creating two models, one to predict the travel and the other to predict the stop times, but without an incredible improvement boost. Instead I assume that there is a high correlation between high waiting times and slow travel, meaning if the model can learn that the trip is going slowly, the longer idle times will be naturally modeled as well, so I do not see a reason to focus on idle prediction yet. I would like to add that better techniques exist, such as spline interpolation, however that was beyond my scope as of now.
 
 Now that we have stops with estimated arrival times, we can do further engineering to give our model an easier time during training. First of all it is a common practice to predict the relative error to the scheduled time. For example if the bus arrived at 14:25 but was scheduled for 14:22, then the relative error is 3 minutes. We can track the relative error across the stops and it forms quite a nice smooth curve, which makes it really nice to predict. Another advantage is that it gives the model a reference point, so the error further into the future does not deviate drastically. Although it is important to mention that the relative error will increase further into the future thanks to the entropy of the system. This is quite significant in our ideology, because we aim to build trust with the user of the application to trust the prediction. If we would try to predict too far into the future it would be impossible to provide consistent results, therefore we introduce a hard stop of ~15 stops and we do not predict further than that.
 
-Another factor to focus on is that the model will be recurrent, effectively this means the model sees just one bus stop at a time and iterates over them. Our data should reflect that, so instead of for example providing the scheduled arrival times as is, I provide the scheduled time to the next bus stop and also the distance to the next bus stop, etc. This helps the model if the relative error will decrease or increase (For example longer stretches between usually mean a decrease, etc.). 
+Another factor to focus on is that the model will be recurrent, effectively this means the model sees just one bus stop at a time and iterates over them. Our data should reflect that, so instead of for example providing the scheduled arrival times as is, I provide the scheduled time to the next bus stop and also the distance to the next bus stop, etc. This helps the model if the relative error will decrease or increase (For example longer stretches between usually mean a decrease, etc.).
 
 Last aspect I want to talk about is the normalization of values. This essentially means that the values should be in a similar range. For this reason I subtract the current delay from all of the times fed into the model, meaning the relative error is always 0 at the start, this helps with cases like an hour delay or more, which might throw off the model, even though the actual trip has normal times between stops. Of course this delay is then added after inference.
 
 So now we are ready to take a look at the example training data from the dataset:
 
-|id                 |route name|day|time  |stop id     |scheduled arrival time|scheduled departure time|distance to stop|time to stop|residual stop time|
-|--|--|--|--|--|--|--|--|--|--|
-|4497 38961202502090|206       |6  |1262.6|8380B2407401|0.0                   |0.0                     |0.0             |0.0         |0.0               |
-|4497 38961202502090|206       |6  |1263.1|8380B2407501|30.0                  |30.0                    |365.5           |30.0        |3.0               |
-|4497 38961202502090|206       |6  |1263.6|8380B2407601|60.0                  |60.0                    |241.0           |30.0        |-4.8              |
-|4497 38961202502090|206       |6  |1264.1|8380B2407701|90.0                  |90.0                    |202.6           |30.0        |-15.2             |
-|4497 38961202502090|206       |6  |1264.6|8370B2407801|120.0                 |120.0                   |326.6           |30.0        |-13.0             |
-|4497 38961202502090|206       |6  |1265.1|8370B2011901|150.0                 |150.0                   |269.0           |30.0        |7.7               |
-|4497 38961202502090|206       |6  |1266.1|8370B2408001|210.0                 |210.0                   |376.7           |60.0        |39.0              |
-|4497 38961202502090|206       |6  |1267.1|8370B2408101|270.0                 |270.0                   |183.6           |60.0        |10.1              |
-|4497 38961202502090|206       |6  |1267.6|8370B2408201|300.0                 |300.0                   |332.8           |30.0        |21.8              |
+| id                  | route name | day | time   | stop id      | scheduled arrival time | scheduled departure time | distance to stop | time to stop | residual stop time |
+| ------------------- | ---------- | --- | ------ | ------------ | ---------------------- | ------------------------ | ---------------- | ------------ | ------------------ |
+| 4497 38961202502090 | 206        | 6   | 1262.6 | 8380B2407401 | 0.0                    | 0.0                      | 0.0              | 0.0          | 0.0                |
+| 4497 38961202502090 | 206        | 6   | 1263.1 | 8380B2407501 | 30.0                   | 30.0                     | 365.5            | 30.0         | 3.0                |
+| 4497 38961202502090 | 206        | 6   | 1263.6 | 8380B2407601 | 60.0                   | 60.0                     | 241.0            | 30.0         | -4.8               |
+| 4497 38961202502090 | 206        | 6   | 1264.1 | 8380B2407701 | 90.0                   | 90.0                     | 202.6            | 30.0         | -15.2              |
+| 4497 38961202502090 | 206        | 6   | 1264.6 | 8370B2407801 | 120.0                  | 120.0                    | 326.6            | 30.0         | -13.0              |
+| 4497 38961202502090 | 206        | 6   | 1265.1 | 8370B2011901 | 150.0                  | 150.0                    | 269.0            | 30.0         | 7.7                |
+| 4497 38961202502090 | 206        | 6   | 1266.1 | 8370B2408001 | 210.0                  | 210.0                    | 376.7            | 60.0         | 39.0               |
+| 4497 38961202502090 | 206        | 6   | 1267.1 | 8370B2408101 | 270.0                  | 270.0                    | 183.6            | 60.0         | 10.1               |
+| 4497 38961202502090 | 206        | 6   | 1267.6 | 8370B2408201 | 300.0                  | 300.0                    | 332.8            | 30.0         | 21.8               |
 
 #### Model Architecture
 
@@ -148,7 +148,7 @@ I will start by mentioning that the architecture was not my idea and it is well 
 
 The job of the decoder then is to take this _hidden state vector_ and use it to predict further stops. You can notice now that the hidden vector as a kind of bottle neck for the information that can be carried over to the predictions. As we will find later, this is something that is good for our model but also cause some issues, because it might abstract away too much information, which for example is good to find out the state of the traffic and "forget" stops which were passed longer time ago, but knowing the exact relative error for the last few stops would be quite helpful and the hidden vector does abstract away from this as well. This causes our model to badly predict the relative error of the first stop and then predict the second one with just a few seconds off from the first one. I will explain how to remedy this later.
 
-But how do we feed the model all of the stop? We also have a variable number of stops which are observed and a variable which are targets for our prediction, so we need our model to be quite flexible. This can be achieved by using the recurrent approach which we have mentioned before. So essentially go stop by stop until the end. This is incorporated into the encoder decoder by putting an LSTM (Long Short Term Memory) model inside both the encoder and the decoder. These are Recurrent Neural Networks (RNNs for short) meaning they process the stops one by one, each step producing a hidden vector which is fed into the next iteration together with the stop information. LSTM is special because it also introduces a forgetful component which essentially learns to forget unimportant information or keep important information for longer. The reason to choose an LSTM among other RNNs was quite arbitrary, however it is known to perform better than classical ones. In the future it might be worth looking into different ones as well. 
+But how do we feed the model all of the stop? We also have a variable number of stops which are observed and a variable which are targets for our prediction, so we need our model to be quite flexible. This can be achieved by using the recurrent approach which we have mentioned before. So essentially go stop by stop until the end. This is incorporated into the encoder decoder by putting an LSTM (Long Short Term Memory) model inside both the encoder and the decoder. These are Recurrent Neural Networks (RNNs for short) meaning they process the stops one by one, each step producing a hidden vector which is fed into the next iteration together with the stop information. LSTM is special because it also introduces a forgetful component which essentially learns to forget unimportant information or keep important information for longer. The reason to choose an LSTM among other RNNs was quite arbitrary, however it is known to perform better than classical ones. In the future it might be worth looking into different ones as well.
 
 Another important detail is that we use small neural networks to embed components into a single vector. So if we are giving each stop the "time to stop", "distance to stop" and the "time" all of these three get embedded together, same goes for trip information, like the day in the week and the route.
 
@@ -183,13 +183,14 @@ The model also needs to be loaded into memory to be used, because this takes few
 
 The purpose of training data collection is to collect the data from GTFS Realtime, filter it and store it in a non-wasteful format. At the start this container has queried the API itself, because the bus model was not implemented yet fully. However it would be wasteful to query it twice, so now the bus model container simply passes the received JSON files to the training data collection container.
 
-The data is filtered to only contain city Cork buses, this was done to only contain buses with similar routes. In the future new bus routes which are longer distance will be tested to see how they function with our model.  
+The data is filtered to only contain city Cork buses, this was done to only contain buses with similar routes. In the future new bus routes which are longer distance will be tested to see how they function with our model.
 
 Afterwards the data is processed to a different format. Instead of a lot of individual updates I create one trip document with an array of vehicle updates, to reduce the size of the stored data.
 
 ### Front end
 
 #### User Experience
+
 One of our main goals on the front-end was to ensure the user has a smooth and intuitive experience when navigating the lightweight app. Hence, we decided on the screen layout that centers around the map - the centerpiece of the application, that Alex ensured is readable and works smoothly - unlike the maps of many of our alternatives. Wherever possible, we tried to use familiar user flows, to improve the intuitiveness even further.
 
 We ensured the first-time user can get to the key info they want within 2 clicks, to make the app accessible and avoid any potential confusion.
@@ -199,6 +200,7 @@ Additionally, to lower mobile data usage, we optimized the API usage to only nee
 Despite initial ideas of adding an account based system, we decided against it, as we weighted the user benefit of being able to share their data between their devices against the risk of frustrating the first-time user that just wants to check the timetable.
 
 #### Modularity and reusability
+
 A key aspect the front-end team decided to use React Native is how easy it is to achieve modularity - the key to a scalable and maintainable app. It also ensured the vast majority of our code is reusable between Android, IOS and web browsers.
 
 We wanted to ensure that as many parts of the app were reusable - hence modular components that are used throughout multiple screens. Additionally, the programmatic and centralized implementation of the app theme allows for quick iterations of design, as the changes are reflected throughout the entire map.
@@ -211,12 +213,12 @@ The above-mentioned techniques let us stay agile even as the project increases i
 
 The flow of the program can be nicely separated into different events which trigger functions in the containers. These events are usually new information, but also requests from the client side. Here is a quick break down:
 
-|Event|Flow triggered|Frequency|
-|--|--|--|
-|Real-time update|bus model fetches data, which is then stored by training data collection. If there is a new update, inference is asked to update its prediction|1 min|
-|Static update|bus model fetches the latest static data and rebuilds the PostgreSQL, it also sends the new route id to name dictionary to inference|~1 day|
-|Client update|Client queries gateway for updated bus data, it then fetches this info from bus model|~1 min|
-|Client request|Client requests more detailed info, queries gateway which then queries the bus model|Unscripted|
+| Event            | Flow triggered                                                                                                                                  | Frequency  |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Real-time update | bus model fetches data, which is then stored by training data collection. If there is a new update, inference is asked to update its prediction | 1 min      |
+| Static update    | bus model fetches the latest static data and rebuilds the PostgreSQL, it also sends the new route id to name dictionary to inference            | ~1 day     |
+| Client update    | Client queries gateway for updated bus data, it then fetches this info from bus model                                                           | ~1 min     |
+| Client request   | Client requests more detailed info, queries gateway which then queries the bus model                                                            | Unscripted |
 
 During development we have used this prototype of a diagram to assist us:
 
@@ -321,3 +323,23 @@ Authored the frontend section of the project report, clearly outlining architect
 Contributed to the overall project presentation, ensuring that the frontend design and functionality were effectively communicated.
 
 ### Alex
+
+As part of the project, I was primarily responsible for the front-end design and development of the mobile application. My key contributions are outlined below:
+
+I have started with designing the full user interface in Figma, taking inspiration from existing solutions such as Google Maps and TFI Live. While these apps influenced the layout, I created a custom design tailored to our use case, ensuring that the interface remained clean, intuitive, and easy to navigate.
+
+I implemented the layout and styling of the application using React Native, with a focus on delivering a user-friendly and responsive experience across both iOS and Android platforms.
+
+To improve performance, I optimized the map view by caching data such as buses and stops locally and minimizing unnecessary re-renders. This significantly improved responsiveness and overall app quality.
+
+I developed and standardized the main UI components, including interactive map markers, bus information pages, and stop detail views. These components followed a consistent design pattern to enhance maintainability and usability.
+
+I collaborated with Pawel to implement the map functionality, contributing to features such as live bus updates, location tracking, and marker interactions.
+
+I was responsible for defining and enforcing a consistent data format for information passed to the front end (excluding predicted arrival times), which simplified integration and reduced potential errors during development.
+
+I implemented the search page, which included filtering and selection functionality for bus stops, making it easier for users to find relevant transit information.
+
+I also created API call functions within the API gateway to retrieve necessary data from the back end, ensuring smooth communication between the application layers.
+
+Finally, I produced the final project video, which demonstrated the app’s features and functionality in a clear and engaging manner for presentation purposes.
