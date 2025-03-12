@@ -342,15 +342,19 @@ I have also created the architecture diagram and played a big role in designing 
 
 I primarily managed the bus model container, which initially only consisted of the Pythonic bus model representation and the Flask server, but latest involved other data processing tasks. Initially, I fetched and parsed the static (CSV) data myself, which fed directly into the Pythonic bus model. I expanded the bus model to include more than just the fields in the CSV files such as "joins" between the  as it was necessary to make the code more readable and quicker.
 
+I researched and deciphered the static data provided by TFI, which remained complicated to understand despite the documentation available online. The data has been heavily normalised, so it is not presented in a straight forward style.
+
 When the responsibility of the PostgreSQL database fell under the bus model container, I modified Radek's implementation and moved the data source of the Pythonic bus model to use the database. This also required me to modify the tables in the database to include some previously excluded fields found in the CSV files. I added a Docker Volume with a flag file to help indicate a complete database as well.
 
 After we made a slight adjustment to the overall architecture of the back-end, I took responsiblity of ensuring that the training-data-collection and inference containers both had access to the static and live data by forwarding relevent data on each update. I also started fetching the bus vehicle data which is used in the Pythonic bus model.
 
 I created a cronjob to fetch the live data minutely within the Dockerfile of the bus model container, so only the cron process must start to get it running.
 
-I collect and store the required information that the prediction model needs and pass the data to the inference container on each bus location update. I handle the returned data in the Pythonic bus model.
+I collect and store the required information that the prediction model needs and pass the data to the inference container on each bus location update. I handle the returned data in the Pythonic bus model. I compute the static bus schedule when there is no predicted arrival times yet and the front-end requests them. I format the times reduce extra calculations on the front-end.
 
-I maintained the bus model Flask routes and made sure that the gateway container's Flask routes correctly called them and had appropriate error checking in place.
+I created and maintained the bus model Flask routes and made sure that the gateway container's Flask routes correctly called them and had appropriate error checking in place. I ensured that all routes required by the front-end were present and worked as intended during all stages of testing.
+
+I ensured that no container was printing too much debugging information to allow server administrators (i.e. us) to be able to read the logs to check for errors and server launching progress.
 
 ###  Pawel
 
