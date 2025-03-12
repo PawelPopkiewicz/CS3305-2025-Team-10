@@ -55,7 +55,7 @@ Later we will showcase different parts of our system and go through the containe
 
 We mainly fetch data from the TFI API which provides us with real-time location updates on buses and potentially other vehicles in Ireland. This is important to mention because we have ran into some troubles when it comes to the data consistency, which has set us back. You can keep this in mind when some of our code seems a bit too much, for example rebuilding the database every day, etc.
 
-![Architecture of our system](images/architecture_diagram_busig.png)
+![Architecture of our system](images/team10_architecture_diagram_busig.png)
 
 ### Bad Data
 
@@ -87,7 +87,7 @@ Transport For Ireland (TFI), provide static data files for several transport ope
 
 The data is formatted to comply with GTFS, the General Transit Feed Specification, a standardised format for supplying public transport data amongst many transport authorities around the world. Fortunately this means that the format is well documented. The relation between the nine files can be handily presented in a relational table format, presented below.
 
-![https://www.researchgate.net/figure/Relations-among-different-text-files-of-a-GTFS-feed_fig1_319605381](images/relation_GTFS_diagram.png)
+![https://www.researchgate.net/figure/Relations-among-different-text-files-of-a-GTFS-feed_fig1_319605381](images/team10_relation_GTFS_diagram.png)
 
 As PostgreSQL utilises a relational database schema, this matched up well with the static GTFS data, allowing us to create tables very similar to the headers of each CSV file. The database creation and population uses a combination of bash and Python scripts, more of which is explained in the [Static Updates](#static-updates) section.
 
@@ -170,7 +170,7 @@ So the overall prediction looks like this:
 3. Give the hidden vector, given to us by the LSTM inside the encoder, to the decoder
 4. In the decoder go though the target stops and predict the relative errors for each one of them
 
-![The model architecture](images/model_architecture_busig.png)
+![The model architecture](images/team10_model_architecture_busig.png)
 
 #### Training
 
@@ -182,7 +182,7 @@ During training, the model did not go through many changes, unlike the format of
 
 I have also figured out that a decent number of stops into the future is about 15, anything further than that causes to model to have a hard time training, because of the high entropy, so whatever the model tries, the data will eventually deviate too much in the end.
 
-![Relative error by stop position from training](images/relative_error_by_position_busig.png)
+![Relative error by stop position from training](images/team10_relative_error_by_position_busig.png)
 
 #### Deployment
 
@@ -257,7 +257,7 @@ The flow of the program can be nicely separated into different events which trig
 
 During development we have used this prototype of a diagram to assist us:
 
-![The sketch which showcases the containers and flow of events](images/architecture_flow_sketch.png)
+![The sketch which showcases the containers and flow of events](images/team10_architecture_flow_sketch.png)
 
 I have found that thinking about our architecture in this way is helpful to conceptualise the architecture and connect components together. Also when extending our functionality you should ask yourself which flow does this fit in and if it does not fit into any of them, then it is probably not needed.
 
