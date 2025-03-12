@@ -199,7 +199,7 @@ The data is filtered to only contain city Cork buses, this was done to only cont
 
 Afterwards the data is processed to a different format. Instead of a lot of individual updates I create one trip document with an array of vehicle updates, to reduce the size of the stored data.
 
-### Front end
+### Front End
 
 #### User Experience
 
@@ -213,7 +213,7 @@ Additionally, to lower mobile data usage, we optimized the API usage to only nee
 
 Despite initial ideas of adding an account based system, we decided against it, as we weighted the user benefit of being able to share their data between their devices against the risk of frustrating the first-time user that just wants to check the timetable.
 
-#### Modularity and reusability
+#### Modularity and Reusability
 
 A key aspect the front-end team decided to use React Native is how easy it is to achieve modularity - the key to a scalable and maintainable app. It also ensured the vast majority of our code is reusable between Android, IOS and web browsers.
 
