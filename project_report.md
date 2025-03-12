@@ -191,7 +191,7 @@ Currently the preprocessing of the data is done inside the inference container. 
 
 The model also needs to be loaded into memory to be used, because this takes few seconds, I load the model once on startup of the container and keep it inside a wrapper class around that model. Afterwards the model is idle until a prediction request arrives through the RESTful API. In the future this preprocessing should be done in the class which is querying the model to reduce the response time. It should also happen async.
 
-### Training data collection
+### Training Data Collection
 
 The purpose of training data collection is to collect the data from GTFS Realtime, filter it and store it in a non-wasteful format. At the start this container has queried the API itself, because the bus model was not implemented yet fully. However it would be wasteful to query it twice, so now the bus model container simply passes the received JSON files to the training data collection container.
 
@@ -301,6 +301,8 @@ Another important takeaway is to keep your code on main a functional version of 
 On the topic of merging code to main, we now really appreciate CI/CD pipelines, which would make our life much much more easier and less stressful. If we had more time we would definitely focus on setting up the pipelines as soon as possible. This would also allow us to push code straight to our home server which Radek has setup, but because during most of the development cycle the main was either too outdated to work with the front end in its current state or somewhat broken, we ended not using our server nearly at all.
 
 The CI/CD pipelines would also involve a lot of tests. I do not need to stress how important are tests during development and the lack of automated testing was really a burden on all of us, the main issue was that we had so much code to write that test were simply an afterthought. I am not sure if so pressed for time tests are still something that needs to be automated, because we are not super familiar with testing frameworks, so it would take some time to set it up and put everyone on board. However it is one of our priorities now to have a decent test coverage of our code, since the MVP is functional, so we can focus on cementing the current architecture in place and make it more stable. If we knew we had more time, our focus would definitely shift towards testing more.
+
+We could have also benefitted from a more formal form of logging that using print statements for both debugging and logging. Use of Python's built in logging module could have helped see the status of past server boots, while also letting us filter the logging level depending on the situation. In some less than ideal situations, we were printing more than the entire terminal's screen worth of debugging which meant we were losing printed outputs. If we had logged to a file instead, we would have been able to still see the older logged outputs.
 
 Although big design up front is something seen as a bit outdated, I think our team would still benefit from spending a little bit more time in the initial design phase and mapping out a clear step by step plan on how to achieve what we have wanted. Although we have individually managed the tasks we needed to do individually, it is equally if not more important to manage to time plan as a group. So in the future we would definitely focus more on planning out our weeks and holding ourselves accountable to meet the team deadlines.
 
