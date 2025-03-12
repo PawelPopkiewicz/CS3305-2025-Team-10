@@ -10,8 +10,8 @@ export default {
     textPrimary: "white",
     textSecondary: "#A9ACB3",
     textSwitchable: "black",
-    backgroundSecondary: "#fcf6f0",
-    border: "darkgrey",
+    backgroundSecondary: "#c9c3bb",
+    border: "white",
     objectSelected: 'white',
     objectNotSelected: "#5F6268",
 };

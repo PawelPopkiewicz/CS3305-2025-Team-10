@@ -13,7 +13,11 @@ const Loading = ({ text }: { text: String }) => {
         <SafeAreaView style={styles.loading}>
                 <Text style={styles.textData}>{text}</Text>
                 <ActivityIndicator size="large" color={colors.objectSelected} />
-                <Button titleStyle={styles.textData}>Go Back</Button>
+                <TouchableOpacity 
+                onPress={() => router.back()}
+                >
+                    <Text style={styles.textData}>Go Back</Text>
+                </TouchableOpacity>
         </SafeAreaView>
     );
 };
@@ -23,6 +27,8 @@ const styles = StyleSheet.create({
         color: colors.textPrimary,
         textAlign: "center",
         fontSize: 24,
+        marginVertical: 20,
+        borderWidth: 1,
     },
     loading: {
         backgroundColor: colors.backgroundPrimary,
@@ -31,6 +37,7 @@ const styles = StyleSheet.create({
         alignContent: 'center',
         width: '100%',
         height: '100%',
+    
     },
     
 });

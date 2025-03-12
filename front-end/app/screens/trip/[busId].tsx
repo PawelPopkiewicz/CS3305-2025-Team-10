@@ -157,11 +157,11 @@ const styles = StyleSheet.create({
     },
     secondRowBus: {
         backgroundColor: colors.backgroundSecondary,
-        width: '15%',
+        width: '20%',
         borderRadius: 10
     },
     thirdRowBus: {
-        width: '55%',
+        width: '50%',
         flexShrink: 0
     },
     fourthRowBus: {
@@ -209,6 +209,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: fonts.heading,
         color: colors.textSwitchable,
+        fontWeight: 'bold',
     },
     textSecondary: {
         color: colors.textPrimary,
