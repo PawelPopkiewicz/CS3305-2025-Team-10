@@ -249,7 +249,7 @@ To accommodate frequent users, the app allows saving favorite bus routes or stop
 
 Users can filter the displayed data on the map to show only the selected bus routes or stops. This reduces clutter and allows for a more personalized and focused map view based on the user’s needs. Using this feature also further improves performance, as there are fewer markers to perform calculations on.
 
-### Flow (Events triggering changes in the architecture)
+### Flow (Events Triggering Changes in the Architecture)
 
 The flow of the program can be nicely separated into different events which trigger functions in the containers. These events are usually new information, but also requests from the client side. Here is a quick break down:
 
@@ -308,9 +308,24 @@ Although big design up front is something seen as a bit outdated, I think our te
 
 Communication among team members is also very important, mainly explaining the reasoning behind your choices to the rest of the team, without focusing too much on the technical detail. This improves mutual understanding and nurtures the collaborative environment.
 
+## Future Improvements
+
+While the list of potential future improvements is endless, there are a few important features that we wish to add.
+
+- Better predictions
+  - There are many easy ways we could improve our predictions, with the easiest option involving training our model on more data.
+- Providing extra context for front-end users
+  - We can tell the front-end when a bus goes off route, is cancelled, or whether the predicted times are model-predicted or estimated based on delay.
+- Web version
+  - Not everyone owns or has access to a mobile device, so offering a web version of our application would improve accessiblity.
+- Reducing response time
+  - There are many potential changes in the back-end architecture which could reduce the server boot time, the response time for the clients or inference response time.
+- Deployment and scaling up
+  - We eventually hope to utilise kubernetes or similar software to deploy our project on the cloud and be able to scale up the server to match large numbers of users at once.
+
 ## Contributions
 
-As discussed before, the collaboration between team members was nicely separated because we have worked on separate containers when it comes to the back end. The front end was of course more coupled, so the workflows between Alex and Pawel overlap.
+As discussed before, the collaboration between team members was nicely separated because we have worked on separate containers when it comes to the back end. The front end was of course more coupled, so the workflows between Alex and Pawel overlap. All of us contributed to the group presentation material and the writing of this report, allowing us all to explain our areas of expertise.
 
 ### Radek
 
