@@ -25,7 +25,7 @@ export default function Index() {
 
                 </View>
 
-            <View style={styles.favourite}>
+                <View style={styles.favourite}>
                     <View style={styles.heading}>
                         <Text style={styles.textPrimary}>Favourite Routes</Text>
                     </View>
@@ -59,8 +59,7 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     heading: {
-        borderTopLeftRadius: 17,
-        borderBottomLeftRadius: 17,
+        borderRadius: 17,
         paddingLeft: 7,
         backgroundColor: colors.backgroundSecondary,
         fontSize: fonts.heading,

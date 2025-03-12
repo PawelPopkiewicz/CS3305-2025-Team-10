@@ -93,7 +93,7 @@ export default function Stop() {
                 </View>
 
                 <View style={[styles.secondRow, {backgroundColor: colors.backgroundSecondary, paddingVertical: 3, borderRadius:10}]}>
-                    <Text style={styles.textPrimary}>
+                    <Text style={styles.textPrimaryCode}>
                         {`Stop ${stopData?.code}` || 'Stop'}
                     </Text>
                     <Text style={styles.textPrimary}>
@@ -187,6 +187,12 @@ const styles = StyleSheet.create({
         textAlign: 'left',
         fontSize: fonts.heading,
         color: colors.textSwitchable,
+    },
+    textPrimaryCode: {
+        textAlign: 'left',
+        fontSize: fonts.heading,
+        color: colors.textSwitchable,
+        fontWeight: 'bold',
     },
     textSecondary: {
         color: colors.textPrimary,

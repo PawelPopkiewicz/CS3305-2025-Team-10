@@ -46,7 +46,7 @@ def test_bus():
         elif response.status_code == 404:
             return abort(404)               # Not found
         else:
-            debug_print("Failed to fetch buses", e)
+            debug_print("Failed to fetch buses")
             return abort(500, "Failed to fetch buses")
     except requests.exceptions.RequestException as e:
         debug_print("Failed to fetch buses", e)
@@ -64,7 +64,7 @@ def get_all_routes():
         elif response.status_code == 404:
             return abort(404)               # Not found
         else:
-            debug_print("Failed to fetch routes", e)
+            debug_print("Failed to fetch routes")
             return abort(500, "Failed to fetch routes")
     except requests.exceptions.RequestException as e:
         debug_print("Failed to fetch routes", e)
@@ -82,7 +82,7 @@ def get_stops():
         elif response.status_code == 404:
             return abort(404)               # Not found
         else:
-            debug_print("Failed to fetch stops", e)
+            debug_print("Failed to fetch stops")
             return abort(500, "Failed to fetch stops")  # Any other status code
     except requests.exceptions.RequestException as e:
         debug_print("Failed to fetch stops", e)
@@ -96,18 +96,12 @@ def stop_arrivals(stop_id: str):
     try:
         response = requests.get(f"{BUS_MODEL_URI}/v1/stop/arrivals/{stop_id}")
         if response.status_code == 200:
-            data = [{
-                "id": bus["id"],
-                "route": bus["route"],
-                "headsign": bus["headsign"],
-                "arrival": datetime.datetime.fromtimestamp(bus["arrival"]).strftime('%H:%M'),
-                } for bus in response.json()]
-            return data                     # Standard response
+            return response.json()          # Standard response
         elif response.status_code == 404:
             return abort(404)               # Not found
         else:
             # Any other status code
-            debug_print("Failed to fetch buses for the given stop", e)
+            debug_print("Failed to fetch buses for the given stop")
             return abort(500, "Failed to fetch buses for the given stop")
     except requests.exceptions.RequestException as e:
         debug_print("Failed to fetch buses for the given stop", e)
@@ -125,7 +119,7 @@ def get_buses():
         elif response.status_code == 404:
             return abort(404)               # Not found
         else:
-            debug_print("Failed to fetch all buses", e)
+            debug_print("Failed to fetch all buses")
             return abort(500, "Failed to fetch all buses")
     except requests.exceptions.RequestException as e:
         debug_print("Failed to fetch all buses", e)
@@ -139,17 +133,11 @@ def get_trips(bus_id: str):
     try:
         response = requests.get(f"{BUS_MODEL_URI}/v1/bus/{bus_id}")
         if response.status_code == 200:
-            data = [{
-                "id": stop["id"], 
-                "code": stop["code"], 
-                "name": stop["name"], 
-                "arrival": datetime.datetime.fromtimestamp(stop["arrival"]).strftime('%H:%M'),
-                } for stop in response.json()]
-            return data                     # Standard response
+            return response.json()          # Standard response
         elif response.status_code == 404:
             return abort(404)               # Not found
         else:
-            debug_print("Failed to fetch trip info", e)
+            debug_print("Failed to fetch trip info")
             return abort(500, "Failed to fetch trip info")
     except requests.exceptions.RequestException as e:
         debug_print("Failed to fetch trip info", e)

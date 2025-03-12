@@ -1,14 +1,20 @@
-from flask import Flask, g, abort, jsonify, request
-import time, datetime
-from gtfsr import GTFSR, StaticGTFSR, BustimesAPI
 import bus_model
+import datetime
+import os
+import requests
+import subprocess
+import time
+
+from flask import Flask, g, abort, jsonify, request
+from gtfsr import GTFSR, StaticGTFSR, BustimesAPI
 from GTFS_Static.db_funcs import get_route_id_to_name_dict
 from dotenv import load_dotenv
+from math import ceil
 
-import subprocess
 subprocess.Popen(["service", "cron", "start"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 load_dotenv()
+training_uri = os.getenv("TRAINING_URI")
 
 app = Flask(__name__)
 load_before = time.time()
@@ -94,31 +100,70 @@ def bus(bus_id: str):
     if bus_obj:
         trip = bus_model.Trip._all.get(bus_obj.latest_trip, None)
         if trip:
-            stop_timestamps = trip.get_schedule_times()
-            day = trip.get_start_time()
-            for stop_id, timestamp in stop_timestamps.get(day.strftime("%Y-%m-%d"), {}).items():
-                stop = bus_model.Stop._all.get(stop_id, None)
-                data = {
-                        "id": stop.stop_id,
-                        "code": stop.stop_code,
-                        "name": stop.stop_name,
-                        "arrival": timestamp,
-                        #"current_trip": True,
-                        }
-                all_stops.append(data)
-            other_trips = trip.get_trips_in_block(day, subsequent_only=True)[:1]    # Next n trips
-            for t in other_trips:
-                stop_timestamps = t.get_schedule_times()
+            if trip.predicted_stop_visit_times:
+                stop_info_dicts = trip.predicted_stop_visit_times
+                print("Predictions", trip.trip_id, stop_info_dicts)
+                delay_t = None
+                for stop_id, stop_dict in stop_info_dicts.items():
+                    delay_t = stop_dict.get("delay", 0)
+                    stop = bus_model.Stop._all.get(stop_id, None)
+                    if stop_dict.get("type", "Scheduled") == "Scheduled":
+                        schedule_time = trip.get_bus_stop_schedule_arrival_time(stop_id)
+                        arr_time = bus_model.timestamp_to_HM(schedule_time + stop_dict.get("delay", 0))
+                        schedule_time = bus_model.timestamp_to_HM(schedule_time)
+                        delay = stop_dict.get("delay", 0)
+                        arrival_time = f"{arr_time} ({schedule_time} + {ceil(delay//60)})"
+                    else:
+                        arrival_time = bus_model.timestamp_to_HM(stop_dict.get("arrival_time", 0))
+                    data = {
+                            "id": stop.stop_id,
+                            "code": stop.stop_code,
+                            "name": stop.stop_name,
+                            "arrival": arrival_time + " PREDICTION",
+                            #"current_trip": True,
+                            }
+                    all_stops.append(data)
+                day = trip.get_start_time()
+                other_trips = trip.get_trips_in_block(day, subsequent_only=True)[:1]    # Next n trips
+                for t in other_trips:
+                    stop_timestamps = t.get_schedule_times()
+                    for stop_id, timestamp in stop_timestamps.get(day.strftime("%Y-%m-%d"), {}).items():
+                        stop = bus_model.Stop._all.get(stop_id, None)
+                        data = {
+                                "id": stop.stop_id,
+                                "code": stop.stop_code,
+                                "name": stop.stop_name,
+                                "arrival": bus_model.timestamp_to_HM(timestamp + delay_t)# + " DELAY, next",
+                                #"current_trip": False,
+                                }
+                        all_stops.append(data) 
+            else:   # Missing predictions
+                print("No predictions", trip.trip_id)
+                stop_timestamps = trip.get_schedule_times()
+                day = trip.get_start_time()
                 for stop_id, timestamp in stop_timestamps.get(day.strftime("%Y-%m-%d"), {}).items():
                     stop = bus_model.Stop._all.get(stop_id, None)
                     data = {
                             "id": stop.stop_id,
                             "code": stop.stop_code,
                             "name": stop.stop_name,
-                            "arrival": timestamp,
-                            #"current_trip": False,
+                            "arrival": bus_model.timestamp_to_HM(timestamp)# + " SCHEDULE",
+                            #"current_trip": True,
                             }
-                    all_stops.append(data) 
+                    all_stops.append(data)
+                other_trips = trip.get_trips_in_block(day, subsequent_only=True)[:1]    # Next n trips
+                for t in other_trips:
+                    stop_timestamps = t.get_schedule_times()
+                    for stop_id, timestamp in stop_timestamps.get(day.strftime("%Y-%m-%d"), {}).items():
+                        stop = bus_model.Stop._all.get(stop_id, None)
+                        data = {
+                                "id": stop.stop_id,
+                                "code": stop.stop_code,
+                                "name": stop.stop_name,
+                                "arrival": bus_model.timestamp_to_HM(timestamp)# + " SCHEDULE, next",
+                                #"current_trip": False,
+                                }
+                        all_stops.append(data) 
 
             return all_stops
     return abort(404)
@@ -138,6 +183,8 @@ def route_id_to_name():
 def update_realtime():
     """Takes the fetched data and populates the model."""
     print("Triggering realtime update")
+    data = GTFSR.fetch_vehicles()
+    # This line breaks, because GTFSR.fetch_vehicles() can return None
     data = GTFSR.fetch_vehicles()
     entities = data.get("entity", [])
     if entities:
@@ -160,6 +207,10 @@ def update_realtime():
             except KeyError as e:
                 print(f"KeyError: {e}")
                 continue
+    try:
+        requests.put(training_uri + "/trips", data=data)
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to send data to training container: {e}")
     return "Success"
 
 @app.route("/v1/update_static", methods=["GET"])
@@ -190,6 +241,7 @@ def update_bus():
                 withdrawn=bus.get("withdrawn", ""),
                 special_features=bus.get("special_features", "")
             )
+        # Make PUT req to AI
         return "Success"
     return "Failed"
 

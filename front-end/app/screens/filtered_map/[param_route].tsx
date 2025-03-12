@@ -47,9 +47,9 @@ const FilteredMap = () => {
 
     return (
         <SafeAreaView style={styles.background}>
-            <TouchableOpacity style={styles.input} onPress={() => router.push("/screens/search")}>
-                <Icon iconStyle={styles.back} onPress={() => router.back()} name="chevron-left" type="font-awesome" />
-                <Text style={styles.textSecondary}>Search bus stop or route</Text>
+            <TouchableOpacity style={styles.input} onPress={() => router.back()}>
+                <Icon iconStyle={styles.back}  name="chevron-left" type="font-awesome" />
+                <Text style={styles.textSecondary}>Go back</Text>
             </TouchableOpacity>
 
             <MapView
@@ -92,12 +92,12 @@ const styles = StyleSheet.create({
     input: {
         marginTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
         overflow: 'hidden',
-        borderRadius: 30,
-        borderWidth: 1,
+        // borderRadius: 30,
+        // borderWidth: 1,
         flexDirection: 'row',
         paddingVertical: 15,
         paddingHorizontal: 20,
-        borderColor: colors.border,
+        // borderColor: colors.border,
     },
     back: {
         color: colors.textPrimary,
